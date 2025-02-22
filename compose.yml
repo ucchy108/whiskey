@@ -1,0 +1,21 @@
+services:
+  web:
+    build: .
+    ports:
+      - 5173:5173
+    volumes:
+      - .:/app
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: whiskey
+      MYSQL_USER: whiskey
+      MYSQL_PASSWORD: password
+    ports:
+      - 3306:3306
+    volumes:
+      - db-volume:/var/lib/mysql
+
+volumes:
+  db-volume:
