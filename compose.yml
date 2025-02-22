@@ -5,6 +5,9 @@ services:
       - 5173:5173
     volumes:
       - .:/app
+    command: sleep infinity
+    depends_on:
+      - db
   db:
     image: mysql:latest
     environment:
