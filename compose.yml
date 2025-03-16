@@ -6,7 +6,7 @@ services:
       - 5555:5555
     volumes:
       - .:/app
-    command: sleep infinity
+    command: npm run dev
     depends_on:
       - db
   db:
