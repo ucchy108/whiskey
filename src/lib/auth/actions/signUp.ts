@@ -1,0 +1,75 @@
+"use server";
+
+import { signUpSchema } from "@/src/features/signup/schema";
+import { z } from "zod";
+import * as bcrypt from "bcrypt";
+import { prisma } from "@/src/lib/prisma";
+
+export type ActionsResult =
+  | {
+      isSuccess: true;
+      message: string;
+    }
+  | {
+      isSuccess: false;
+      error: {
+        message: string;
+      };
+    };
+
+export const signUp = async (
+  values: z.infer<typeof signUpSchema>
+): Promise<ActionsResult> => {
+  const validatedFields = signUpSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return {
+      isSuccess: false,
+      error: {
+        message: validatedFields.error.message,
+      },
+    };
+  }
+
+  const { email, password } = validatedFields.data;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (existingUser) {
+      return {
+        isSuccess: false,
+        error: {
+          message: "このメールアドレスは既に登録されています。",
+        },
+      };
+    }
+
+    // ここにデータベースへの登録処理を追加します。
+    await prisma.user.create({
+      data: {
+        email: email,
+        password: hashedPassword,
+      },
+    });
+
+    return {
+      isSuccess: true,
+      message: "サインアップに成功しました。",
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      isSuccess: false,
+      error: {
+        message: "サインアップに失敗しました。",
+      },
+    };
+  }
+};
