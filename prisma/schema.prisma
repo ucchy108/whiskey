@@ -14,16 +14,34 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(uuid()) @db.VarChar(36)
-  email String @unique @db.VarChar(255)
-  name  String @db.VarChar(255)
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  email         String    @unique @db.VarChar(255)
+  emailVerified DateTime?
+  password      String    @db.VarChar(255)
 
-  workouts Workout[]
+  Profile Profile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model Profile {
+  id     String @id @default(uuid()) @db.VarChar(36)
+  userId String @unique @db.VarChar(36)
+  name   String @db.VarChar(255)
+  age    Int
+  weight Float
+  height Float
+
+  user     User      @relation(fields: [userId], references: [id])
+  workouts Workout[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
 }
 
 model Exercise {
@@ -42,7 +60,7 @@ model Exercise {
 
 model Workout {
   id         String   @id @default(uuid()) @db.VarChar(36)
-  userId     String   @db.VarChar(36)
+  profileId  String   @db.VarChar(36)
   exerciseId String   @db.VarChar(36)
   date       DateTime
   weight     Float
@@ -50,7 +68,7 @@ model Workout {
   sets       Int
   memo       String?
 
-  User     User     @relation(fields: [userId], references: [id])
+  Profile  Profile  @relation(fields: [profileId], references: [id])
   Exercise Exercise @relation(fields: [exerciseId], references: [id])
 
   createdAt DateTime @default(now())

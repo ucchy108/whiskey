@@ -1,0 +1,5 @@
+GRANT CREATE,
+  ALTER,
+  DROP,
+  REFERENCES ON *.* TO 'whiskey' @'%';
+FLUSH PRIVILEGES;
