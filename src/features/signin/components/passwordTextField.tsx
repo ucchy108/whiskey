@@ -6,6 +6,7 @@ function SigniInPasswordTextField() {
       id="password"
       label="Password"
       type="password"
+      name="password"
       variant="outlined"
       fullWidth
       required

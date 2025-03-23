@@ -1,7 +1,6 @@
 "use server";
 
-import { signUpSchema } from "@/src/features/signup/schema";
-import { z } from "zod";
+import { SignUpFormSchema, signUpSchema } from "@/src/features/signup/schema";
 import * as bcrypt from "bcrypt";
 import { prisma } from "@/src/lib/prisma";
 
@@ -18,7 +17,7 @@ export type ActionsResult =
     };
 
 export const signUp = async (
-  values: z.infer<typeof signUpSchema>
+  values: SignUpFormSchema
 ): Promise<ActionsResult> => {
   const validatedFields = signUpSchema.safeParse(values);
 

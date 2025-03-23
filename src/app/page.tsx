@@ -1,13 +1,12 @@
 import { Typography } from "@mui/material";
-import { auth } from "../lib/auth";
+import Menu from "../components/menu";
 
 async function Home() {
-  const session = await auth();
-
   return (
     <>
-      <Typography variant="h3">Test</Typography>
-      <p>{JSON.stringify(session, null, 2)}</p>
+      <Menu>
+        <Typography variant="h1">Home</Typography>
+      </Menu>
     </>
   );
 }

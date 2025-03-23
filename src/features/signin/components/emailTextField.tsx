@@ -6,6 +6,7 @@ function SignInEmailTextField() {
       id="email"
       label="Email"
       type="email"
+      name="email"
       variant="outlined"
       fullWidth
       required
