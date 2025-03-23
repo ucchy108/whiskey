@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 
-function SignInEmailTextField() {
+export function SignInEmailTextField() {
   return (
     <TextField
       id="email"
@@ -13,5 +13,3 @@ function SignInEmailTextField() {
     />
   );
 }
-
-export default SignInEmailTextField;

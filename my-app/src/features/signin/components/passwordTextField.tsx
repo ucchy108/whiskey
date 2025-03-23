@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 
-function SigniInPasswordTextField() {
+export function SignInPasswordTextField() {
   return (
     <TextField
       id="password"
@@ -13,5 +13,3 @@ function SigniInPasswordTextField() {
     />
   );
 }
-
-export default SigniInPasswordTextField;
