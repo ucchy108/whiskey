@@ -1,6 +1,6 @@
 "use server";
 
-import { SignUpFormSchema, signUpSchema } from "@/src/features/signup/schema";
+import { SignUpFormSchema, signUpSchema } from "@/features/signup/schema";
 import * as bcrypt from "bcrypt";
 import { prisma } from "@/src/lib/prisma";
 

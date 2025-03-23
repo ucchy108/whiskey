@@ -5,8 +5,8 @@ services:
       - 3000:3000
       - 5555:5555
     volumes:
-      - .:/app
-    command: npm run dev
+      - ./my-app:/app
+    command: sleep infinity
     depends_on:
       - db
   db:

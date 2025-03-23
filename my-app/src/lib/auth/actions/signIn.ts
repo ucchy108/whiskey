@@ -1,6 +1,6 @@
 "use server";
 
-import { SignInFormSchema, signInSchema } from "@/src/features/signin/schema";
+import { SignInFormSchema, signInSchema } from "@/features/signin/schema";
 import { signIn as AuthSignIn } from "@/src/auth";
 import { AuthError } from "next-auth";
 // import { DEFAULT_LOGIN_REDIRECT } from "../auth.config";
