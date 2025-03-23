@@ -1,8 +1,12 @@
 import { Button } from "@mui/material";
 
-export function SignUpSubmitButton() {
+interface SignUpSubmitButtonProps {
+  onClick: () => void;
+}
+
+export function SignUpSubmitButton({ onClick }: SignUpSubmitButtonProps) {
   return (
-    <Button type="submit" variant="contained">
+    <Button type="submit" variant="contained" onClick={onClick}>
       Sign Up
     </Button>
   );

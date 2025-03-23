@@ -2,19 +2,8 @@
 
 import { SignUpFormSchema, signUpSchema } from "@/features/signup/schema";
 import * as bcrypt from "bcrypt";
-import { prisma } from "@/src/lib/prisma";
-
-export type ActionsResult =
-  | {
-      isSuccess: true;
-      message: string;
-    }
-  | {
-      isSuccess: false;
-      error: {
-        message: string;
-      };
-    };
+import { prisma } from "@/lib/prisma";
+import { ActionsResult } from "./result";
 
 export const signUp = async (
   values: SignUpFormSchema
