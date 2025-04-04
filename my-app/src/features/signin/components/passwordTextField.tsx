@@ -1,15 +1,33 @@
 import { TextField } from "@mui/material";
+import { Control, Controller, FieldErrors } from "react-hook-form";
+import { SignInFormSchema } from "../schema";
 
-export function SignInPasswordTextField() {
+interface SignInEmailTextFieldProps {
+  control: Control<SignInFormSchema>;
+  error: FieldErrors<SignInFormSchema>;
+}
+
+export function SignInPasswordTextField({
+  control,
+  error,
+}: SignInEmailTextFieldProps) {
   return (
-    <TextField
-      id="password"
-      label="Password"
-      type="password"
+    <Controller
       name="password"
-      variant="outlined"
-      fullWidth
-      required
+      control={control}
+      render={({ field }) => (
+        <TextField
+          {...field}
+          id="password"
+          label="Password"
+          type="password"
+          variant="outlined"
+          fullWidth
+          required
+          error={!!error.password}
+          helperText={error.password ? error.password.message : ""}
+        />
+      )}
     />
   );
 }
