@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import { Container } from "@mui/material";
+import { NavigationBar } from "@/components/menu";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <NavigationBar />
         <Container maxWidth="md">{children}</Container>
       </body>
     </html>
