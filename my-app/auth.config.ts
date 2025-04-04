@@ -1,20 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 
 export const authConfig: NextAuthConfig = {
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        // await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        const email = "user@nextemail.com";
-        const password = "password";
-        return credentials.email === email && credentials.password === password
-          ? { id: "userId", email }
-          : null;
-      },
-    }),
-  ],
+  providers: [],
   pages: {
     signIn: "/signin",
   },
