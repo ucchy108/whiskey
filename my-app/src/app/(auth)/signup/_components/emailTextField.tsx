@@ -22,6 +22,7 @@ export function SignUpEmailTextField({
           label="Email"
           type="email"
           variant="outlined"
+          size="small"
           fullWidth
           required
           error={!!error.email}

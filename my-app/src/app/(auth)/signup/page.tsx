@@ -9,7 +9,7 @@ import {
   SignUpFormSchema,
   signUpSchema,
 } from "@/app/(auth)/signup/_lib/schema";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { startTransition } from "react";
@@ -26,7 +26,6 @@ function SignUpPage() {
   });
 
   const onSubmit = (values: SignUpFormSchema) => {
-    console.log(values);
     startTransition(async () => {
       const result = await signUp(values);
 
@@ -37,16 +36,39 @@ function SignUpPage() {
   };
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Stack spacing={2}>
-          <Typography variant="h5">Sign Up</Typography>
-          <SignUpEmailTextField control={control} error={formState.errors} />
-          <SignUpPasswordTextField control={control} error={formState.errors} />
-          <SignUpSubmitButton onClick={handleSubmit(onSubmit)} />
-        </Stack>
-      </CardContent>
-    </Card>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <Card variant="outlined" sx={{ width: 400, py: 4 }}>
+        <CardContent>
+          <Stack spacing={2}>
+            <Typography
+              variant="h5"
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItem: "center",
+              }}
+            >
+              Sign Up
+            </Typography>
+            <SignUpEmailTextField control={control} error={formState.errors} />
+            <SignUpPasswordTextField
+              control={control}
+              error={formState.errors}
+            />
+            <Stack sx={{ py: 2 }}>
+              <SignUpSubmitButton onClick={handleSubmit(onSubmit)} />
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 

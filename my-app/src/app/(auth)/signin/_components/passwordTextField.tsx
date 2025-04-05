@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 import { Control, Controller, FieldErrors } from "react-hook-form";
-import { SignInFormSchema } from "../schema";
+import { SignInFormSchema } from "../_lib/schema";
 
 interface SignInEmailTextFieldProps {
   control: Control<SignInFormSchema>;
@@ -22,6 +22,7 @@ export function SignInPasswordTextField({
           label="Password"
           type="password"
           variant="outlined"
+          size="small"
           fullWidth
           required
           error={!!error.password}

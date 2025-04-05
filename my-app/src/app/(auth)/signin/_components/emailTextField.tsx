@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import { SignInFormSchema } from "../schema";
+import { SignInFormSchema } from "../_lib/schema";
 import { Control, Controller, FieldErrors } from "react-hook-form";
 
 interface SignInEmailTextFieldProps {
@@ -22,6 +22,7 @@ export function SignInEmailTextField({
           label="Email"
           type="email"
           variant="outlined"
+          size="small"
           fullWidth
           required
           error={!!error.email}
