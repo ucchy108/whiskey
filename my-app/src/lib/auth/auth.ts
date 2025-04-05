@@ -1,9 +1,11 @@
 import NextAuth from "next-auth";
-import { authConfig } from "../../../auth.config";
 import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "@/app/(auth)/signin/_lib/schema";
 import { getUserByEmail } from "../prisma/user";
 import * as bcrypt from "bcrypt";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "../prisma";
+import { authConfig } from "./config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -27,4 +29,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
 });
