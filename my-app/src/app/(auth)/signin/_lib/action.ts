@@ -1,9 +1,12 @@
 "use server";
 
-import { SignInFormSchema, signInSchema } from "@/features/signin/schema";
-import { signIn as AuthSignIn } from "../auth";
+import {
+  SignInFormSchema,
+  signInSchema,
+} from "@/app/(auth)/signin/_lib/schema";
+import { signIn as AuthSignIn } from "@/lib/auth/auth";
+import { ActionsResult } from "@/lib/auth/result";
 import { AuthError } from "next-auth";
-import { ActionsResult } from "./result";
 
 export const signIn = async (
   values: SignInFormSchema
@@ -25,7 +28,7 @@ export const signIn = async (
     await AuthSignIn("credentials", {
       email: email,
       password: password,
-      redirectTo: "/dashboard",
+      redirectTo: "/",
     });
 
     return {

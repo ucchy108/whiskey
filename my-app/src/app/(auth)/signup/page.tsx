@@ -4,13 +4,16 @@ import {
   SignUpEmailTextField,
   SignUpPasswordTextField,
   SignUpSubmitButton,
-} from "@/features/signup";
-import { SignUpFormSchema, signUpSchema } from "@/features/signup/schema";
+} from "@/app/(auth)/signup/_components";
+import {
+  SignUpFormSchema,
+  signUpSchema,
+} from "@/app/(auth)/signup/_lib/schema";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { startTransition } from "react";
-import { signUp } from "@/lib/auth/actions/signUp";
+import { signUp } from "@/app/(auth)/signup/_lib/action";
 
 function SignUpPage() {
   const { control, handleSubmit, formState } = useForm<SignUpFormSchema>({

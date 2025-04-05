@@ -4,9 +4,12 @@ import {
   SignInEmailTextField,
   SignInPasswordTextField,
   SignInSubmitButton,
-} from "@/features/signin";
-import { SignInFormSchema, signInSchema } from "@/features/signin/schema";
-import { signIn } from "@/lib/auth/actions/signIn";
+} from "@/app/(auth)/signin/_components";
+import {
+  SignInFormSchema,
+  signInSchema,
+} from "@/app/(auth)/signin/_lib/schema";
+import { signIn } from "@/app/(auth)/signin/_lib/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
 import { startTransition } from "react";

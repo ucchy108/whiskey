@@ -1,9 +1,12 @@
 "use server";
 
-import { SignUpFormSchema, signUpSchema } from "@/features/signup/schema";
+import {
+  SignUpFormSchema,
+  signUpSchema,
+} from "@/app/(auth)/signup/_lib/schema";
 import * as bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
-import { ActionsResult } from "./result";
+import { ActionsResult } from "@/lib/auth/result";
 
 export const signUp = async (
   values: SignUpFormSchema

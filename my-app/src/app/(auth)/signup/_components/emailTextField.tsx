@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 import { Control, Controller, FieldErrors } from "react-hook-form";
-import { SignUpFormSchema } from "../schema";
+import { SignUpFormSchema } from "../_lib/schema";
 
 interface SignUpEmailTextFieldProps {
   control: Control<SignUpFormSchema>;

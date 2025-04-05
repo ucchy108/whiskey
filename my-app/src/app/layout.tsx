@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@mui/material";
-import { NavigationBar } from "@/components/menu";
+import { NavigationBar } from "@/app/_components/navigationBar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
