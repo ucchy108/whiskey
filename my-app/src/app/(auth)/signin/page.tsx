@@ -11,7 +11,7 @@ import {
 } from "@/app/(auth)/signin/_lib/schema";
 import { signIn } from "@/app/(auth)/signin/_lib/action";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Card, CardContent, Stack, Typography, Link } from "@mui/material";
+import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import { startTransition } from "react";
 import { useForm } from "react-hook-form";
 import NextLink from "next/link";
@@ -68,7 +68,7 @@ function SignInPage() {
             <Typography variant="body2" align="center">
               アカウントをお持ちでない方は{" "}
               <NextLink href="/signup" passHref>
-                <Link component={"a"}>サインアップ</Link>
+                <span>サインアップ</span>
               </NextLink>
             </Typography>
           </Stack>
