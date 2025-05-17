@@ -19,7 +19,6 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
-import { WorkoutsContainer } from "./(list)/_containers";
 
 // ワークアウトの型定義
 interface Workout {
@@ -150,8 +149,6 @@ export default function Home() {
             新しいワークアウト
           </Button>
         </Box>
-
-        <WorkoutsContainer />
       </Box>
 
       {/* ワークアウト追加/編集ダイアログ */}

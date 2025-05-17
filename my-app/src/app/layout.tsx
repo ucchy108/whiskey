@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { NavigationBar } from "@/app/_components";
 
 export const metadata: Metadata = {
@@ -16,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <NavigationBar />
-        <Container maxWidth="md">{children}</Container>
+        <Box component="main" sx={{ paddingTop: "64px" }}>
+          <Container maxWidth="md">{children}</Container>
+        </Box>
       </body>
     </html>
   );
