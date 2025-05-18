@@ -19,6 +19,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
+import { WorkoutList } from "./(list)/components/WorkoutList";
 
 // ワークアウトの型定義
 interface Workout {
@@ -47,7 +48,7 @@ export default function Home() {
     name: "",
     type: "ランニング",
     duration: 30,
-    date: new Date().toISOString().split("T")[0],
+    date: "2025-01-01",
   });
 
   // ローカルストレージからワークアウトデータを読み込む
@@ -79,7 +80,7 @@ export default function Home() {
         name: "",
         type: "ランニング",
         duration: 30,
-        date: new Date().toISOString().split("T")[0],
+        date: "2025-01-01",
       });
     }
     setOpenDialog(true);
@@ -150,6 +151,8 @@ export default function Home() {
           </Button>
         </Box>
       </Box>
+
+      <WorkoutList />
 
       {/* ワークアウト追加/編集ダイアログ */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
