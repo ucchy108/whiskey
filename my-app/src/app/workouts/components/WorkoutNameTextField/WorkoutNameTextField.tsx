@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField } from "@mui/material";
 
-function NameTextField() {
+function WorkoutNameTextField() {
   return (
     <TextField
       autoFocus
@@ -15,6 +15,6 @@ function NameTextField() {
   );
 }
 
-const MemoizedNameTextField = React.memo(NameTextField);
+const MemoizedWorkoutNameTextField = React.memo(WorkoutNameTextField);
 
-export { MemoizedNameTextField as NameTextField };
+export { MemoizedWorkoutNameTextField as WorkoutNameTextField };

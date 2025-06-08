@@ -5,7 +5,7 @@ import { Container, Typography, Box, Button } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import { WorkoutList } from "./components/WorkoutList";
 import { useFormDialog } from "./hooks/useFormDialog";
-import { FormDialog as WorkoutFormDialog } from "./components/FormDialog";
+import { WorkoutFormDialog } from "./components/WorkoutFormDialog";
 import { useGetWorkouts } from "./hooks/useGetWorkouts";
 
 export default function Home() {

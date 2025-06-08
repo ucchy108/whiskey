@@ -12,7 +12,7 @@ const workoutTypes = [
   "その他",
 ];
 
-function TypeTextField() {
+function WorkoutTypeTextField() {
   return (
     <FormControl fullWidth sx={{ mb: 2 }}>
       <InputLabel>タイプ</InputLabel>
@@ -32,6 +32,6 @@ function TypeTextField() {
   );
 }
 
-const MemoizedTypeTextField = React.memo(TypeTextField);
+const MemoizedWorkoutTypeTextField = React.memo(WorkoutTypeTextField);
 
-export { MemoizedTypeTextField as TypeTextField };
+export { MemoizedWorkoutTypeTextField as WorkoutTypeTextField };

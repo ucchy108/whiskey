@@ -7,30 +7,30 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { NameTextField } from "../NameTextField";
-import { TypeTextField } from "../TypeTextField";
-import { DateDurationTextField } from "../DateDurationTextField";
+import { WorkoutNameTextField } from "../WorkoutNameTextField";
+import { WorkoutTypeTextField } from "../WorkoutTypeTextField";
+import { WorkoutDateDurationTextField } from "../WorkoutDateDurationTextField";
 
-interface FormDialogProps {
+interface WorkoutFormDialogProps {
   workout: WorkoutSchema | null;
   openDialog: boolean;
   handleCloseDialog: () => void;
 }
 
-function FormDialog({
+function WorkoutFormDialog({
   workout,
   openDialog,
   handleCloseDialog,
-}: FormDialogProps) {
+}: WorkoutFormDialogProps) {
   return (
     <Dialog open={openDialog} onClose={handleCloseDialog}>
       <DialogTitle>
         {workout ? "ワークアウトを追加" : "ワークアウトを編集"}
       </DialogTitle>
       <DialogContent>
-        <NameTextField />
-        <TypeTextField />
-        <DateDurationTextField />
+        <WorkoutNameTextField />
+        <WorkoutTypeTextField />
+        <WorkoutDateDurationTextField />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDialog}>キャンセル</Button>
@@ -40,6 +40,6 @@ function FormDialog({
   );
 }
 
-const MemoizedFormDialog = memo(FormDialog);
+const MemoizedWorkoutFormDialog = memo(WorkoutFormDialog);
 
-export { MemoizedFormDialog as FormDialog };
+export { MemoizedWorkoutFormDialog as WorkoutFormDialog };

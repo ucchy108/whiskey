@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField } from "@mui/material";
 
-function DateDurationTextField() {
+function WorkoutDateDurationTextField() {
   return (
     <>
       <TextField
@@ -29,6 +29,8 @@ function DateDurationTextField() {
   );
 }
 
-const MemoizedDateDurationTextField = React.memo(DateDurationTextField);
+const MemoizedWorkoutDateDurationTextField = React.memo(
+  WorkoutDateDurationTextField
+);
 
-export { MemoizedDateDurationTextField as DateDurationTextField };
+export { MemoizedWorkoutDateDurationTextField as WorkoutDateDurationTextField };
