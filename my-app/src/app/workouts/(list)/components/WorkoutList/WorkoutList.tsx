@@ -1,12 +1,14 @@
 "use client";
 
 import { Card } from "@mui/material";
-import { useGetWorkouts } from "../../hooks/useGetWorkouts";
 import { WorkoutItem } from "../WorkoutItem";
+import { WorkoutSchema } from "@/app/workouts/schema";
 
-export function WorkoutList() {
-  const { workouts } = useGetWorkouts();
+interface WorkoutListProps {
+  workouts?: WorkoutSchema[];
+}
 
+export function WorkoutList({ workouts }: WorkoutListProps) {
   return (
     <>
       {workouts?.map((workout) => {
