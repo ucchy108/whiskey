@@ -3,7 +3,7 @@
 import { Box, IconButton, ListItem, ListItemText } from "@mui/material";
 import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import { WorkoutSchema } from "@/app/workouts/schema";
-import { useFormDialog } from "@/app/workouts/(create)/hooks/useFormDialog";
+import { useFormDialog } from "@/app/workouts/hooks/useFormDialog";
 import { useCallback } from "react";
 
 interface WorkoutProps {

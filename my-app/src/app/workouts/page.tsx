@@ -3,10 +3,10 @@
 import React from "react";
 import { Container, Typography, Box, Button } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
-import { WorkoutList } from "./(list)/components/WorkoutList";
-import { useFormDialog } from "./(create)/hooks/useFormDialog";
-import { FormDialog as WorkoutFormDialog } from "./(create)/components/FormDialog";
-import { useGetWorkouts } from "./(list)/hooks/useGetWorkouts";
+import { WorkoutList } from "./components/WorkoutList";
+import { useFormDialog } from "./hooks/useFormDialog";
+import { FormDialog as WorkoutFormDialog } from "./components/FormDialog";
+import { useGetWorkouts } from "./hooks/useGetWorkouts";
 
 export default function Home() {
   const { open, handleClick, selectedItem } = useFormDialog();

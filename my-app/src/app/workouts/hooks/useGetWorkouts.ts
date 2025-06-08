@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { WorkoutSchema } from "../../schema";
+import { WorkoutSchema } from "../schema";
 
 interface UseGetWorkoutsReturn {
   workouts: WorkoutSchema[] | undefined;
