@@ -1,6 +1,6 @@
 "use client";
 
-import { createTheme } from "@mui/material/styles";
+import { createTheme, Theme } from "@mui/material/styles";
 import { Roboto } from "next/font/google";
 
 const roboto = Roboto({
@@ -9,7 +9,7 @@ const roboto = Roboto({
   display: "swap",
 });
 
-const theme = createTheme({
+export const theme = createTheme({
   colorSchemes: { light: true, dark: true },
   cssVariables: {
     colorSchemeSelector: "class",
@@ -35,4 +35,22 @@ const theme = createTheme({
   },
 });
 
-export default theme;
+export function successColor(theme: Theme): string {
+  return theme.palette.success.main;
+}
+
+export function onSuccessColor(theme: Theme): string {
+  return theme.palette.success.contrastText;
+}
+
+export function errorColor(theme: Theme): string {
+  return theme.palette.error.main;
+}
+
+export function onErrorColor(theme: Theme): string {
+  return theme.palette.error.contrastText;
+}
+
+export type ThemeProps = {
+  theme?: Theme;
+};
