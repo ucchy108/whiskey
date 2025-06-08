@@ -1,10 +1,11 @@
 "use client";
 
+import React from "react";
 import { Box, Tab, Tabs } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { FitnessCenter as FitnessCenterIcon, Dashboard as DashboardIcon, BarChart as BarChartIcon, Settings as SettingsIcon } from "@mui/icons-material";
 
-export function TabNavigation() {
+function TabNavigation() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,3 +49,7 @@ export function TabNavigation() {
     </Box>
   );
 }
+
+const MemoizedTabNavigation = React.memo(TabNavigation);
+
+export { MemoizedTabNavigation as TabNavigation };

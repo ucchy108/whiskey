@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 import { Box, Container } from "@mui/material";
 import { Providers } from "@/app/components/Providers";
