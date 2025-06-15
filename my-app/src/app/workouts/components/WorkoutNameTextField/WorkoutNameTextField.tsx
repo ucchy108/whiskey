@@ -1,20 +1,37 @@
-import React from "react";
+import React, { memo } from "react";
 import { TextField } from "@mui/material";
+import { Control, Controller, FieldErrors } from "react-hook-form";
+import { WorkoutFormSchema } from "../../schema";
 
-function WorkoutNameTextField() {
+interface WorkoutNameTextFieldProps {
+  control: Control<WorkoutFormSchema>;
+  error: FieldErrors<WorkoutFormSchema>;
+}
+
+function WorkoutNameTextField({ control, error }: WorkoutNameTextFieldProps) {
   return (
-    <TextField
-      autoFocus
-      margin="dense"
+    <Controller
       name="name"
-      label="ワークアウト名"
-      fullWidth
-      variant="outlined"
-      sx={{ mb: 2 }}
+      control={control}
+      render={({ field }) => (
+        <TextField
+          {...field}
+          id="name"
+          autoFocus
+          margin="dense"
+          name="name"
+          label="ワークアウト名"
+          fullWidth
+          variant="outlined"
+          sx={{ mb: 2 }}
+          error={!!error.name}
+          helperText={error.name?.message}
+        />
+      )}
     />
   );
 }
 
-const MemoizedWorkoutNameTextField = React.memo(WorkoutNameTextField);
+const MemoizedWorkoutNameTextField = memo(WorkoutNameTextField);
 
 export { MemoizedWorkoutNameTextField as WorkoutNameTextField };
