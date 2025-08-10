@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { formSchema } from "@/app/(auth)/schema";
 import { prisma } from "@/lib/prisma";
 import * as bcrypt from "bcrypt";
+import { signInFormSchema } from "@/app/(auth)/signin/components/SignInForm/formSchema";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsedCredentials = formSchema.safeParse(body);
+    const parsedCredentials = signInFormSchema.safeParse(body);
 
     if (!parsedCredentials.success) {
       console.error("Validation error:", parsedCredentials.error.message);
