@@ -10,15 +10,15 @@ import { Stack, Typography } from "@mui/material";
 import { FieldError, useForm } from "react-hook-form";
 import { useSignIn } from "../../hooks/useSignIn";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
-import { formSchema, FormSchema } from "@/app/(auth)/schema";
+import { signInFormSchema, SignInFormSchema } from "./formSchema";
 
 function SignInForm() {
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+  } = useForm<SignInFormSchema>({
+    resolver: zodResolver(signInFormSchema),
     mode: "onSubmit",
     defaultValues: {
       email: "",
@@ -30,7 +30,7 @@ function SignInForm() {
 
   const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
 
-  const onSubmit = (values: FormSchema) => {
+  const onSubmit = (values: SignInFormSchema) => {
     startTransition(async () => {
       const result = await signIn(values);
       if (!result.isSuccess) {

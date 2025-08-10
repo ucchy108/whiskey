@@ -10,8 +10,7 @@ export const passwordSchema = z.string().min(6, {
 });
 export type PasswordSchema = z.infer<typeof passwordSchema>;
 
-export const formSchema = z.object({
+export const baseFormSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
 });
-export type FormSchema = z.infer<typeof formSchema>;
