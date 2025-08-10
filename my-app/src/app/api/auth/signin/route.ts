@@ -1,19 +1,38 @@
+import { signInFormSchema } from "@/app/(auth)/signin/components/SignInForm/formSchema";
+import { prisma } from "@/lib/prisma";
+import * as bcrypt from "bcrypt";
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const parsedCredentials = signInFormSchema.safeParse(body);
 
-    // TODO: サインイン処理を実装
-    // 1. リクエストボディのバリデーション
-    // 2. ユーザー認証
-    // 3. セッション作成
+    if (!parsedCredentials.success) {
+      console.error("Validation error:", parsedCredentials.error.message);
+      return NextResponse.json({ error: "Invalid SignIn" }, { status: 400 });
+    }
 
-    console.log("Received sign-in request:", body);
+    const { email, password } = parsedCredentials.data;
+    const auth = await prisma.auth.findUnique({
+      where: { email },
+      include: {
+        user: true,
+      },
+    });
+
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      auth?.password || ""
+    );
+    if (!isPasswordValid || !auth?.user) {
+      return NextResponse.json({ error: "Invalid SignIn" }, { status: 401 });
+    }
 
     return NextResponse.json(
-      { message: "サインイン処理を実装してください" },
-      { status: 501 }
+      { message: "Success", user: auth.user },
+      { status: 200 }
     );
   } catch {
     return NextResponse.json(
