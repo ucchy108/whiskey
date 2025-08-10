@@ -46,7 +46,7 @@ function ErrorSnackbar({ open, onClose, message }: ErrorSnackbarProps) {
               <CloseIcon color={"inherit"} />
             </IconButton>
           }
-        ></Content>
+        />
       </Snackbar>
     </>
   );

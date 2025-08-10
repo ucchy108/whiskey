@@ -1,4 +1,6 @@
-FROM node:f6908ff3eb35a5d0c8fc60086fd29ae16e3abdba
+FROM node:24-bookworm
+
+RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

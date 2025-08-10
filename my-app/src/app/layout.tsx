@@ -1,9 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Box, Container } from "@mui/material";
 import { Providers } from "@/app/components/Providers";
 import { NavigationBar } from "./components/NavigationBar";
-import { TabNavigation } from "./components/TabNavigation/TabNavigation";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,12 +18,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <NavigationBar />
-          <Box component="main" sx={{ paddingTop: "64px" }}>
-            <TabNavigation />
-            <Container sx={{ mt: 3 }}>
-              {children}
-            </Container>
-          </Box>
+          {children}
         </Providers>
       </body>
     </html>
