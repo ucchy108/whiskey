@@ -1,29 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   AppBar,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
+  // Button,
+  // IconButton,
+  // Menu,
+  // MenuItem,
   Toolbar,
   Typography,
 } from "@mui/material";
-import { AccountCircle } from "@mui/icons-material";
-import { useSession } from "next-auth/react";
+// import { AccountCircle } from "@mui/icons-material";
+// import { useSession } from "next-auth/react";
 
 function NavigationBar() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: session } = useSession();
+  // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  // const { data: session } = useSession();
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
 
   return (
     <AppBar
@@ -34,7 +34,7 @@ function NavigationBar() {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Whiskey
         </Typography>
-        {session?.user ? (
+        {/* {session?.user ? (
           <>
             <IconButton
               size="large"
@@ -69,7 +69,7 @@ function NavigationBar() {
           </>
         ) : (
           <Button color="inherit">Login</Button>
-        )}
+        )} */}
       </Toolbar>
     </AppBar>
   );
