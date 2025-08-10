@@ -14,12 +14,15 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid()) @db.VarChar(36)
-  email         String    @unique @db.VarChar(255)
-  emailVerified DateTime?
-  password      String    @db.VarChar(255)
+  id     String @id @default(uuid()) @db.VarChar(36)
+  name   String @db.VarChar(255)
+  age    Int
+  weight Float
+  height Float
 
-  Profile Profile?
+  Auth Auth?
+
+  workouts Workout[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -27,52 +30,62 @@ model User {
   @@map("users")
 }
 
-model Profile {
-  id     String @id @default(uuid()) @db.VarChar(36)
-  userId String @unique @db.VarChar(36)
-  name   String @db.VarChar(255)
-  age    Int
-  weight Float
-  height Float
+model Auth {
+  id       String  @id @default(uuid()) @db.VarChar(36)
+  userId   String  @unique @db.VarChar(36)
+  email    String? @unique @db.VarChar(255)
+  password String? @db.VarChar(255)
 
-  user     User      @relation(fields: [userId], references: [id])
-  workouts Workout[]
+  user User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("profiles")
+  @@map("auths")
 }
 
 model Exercise {
   id          String  @id @default(uuid()) @db.VarChar(36)
   name        String  @db.VarChar(255)
   description String?
-  muscleGroup String
 
-  workouts Workout[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  Detail    WorkoutDetail[]
 
   @@map("exercises")
 }
 
 model Workout {
-  id         String   @id @default(uuid()) @db.VarChar(36)
-  profileId  String   @db.VarChar(36)
-  exerciseId String   @db.VarChar(36)
-  date       DateTime
-  weight     Float
-  reps       Int
-  sets       Int
-  memo       String?
+  id     String   @id @default(uuid()) @db.VarChar(36)
+  userId String   @db.VarChar(36)
+  date   DateTime
+  dialy  String?
 
-  Profile  Profile  @relation(fields: [profileId], references: [id])
+  User User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  Detail    WorkoutDetail[]
+
+  @@map("workouts")
+}
+
+model WorkoutDetail {
+  id         String  @id @default(uuid()) @db.VarChar(36)
+  workoutId  String  @db.VarChar(36)
+  exerciseId String  @db.VarChar(36)
+  sets       Int
+  reps       Int
+  weight     Float?
+  duration   Int? // Duration in seconds
+  notes      String?
+
+  Workout  Workout  @relation(fields: [workoutId], references: [id])
   Exercise Exercise @relation(fields: [exerciseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("workouts")
+  @@map("workout_details")
 }

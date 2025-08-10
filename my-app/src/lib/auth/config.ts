@@ -10,7 +10,6 @@ export const authConfig: NextAuthConfig = {
     signIn: "/signin",
   },
   callbacks: {
-    // TODO: このままではログインしたあとにdashboard意外から動けないためリファクタリングを行う
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
 
@@ -31,4 +30,4 @@ export const authConfig: NextAuthConfig = {
       return true;
     },
   },
-};
+} satisfies NextAuthConfig;
