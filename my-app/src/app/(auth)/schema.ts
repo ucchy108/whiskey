@@ -9,3 +9,9 @@ export const passwordSchema = z.string().min(6, {
   message: "パスワードは6文字以上です。",
 });
 export type PasswordSchema = z.infer<typeof passwordSchema>;
+
+export const formSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+export type FormSchema = z.infer<typeof formSchema>;

@@ -7,18 +7,18 @@ import { PasswordTextField } from "@/app/(auth)/components/PasswordTextField";
 import { SubmitButton } from "@/app/(auth)/components/SubmitButton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, Typography } from "@mui/material";
-import { signInFormSchema, SignInFormSchema } from "./formSchema";
 import { FieldError, useForm } from "react-hook-form";
 import { useSignIn } from "../../hooks/useSignIn";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
+import { formSchema, FormSchema } from "@/app/(auth)/schema";
 
 function SignInForm() {
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignInFormSchema>({
-    resolver: zodResolver(signInFormSchema),
+  } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
     mode: "onSubmit",
     defaultValues: {
       email: "",
@@ -30,7 +30,7 @@ function SignInForm() {
 
   const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
 
-  const onSubmit = (values: SignInFormSchema) => {
+  const onSubmit = (values: FormSchema) => {
     startTransition(async () => {
       const result = await signIn(values);
       if (!result.isSuccess) {
