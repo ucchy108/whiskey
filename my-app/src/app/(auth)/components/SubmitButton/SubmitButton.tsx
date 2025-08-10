@@ -1,14 +1,26 @@
-import { memo } from "react";
-import { Button } from "@mui/material";
+import { JSX, memo } from "react";
+import { Button, ButtonProps } from "@mui/material";
 
-interface SubmitButtonProps {
-  onClick: () => void;
-}
+type SubmitButtonProps = ButtonProps & {
+  loading: boolean;
+};
 
-function SubmitButton({ onClick }: SubmitButtonProps) {
+function SubmitButton({
+  children,
+  loading,
+  loadingIndicator = "通信中...",
+  ...props
+}: SubmitButtonProps): JSX.Element {
   return (
-    <Button variant="contained" color="primary" onClick={onClick} fullWidth>
-      Submit
+    <Button
+      variant="contained"
+      color="primary"
+      type="submit"
+      loading={loading}
+      loadingIndicator={loadingIndicator}
+      {...props}
+    >
+      {children}
     </Button>
   );
 }

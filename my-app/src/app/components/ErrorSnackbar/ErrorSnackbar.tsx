@@ -1,4 +1,5 @@
 import {
+  Box,
   IconButton,
   Snackbar,
   SnackbarContent,
@@ -25,30 +26,28 @@ interface ErrorSnackbarProps {
 
 function ErrorSnackbar({ open, onClose, message }: ErrorSnackbarProps) {
   return (
-    <>
-      <Snackbar
-        open={open}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        autoHideDuration={6000}
-        onClose={onClose}
-      >
-        <Content
-          message={
-            <>
-              <CheckCircleIcon color={"inherit"} />
-              <Typography variant={"body2"} color="inherit">
-                {message}
-              </Typography>
-            </>
-          }
-          action={
-            <IconButton color="inherit" onClick={onClose} size={"large"}>
-              <CloseIcon color={"inherit"} />
-            </IconButton>
-          }
-        />
-      </Snackbar>
-    </>
+    <Snackbar
+      open={open}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      autoHideDuration={6000}
+      onClose={onClose}
+    >
+      <Content
+        message={
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CheckCircleIcon color={"inherit"} sx={{ mr: 1 }} />
+            <Typography variant={"body2"} color="inherit">
+              {message}
+            </Typography>
+          </Box>
+        }
+        action={
+          <IconButton color="inherit" onClick={onClose} size={"large"}>
+            <CloseIcon color={"inherit"} />
+          </IconButton>
+        }
+      />
+    </Snackbar>
   );
 }
 

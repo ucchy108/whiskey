@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, startTransition } from "react";
+import { memo, startTransition, useCallback } from "react";
 import NextLink from "next/link";
 import { EmailTextField } from "@/app/(auth)/components/EmailTextField";
 import { PasswordTextField } from "@/app/(auth)/components/PasswordTextField";
@@ -26,44 +26,52 @@ function SignInForm() {
     },
   });
 
-  const { signIn } = useSignIn();
+  const { signIn, isLoading } = useSignIn();
 
   const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
 
-  const onSubmit = (values: SignInFormSchema) => {
-    startTransition(async () => {
-      const result = await signIn(values);
-      if (!result.isSuccess) {
-        openErrorSnackbar(result.error?.message);
-      }
-    });
-  };
+  const onSubmit = useCallback(
+    (values: SignInFormSchema) => {
+      startTransition(async () => {
+        const result = await signIn(values);
+
+        if (!result.isSuccess) {
+          openErrorSnackbar(result.error?.message);
+        }
+      });
+    },
+    [openErrorSnackbar, signIn]
+  );
 
   return (
     <>
-      <Stack spacing={2}>
-        <Typography
-          variant="h5"
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItem: "center",
-          }}
-        >
-          Sign In
-        </Typography>
-        <EmailTextField control={control} error={errors as FieldError} />
-        <PasswordTextField control={control} error={errors as FieldError} />
-        <Stack sx={{ py: 2 }}>
-          <SubmitButton onClick={handleSubmit(onSubmit)} />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack spacing={2}>
+          <Typography
+            variant="h5"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItem: "center",
+            }}
+          >
+            Sign In
+          </Typography>
+          <EmailTextField control={control} error={errors as FieldError} />
+          <PasswordTextField control={control} error={errors as FieldError} />
+          <Stack sx={{ py: 2 }}>
+            <SubmitButton fullWidth loading={isLoading}>
+              ログイン
+            </SubmitButton>
+          </Stack>
+          <Typography variant="body2" align="center">
+            アカウントをお持ちでない方は{" "}
+            <NextLink href="/signup" passHref>
+              <span>サインアップ</span>
+            </NextLink>
+          </Typography>
         </Stack>
-        <Typography variant="body2" align="center">
-          アカウントをお持ちでない方は{" "}
-          <NextLink href="/signup" passHref>
-            <span>サインアップ</span>
-          </NextLink>
-        </Typography>
-      </Stack>
+      </form>
       <ErrorSnackbar />
     </>
   );
