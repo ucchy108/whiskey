@@ -8,9 +8,9 @@ import {
   SignInFormSchema,
 } from "./components/SignInForm/formSchema";
 
-export async function signInAction(
+export const signInAction = async (
   values: SignInFormSchema
-): Promise<ActionsResult> {
+): Promise<ActionsResult> => {
   const validatedFields = signInFormSchema.safeParse(values);
   if (!validatedFields.success) {
     return {
@@ -56,4 +56,4 @@ export async function signInAction(
 
     throw error;
   }
-}
+};
