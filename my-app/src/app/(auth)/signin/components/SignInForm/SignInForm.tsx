@@ -6,10 +6,11 @@ import { EmailTextField } from "@/app/(auth)/components/EmailTextField";
 import { PasswordTextField } from "@/app/(auth)/components/PasswordTextField";
 import { SubmitButton } from "@/app/(auth)/components/SubmitButton";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { signInFormSchema, SignInFormSchema } from "./formSchema";
 import { FieldError, useForm } from "react-hook-form";
-import { signIn } from "../../_lib/action";
+import { useSignIn } from "../../hooks/useSignIn";
+import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 
 function SignInForm() {
   const {
@@ -25,52 +26,46 @@ function SignInForm() {
     },
   });
 
+  const { signIn } = useSignIn();
+
+  const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
+
   const onSubmit = (values: SignInFormSchema) => {
     startTransition(async () => {
       const result = await signIn(values);
       if (!result.isSuccess) {
-        console.error(result.error.message);
+        openErrorSnackbar(result.error?.message);
       }
     });
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <Card variant="outlined" sx={{ width: 400, py: 4 }}>
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography
-              variant="h5"
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItem: "center",
-              }}
-            >
-              Sign In
-            </Typography>
-            <EmailTextField control={control} error={errors as FieldError} />
-            <PasswordTextField control={control} error={errors as FieldError} />
-            <Stack sx={{ py: 2 }}>
-              <SubmitButton onClick={handleSubmit(onSubmit)} />
-            </Stack>
-            <Typography variant="body2" align="center">
-              アカウントをお持ちでない方は{" "}
-              <NextLink href="/signup" passHref>
-                <span>サインアップ</span>
-              </NextLink>
-            </Typography>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Box>
+    <>
+      <Stack spacing={2}>
+        <Typography
+          variant="h5"
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItem: "center",
+          }}
+        >
+          Sign In
+        </Typography>
+        <EmailTextField control={control} error={errors as FieldError} />
+        <PasswordTextField control={control} error={errors as FieldError} />
+        <Stack sx={{ py: 2 }}>
+          <SubmitButton onClick={handleSubmit(onSubmit)} />
+        </Stack>
+        <Typography variant="body2" align="center">
+          アカウントをお持ちでない方は{" "}
+          <NextLink href="/signup" passHref>
+            <span>サインアップ</span>
+          </NextLink>
+        </Typography>
+      </Stack>
+      <ErrorSnackbar />
+    </>
   );
 }
 
