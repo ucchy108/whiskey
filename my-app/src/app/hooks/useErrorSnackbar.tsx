@@ -1,43 +1,27 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { ErrorSnackbar } from "../components/ErrorSnackbar";
+import { useSnackbarContext } from "../contexts/SnackbarContext";
 
 interface UseErrorSnackbarReturn {
   ErrorSnackbar: () => React.ReactNode;
-  openErrorSnackbar: (message: string) => void;
+  openErrorSnackbar: (message: string, onCloseCallback?: () => void) => void;
 }
 
 export function useErrorSnackbar(): UseErrorSnackbarReturn {
-  const [state, setState] = useState<{ opened: boolean; message: string }>({
-    opened: false,
-    message: "",
-  });
-
-  const open = useCallback((message: string) => {
-    setState({
-      opened: true,
-      message: message,
-    });
-  }, []);
-
-  const close = useCallback(() => {
-    setState({
-      opened: false,
-      message: "",
-    });
-  }, []);
+  const { errorState, openErrorSnackbar, closeErrorSnackbar } = useSnackbarContext();
 
   const ErrorSnackbarComponent = useCallback(() => {
     return (
       <ErrorSnackbar
-        open={state.opened}
-        message={state.message}
-        onClose={close}
+        open={errorState.opened}
+        message={errorState.message}
+        onClose={closeErrorSnackbar}
       />
     );
-  }, [close, state]);
+  }, [errorState, closeErrorSnackbar]);
 
   return {
     ErrorSnackbar: ErrorSnackbarComponent,
-    openErrorSnackbar: open,
+    openErrorSnackbar,
   };
 }

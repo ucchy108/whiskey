@@ -3,11 +3,14 @@
 import React from "react";
 import { SessionProvider } from "next-auth/react";
 import { ThemeRegistry } from "../ThemeRegistry";
+import { SnackbarProvider } from "../../contexts/SnackbarContext";
 
 function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ThemeRegistry>{children}</ThemeRegistry>
+      <ThemeRegistry>
+        <SnackbarProvider>{children}</SnackbarProvider>
+      </ThemeRegistry>
     </SessionProvider>
   );
 }

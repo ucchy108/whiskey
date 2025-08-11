@@ -7,12 +7,7 @@ import { AuthStep } from "../AuthStep";
 import { AccountStep } from "../AccountStep";
 import { SignUpStepper } from "../SignUpStepper";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Stack,
-  Typography,
-  Button,
-  Box,
-} from "@mui/material";
+import { Stack, Typography, Button, Box } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { signUp } from "../../action";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
@@ -44,14 +39,8 @@ function SignUpForm() {
   const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
   const { openSuccessSnackbar, SuccessSnackbar } = useSuccessSnackbar();
 
-  const {
-    activeStep,
-    steps,
-    isLastStep,
-    isFirstStep,
-    handleNext,
-    handleBack,
-  } = useSignUpSteps(trigger);
+  const { activeStep, steps, isLastStep, isFirstStep, handleNext, handleBack } =
+    useSignUpSteps(trigger);
 
   const onSubmit = useCallback(
     (values: SignUpFormSchema) => {
@@ -116,9 +105,7 @@ function SignUpForm() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={3}>
-            <Box sx={{ minHeight: 200 }}>
-              {getStepContent(activeStep)}
-            </Box>
+            <Box sx={{ minHeight: 200 }}>{getStepContent(activeStep)}</Box>
 
             <Stack direction="row" spacing={2} justifyContent="space-between">
               {isFirstStep ? (

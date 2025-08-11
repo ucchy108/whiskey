@@ -1,6 +1,7 @@
 import React from "react";
-import { errorColor, onErrorColor, ThemeProps } from "@/theme";
+import { successColor, onSuccessColor, ThemeProps } from "@/theme";
 import {
+  Box,
   IconButton,
   Snackbar,
   SnackbarContent,
@@ -12,8 +13,8 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const Content = styled(SnackbarContent)<ThemeProps>`
   && {
-    background: ${({ theme }): string => errorColor(theme)};
-    color: ${({ theme }): string => onErrorColor(theme)};
+    background: ${({ theme }): string => successColor(theme)};
+    color: ${({ theme }): string => onSuccessColor(theme)};
   }
 `;
 
@@ -34,12 +35,12 @@ function SuccessSnackbar({ open, onClose, message }: ErrorSnackbarProps) {
       >
         <Content
           message={
-            <>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               <CheckCircleIcon color={"inherit"} />
               <Typography variant={"body2"} color="inherit">
                 {message}
               </Typography>
-            </>
+            </Box>
           }
           action={
             <IconButton color="inherit" onClick={onClose} size={"large"}>
