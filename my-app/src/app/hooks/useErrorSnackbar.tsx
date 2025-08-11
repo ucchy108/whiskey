@@ -8,17 +8,22 @@ interface UseErrorSnackbarReturn {
 }
 
 export function useErrorSnackbar(): UseErrorSnackbarReturn {
-  const { errorState, openErrorSnackbar, closeErrorSnackbar } = useSnackbarContext();
+  const { states, openSnackbar, closeSnackbar } = useSnackbarContext();
+  const errorState = states.error;
 
   const ErrorSnackbarComponent = useCallback(() => {
     return (
       <ErrorSnackbar
         open={errorState.opened}
         message={errorState.message}
-        onClose={closeErrorSnackbar}
+        onClose={() => closeSnackbar('error')}
       />
     );
-  }, [errorState, closeErrorSnackbar]);
+  }, [errorState, closeSnackbar]);
+
+  const openErrorSnackbar = useCallback((message: string, onCloseCallback?: () => void) => {
+    openSnackbar('error', message, onCloseCallback);
+  }, [openSnackbar]);
 
   return {
     ErrorSnackbar: ErrorSnackbarComponent,

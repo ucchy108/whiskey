@@ -1,88 +1,78 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
-interface SnackbarState {
+type SnackbarState = {
   opened: boolean;
   message: string;
   onCloseCallback?: () => void;
-}
+};
 
-interface SnackbarContextType {
-  successState: SnackbarState;
-  errorState: SnackbarState;
-  openSuccessSnackbar: (message: string, onCloseCallback?: () => void) => void;
-  openErrorSnackbar: (message: string, onCloseCallback?: () => void) => void;
-  closeSuccessSnackbar: () => void;
-  closeErrorSnackbar: () => void;
-}
+type SnackbarType = "success" | "error";
 
-const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
+type SnackbarContextType = {
+  states: Record<SnackbarType, SnackbarState>;
+  openSnackbar: (
+    type: SnackbarType,
+    message: string,
+    onCloseCallback?: () => void
+  ) => void;
+  closeSnackbar: (type: SnackbarType) => void;
+};
+
+const SnackbarContext = createContext<SnackbarContextType | undefined>(
+  undefined
+);
+
+const initialState: SnackbarState = {
+  opened: false,
+  message: "",
+  onCloseCallback: undefined,
+};
 
 interface SnackbarProviderProps {
   children: ReactNode;
 }
 
 export function SnackbarProvider({ children }: SnackbarProviderProps) {
-  const [successState, setSuccessState] = useState<SnackbarState>({
-    opened: false,
-    message: "",
-    onCloseCallback: undefined,
+  const [states, setStates] = useState<Record<SnackbarType, SnackbarState>>({
+    success: initialState,
+    error: initialState,
   });
 
-  const [errorState, setErrorState] = useState<SnackbarState>({
-    opened: false,
-    message: "",
-    onCloseCallback: undefined,
-  });
+  const openSnackbar = useCallback(
+    (type: SnackbarType, message: string, onCloseCallback?: () => void) => {
+      setStates((prev) => ({
+        ...prev,
+        [type]: {
+          opened: true,
+          message,
+          onCloseCallback,
+        },
+      }));
+    },
+    []
+  );
 
-  const openSuccessSnackbar = useCallback((message: string, onCloseCallback?: () => void) => {
-    setSuccessState({
-      opened: true,
-      message,
-      onCloseCallback,
+  const closeSnackbar = useCallback((type: SnackbarType) => {
+    setStates((prev) => {
+      const { onCloseCallback } = prev[type];
+      onCloseCallback?.();
+      return {
+        ...prev,
+        [type]: initialState,
+      };
     });
   }, []);
-
-  const openErrorSnackbar = useCallback((message: string, onCloseCallback?: () => void) => {
-    setErrorState({
-      opened: true,
-      message,
-      onCloseCallback,
-    });
-  }, []);
-
-  const closeSuccessSnackbar = useCallback(() => {
-    const { onCloseCallback } = successState;
-    setSuccessState({
-      opened: false,
-      message: "",
-      onCloseCallback: undefined,
-    });
-    onCloseCallback?.();
-  }, [successState]);
-
-  const closeErrorSnackbar = useCallback(() => {
-    const { onCloseCallback } = errorState;
-    setErrorState({
-      opened: false,
-      message: "",
-      onCloseCallback: undefined,
-    });
-    onCloseCallback?.();
-  }, [errorState]);
 
   return (
-    <SnackbarContext.Provider 
-      value={{ 
-        successState, 
-        errorState, 
-        openSuccessSnackbar, 
-        openErrorSnackbar, 
-        closeSuccessSnackbar, 
-        closeErrorSnackbar 
-      }}
-    >
+    <SnackbarContext.Provider value={{ states, openSnackbar, closeSnackbar }}>
       {children}
     </SnackbarContext.Provider>
   );
@@ -91,7 +81,9 @@ export function SnackbarProvider({ children }: SnackbarProviderProps) {
 export function useSnackbarContext() {
   const context = useContext(SnackbarContext);
   if (context === undefined) {
-    throw new Error("useSnackbarContext must be used within a SnackbarProvider");
+    throw new Error(
+      "useSnackbarContext must be used within a SnackbarProvider"
+    );
   }
   return context;
 }

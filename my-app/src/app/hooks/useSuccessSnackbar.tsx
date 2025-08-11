@@ -3,17 +3,22 @@ import { SuccessSnackbar } from "../components/SuccessSnackbar";
 import { useSnackbarContext } from "../contexts/SnackbarContext";
 
 export function useSuccessSnackbar() {
-  const { successState, openSuccessSnackbar, closeSuccessSnackbar } = useSnackbarContext();
+  const { states, openSnackbar, closeSnackbar } = useSnackbarContext();
+  const successState = states.success;
 
   const SuccessSnackbarComponent = useCallback(() => {
     return (
       <SuccessSnackbar
         open={successState.opened}
         message={successState.message}
-        onClose={closeSuccessSnackbar}
+        onClose={() => closeSnackbar('success')}
       />
     );
-  }, [successState, closeSuccessSnackbar]);
+  }, [successState, closeSnackbar]);
+
+  const openSuccessSnackbar = useCallback((message: string, onCloseCallback?: () => void) => {
+    openSnackbar('success', message, onCloseCallback);
+  }, [openSnackbar]);
 
   return {
     SuccessSnackbar: SuccessSnackbarComponent,
