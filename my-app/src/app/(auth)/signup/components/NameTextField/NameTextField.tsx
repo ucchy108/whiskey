@@ -1,12 +1,13 @@
 import { TextField } from "@mui/material";
 import { Control, Controller, FieldError, FieldPath } from "react-hook-form";
+import { NameSchema } from "../SignUpForm/formSchema";
 
-interface NameTextFieldProps<Schema extends Record<"name", string>> {
+interface NameTextFieldProps<Schema extends Record<"name", NameSchema>> {
   control: Control<Schema>;
   error: FieldError;
 }
 
-export function NameTextField<Schema extends Record<"name", string>>({
+export function NameTextField<Schema extends Record<"name", NameSchema>>({
   control,
   error,
 }: NameTextFieldProps<Schema>) {

@@ -19,7 +19,7 @@ function SignInForm() {
     formState: { errors },
   } = useForm<SignInFormSchema>({
     resolver: zodResolver(signInFormSchema),
-    mode: "onSubmit",
+    mode: "onChange",
     defaultValues: {
       email: "",
       password: "",
@@ -57,8 +57,14 @@ function SignInForm() {
           >
             Sign In
           </Typography>
-          <EmailTextField control={control} error={errors as FieldError} />
-          <PasswordTextField control={control} error={errors as FieldError} />
+          <EmailTextField
+            control={control}
+            error={errors.email as FieldError}
+          />
+          <PasswordTextField
+            control={control}
+            error={errors.password as FieldError}
+          />
           <Stack sx={{ py: 2 }}>
             <SubmitButton fullWidth loading={isLoading}>
               ログイン

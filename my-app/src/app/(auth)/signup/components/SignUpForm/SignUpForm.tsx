@@ -11,7 +11,6 @@ import { Stack, Typography, Button, Box } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { signUp } from "../../action";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
-import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
 import { signUpFormSchema, SignUpFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useSignUpSteps } from "../../hooks/useSignUpSteps";
@@ -29,15 +28,14 @@ function SignUpForm() {
       email: "",
       password: "",
       name: "",
-      age: 0,
-      weight: 0,
-      height: 0,
+      age: "0",
+      weight: "0",
+      height: "0",
     },
   });
 
   const router = useRouter();
   const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
-  const { openSuccessSnackbar, SuccessSnackbar } = useSuccessSnackbar();
 
   const { activeStep, steps, isLastStep, isFirstStep, handleNext, handleBack } =
     useSignUpSteps(trigger);
@@ -50,12 +48,11 @@ function SignUpForm() {
         if (!result.isSuccess) {
           openErrorSnackbar(result.error?.message);
         } else {
-          openSuccessSnackbar(result.message);
-          router.push("/signin");
+          router.push(`/signin?create_success=true`);
         }
       });
     },
-    [openErrorSnackbar, openSuccessSnackbar, router]
+    [openErrorSnackbar, router]
   );
 
   const getStepContent = (step: number) => {
@@ -137,7 +134,6 @@ function SignUpForm() {
         </form>
       </Stack>
       <ErrorSnackbar />
-      <SuccessSnackbar />
     </>
   );
 }

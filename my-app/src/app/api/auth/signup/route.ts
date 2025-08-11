@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
         user: {
           create: {
             name: name,
-            age: age,
-            weight: weight,
-            height: height,
+            age: parseInt(age),
+            weight: parseFloat(weight),
+            height: parseFloat(height),
           },
         },
       },

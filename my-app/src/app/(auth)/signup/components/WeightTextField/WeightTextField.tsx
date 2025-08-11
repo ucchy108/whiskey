@@ -1,12 +1,13 @@
 import { TextField } from "@mui/material";
 import { Control, Controller, FieldError, FieldPath } from "react-hook-form";
+import { WeightSchema } from "../SignUpForm/formSchema";
 
-interface WeightTextFieldProps<Schema extends Record<"weight", number>> {
+interface WeightTextFieldProps<Schema extends Record<"weight", WeightSchema>> {
   control: Control<Schema>;
   error: FieldError;
 }
 
-export function WeightTextField<Schema extends Record<"weight", number>>({
+export function WeightTextField<Schema extends Record<"weight", WeightSchema>>({
   control,
   error,
 }: WeightTextFieldProps<Schema>) {
@@ -19,14 +20,19 @@ export function WeightTextField<Schema extends Record<"weight", number>>({
           {...field}
           id="weight"
           label="体重 (kg)"
-          type="number"
+          type="text"
           variant="outlined"
           size="small"
           fullWidth
           required
           error={!!error}
           helperText={error ? error.message : ""}
-          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+          slotProps={{
+            htmlInput: {
+              inputMode: "decimal",
+              pattern: "[0-9]*.?[0-9]*",
+            },
+          }}
         />
       )}
     />
