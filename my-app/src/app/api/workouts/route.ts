@@ -1,42 +1,40 @@
-export async function GET() {
-  // ローカルストレージからワークアウトデータを取得
-  const workouts = [
-    {
-      id: "1",
-      name: "ランニング",
-      date: "2023-10-01",
-      weight: 0,
-      reps: 0,
-      sets: 0,
-      memo: "",
-    },
-    {
-      id: "2",
-      name: "ウェイトトレーニング",
-      date: "2023-10-02",
-      weight: 70,
-      reps: 10,
-      sets: 3,
-      memo: "背中の日",
-    },
-    {
-      id: "3",
-      name: "ヨガ",
-      date: "2023-10-03",
-      weight: 0,
-      reps: 0,
-      sets: 0,
-      memo: "リラックス",
-    },
-  ];
+import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
-  if (workouts) {
-    return new Response(JSON.stringify(workouts), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const workouts = await prisma.workout.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        Detail: {
+          include: {
+            Exercise: true,
+          },
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
     });
-  } else {
-    return new Response("No workouts found", { status: 404 });
+
+    return NextResponse.json(
+      { message: "Success", workouts: workouts },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching workouts:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
