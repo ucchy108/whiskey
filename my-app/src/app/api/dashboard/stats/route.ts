@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth/auth";
-
-export type DashboardStats = {
-  totalWorkouts: number;
-  thisWeekWorkouts: number;
-  totalExercises: number;
-  totalWeight: number;
-};
+import { getDashboardStats } from "./stats.service";
 
 /**
  * ダッシュボード統計APIエンドポイント
@@ -22,75 +15,15 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "ユーザーIDが見つかりません" },
+        { status: 401 }
+      );
+    }
 
-    // 今週の開始日を計算
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    // 並列でデータを取得して効率化
-    const [totalWorkoutsResult, thisWeekWorkoutsResult, totalExercisesResult] =
-      await Promise.all([
-        // 総ワークアウト数
-        prisma.workout.count({
-          where: { userId },
-        }),
-
-        // 今週のワークアウト数
-        prisma.workout.count({
-          where: {
-            userId,
-            date: {
-              gte: startOfWeek,
-            },
-          },
-        }),
-
-        // 総運動種目数（WorkoutDetailの合計数）
-        prisma.workoutDetail.count({
-          where: {
-            Workout: { userId },
-          },
-        }),
-
-        // 総重量（重量 × セット数の合計）
-        prisma.workoutDetail.aggregate({
-          where: {
-            Workout: { userId },
-            weight: { not: null }, // 重量がnullでないもののみ
-          },
-          _sum: {
-            weight: true,
-            sets: true,
-          },
-        }),
-      ]);
-
-    // 総重量の計算（重量 × セット数）
-    // より正確な計算のため、個別に重量×セット数を計算
-    const weightDetailsResult = await prisma.workoutDetail.findMany({
-      where: {
-        Workout: { userId },
-        weight: { not: null },
-      },
-      select: {
-        weight: true,
-        sets: true,
-      },
-    });
-
-    const totalWeight = weightDetailsResult.reduce((sum, detail) => {
-      const weight = detail.weight || 0;
-      return sum + weight * detail.sets;
-    }, 0);
-
-    const stats: DashboardStats = {
-      totalWorkouts: totalWorkoutsResult,
-      thisWeekWorkouts: thisWeekWorkoutsResult,
-      totalExercises: totalExercisesResult,
-      totalWeight: Math.round(totalWeight),
-    };
+    // サービス層で統計データを取得
+    const stats = await getDashboardStats(userId);
 
     return NextResponse.json(stats);
   } catch (error) {

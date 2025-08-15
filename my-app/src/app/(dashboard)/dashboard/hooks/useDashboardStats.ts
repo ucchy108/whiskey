@@ -36,16 +36,14 @@ export function useDashboardStats(): UseDashboardStatsReturn {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("認証が必要です");
-        }
         throw new Error(`統計データの取得に失敗しました: ${response.status}`);
       }
 
       const data: DashboardStats = await response.json();
       setStats(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "不明なエラーが発生しました";
+      const errorMessage =
+        err instanceof Error ? err.message : "不明なエラーが発生しました";
       setError(errorMessage);
       console.error("Dashboard stats fetch error:", err);
     } finally {

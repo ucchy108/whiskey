@@ -11,7 +11,6 @@ import {
 import {
   TrendingUp,
   BarChart,
-  Timeline,
   CalendarMonth,
 } from "@mui/icons-material";
 import { WorkoutWithDetails } from "../../types";
