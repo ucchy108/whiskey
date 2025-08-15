@@ -37,21 +37,16 @@ export const authConfig: NextAuthConfig = {
       // ユーザー情報をJWTトークンに保存
       if (user) {
         token.id = user.id;
-        token.name = user.email;
-        token.email = user.email;
+        token.name = user.name;
       }
+
       return token;
     },
     session({ session, token }) {
       // JWTトークンからセッションにユーザー情報を移行
-      if (token) {
-        session.user = {
-          id: token.id as string,
-          name: token.name,
-          email: token.email as string,
-          emailVerified: new Date(),
-        };
-      }
+      session.user.id = token.id as string;
+      session.user.name = token.name as string;
+
       return session;
     },
   },
