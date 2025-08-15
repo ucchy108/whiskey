@@ -29,8 +29,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid SignIn" }, { status: 401 });
     }
 
+    const responseData = {
+      id: auth.user.id,
+      name: auth.user.name,
+      email: auth.email,
+    };
+
     return NextResponse.json(
-      { message: "Success", user: auth.user },
+      { message: "Success", user: responseData },
       { status: 200 }
     );
   } catch {

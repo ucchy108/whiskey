@@ -1,4 +1,5 @@
-import type { NextAuthConfig } from "next-auth";
+// import type { NextAuthConfig } from "next-auth";
+import { NextAuthConfig } from "next-auth";
 
 const publicRoutes: string[] = [];
 const authRoutes: string[] = ["/signin", "/signup"];
@@ -8,6 +9,9 @@ export const authConfig: NextAuthConfig = {
   providers: [],
   pages: {
     signIn: "/signin",
+  },
+  session: {
+    strategy: "jwt",
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
@@ -28,6 +32,27 @@ export const authConfig: NextAuthConfig = {
       }
 
       return true;
+    },
+    jwt({ token, user }) {
+      // ユーザー情報をJWTトークンに保存
+      if (user) {
+        token.id = user.id;
+        token.name = user.email;
+        token.email = user.email;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      // JWTトークンからセッションにユーザー情報を移行
+      if (token) {
+        session.user = {
+          id: token.id as string,
+          name: token.name,
+          email: token.email as string,
+          emailVerified: new Date(),
+        };
+      }
+      return session;
     },
   },
 } satisfies NextAuthConfig;
