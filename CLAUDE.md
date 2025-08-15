@@ -91,9 +91,20 @@ npx prisma generate
 3. 未認証ユーザーは/signinへリダイレクト
 
 ### コンポーネント設計
-- 各ページのコンポーネントは独自のディレクトリに配置
+- **1コンポーネント1ディレクトリ**: 各コンポーネントは独自のディレクトリに配置し、`index.ts`でexport
 - `components/`と`_lib/`でページ固有のコンポーネントとロジックを分離
 - 共通コンポーネントは`app/components/`に配置
+
+#### コンポーネントディレクトリ構造
+```
+components/
+├── ComponentName/
+│   ├── ComponentName.tsx  # メインコンポーネント
+│   └── index.ts           # export { ComponentName } from "./ComponentName";
+└── AnotherComponent/
+    ├── AnotherComponent.tsx
+    └── index.ts
+```
 
 ### API設計
 - Next.js App RouterのAPI Routes使用

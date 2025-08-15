@@ -1,39 +1,12 @@
 "use client";
 
 import React from "react";
-import { Container, Typography, Box, Button } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
-import { WorkoutList } from "./components/WorkoutList";
-import { useFormDialog } from "./hooks/useFormDialog";
-import { WorkoutFormDialog } from "./components/WorkoutFormDialog";
-import { useGetWorkouts } from "./hooks/useGetWorkouts";
+import { Typography } from "@mui/material";
 
 export default function Home() {
-  const { open, handleClick, selectedItem } = useFormDialog();
-  const { workouts } = useGetWorkouts();
   return (
-    <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom align="center">
-          ワークアウト管理
-        </Typography>
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleClick}
-          >
-            新しいワークアウト
-          </Button>
-        </Box>
-      </Box>
-      <WorkoutList workouts={workouts} />
-      <WorkoutFormDialog
-        workout={selectedItem}
-        openDialog={open}
-        handleCloseDialog={handleClick}
-      />
-    </Container>
+    <Typography variant="h4" gutterBottom>
+      ダッシュボード
+    </Typography>
   );
 }
