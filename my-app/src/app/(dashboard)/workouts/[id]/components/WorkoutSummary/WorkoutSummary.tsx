@@ -7,59 +7,18 @@ import {
   Box,
   Stack,
 } from "@mui/material";
-import {
-  FitnessCenter,
-  TrendingUp,
-  Timeline,
-  Repeat,
-  BarChart,
-} from "@mui/icons-material";
+import { BarChart } from "@mui/icons-material";
 import { WorkoutDetailWithExercise } from "@/app/(dashboard)/dashboard/types";
+import { useWorkoutStats } from "../../hooks/useWorkoutStats";
+import { createWorkoutMetrics } from "../../utils/workoutMetrics";
 
 interface WorkoutSummaryProps {
   exercises: WorkoutDetailWithExercise[];
 }
 
 function WorkoutSummary({ exercises }: WorkoutSummaryProps) {
-  // 統計計算
-  const totalExercises = exercises.length;
-  const totalSets = exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
-  const totalReps = exercises.reduce((sum, exercise) => sum + exercise.reps, 0);
-  const totalWeight = exercises.reduce((sum, exercise) => {
-    const weight = exercise.weight || 0;
-    return sum + (weight * exercise.sets);
-  }, 0);
-
-  const metrics = [
-    {
-      label: "種目数",
-      value: totalExercises,
-      unit: "種目",
-      icon: <FitnessCenter />,
-      color: "#1976d2",
-    },
-    {
-      label: "総セット数",
-      value: totalSets,
-      unit: "セット",
-      icon: <Repeat />,
-      color: "#388e3c",
-    },
-    {
-      label: "総レップ数",
-      value: totalReps,
-      unit: "回",
-      icon: <Timeline />,
-      color: "#f57c00",
-    },
-    {
-      label: "総重量",
-      value: Math.round(totalWeight),
-      unit: "kg",
-      icon: <TrendingUp />,
-      color: "#d32f2f",
-    },
-  ];
+  const stats = useWorkoutStats(exercises);
+  const metrics = createWorkoutMetrics(stats);
 
   return (
     <Card sx={{ mb: 3, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
