@@ -1,0 +1,1 @@
+export { WorkoutChart } from "./WorkoutChart";

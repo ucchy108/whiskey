@@ -1,31 +1,38 @@
 "use client";
 
-import { Box, Typography, Stack } from "@mui/material";
-import { WorkoutWithDetails } from "../../types";
 import { memo } from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { WorkoutWithDetails } from "../../types";
 import { WorkoutCard } from "../WorkoutCard";
+import { EmptyState } from "../EmptyState";
+import { History } from "@mui/icons-material";
 
 interface WorkoutListProps {
   workouts: WorkoutWithDetails[];
+  onCreateWorkout: () => void;
 }
 
-function WorkoutList({ workouts }: WorkoutListProps) {
+function WorkoutList({ workouts, onCreateWorkout }: WorkoutListProps) {
   if (workouts.length === 0) {
-    return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography variant="body1" color="textSecondary">
-          ワークアウト記録がありません
-        </Typography>
-      </Box>
-    );
+    return <EmptyState onCreateWorkout={onCreateWorkout} />;
   }
 
   return (
-    <Stack spacing={2}>
-      {workouts.map((workout) => (
-        <WorkoutCard key={workout.id} workout={workout} />
-      ))}
-    </Stack>
+    <>
+      <Box sx={{ mt: 4, mb: 3 }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <History color="primary" />
+          <Typography variant="h6" fontWeight="bold">
+            最近のワークアウト
+          </Typography>
+        </Stack>
+      </Box>
+      <Stack spacing={2}>
+        {workouts.map((workout) => (
+          <WorkoutCard key={workout.id} workout={workout} />
+        ))}
+      </Stack>
+    </>
   );
 }
 
