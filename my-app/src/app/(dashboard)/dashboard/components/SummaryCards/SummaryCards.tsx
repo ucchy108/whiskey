@@ -6,18 +6,36 @@ import {
   Typography,
   Box,
   Stack,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { WorkoutWithDetails } from "../../types";
-import { useSummaryStats } from "../../hooks/useSummaryStats";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { createSummaryCards } from "../../utils/createSummaryCards";
 
-interface SummaryCardsProps {
-  workouts: WorkoutWithDetails[];
-}
+function SummaryCards() {
+  const { stats, loading, error } = useDashboardStats();
 
-function SummaryCards({ workouts }: SummaryCardsProps) {
-  const summaryStats = useSummaryStats(workouts);
-  const summaryCards = createSummaryCards(summaryStats);
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mb: 4 }}>
+        {error}
+      </Alert>
+    );
+  }
+
+  if (!stats) {
+    return null;
+  }
+
+  const summaryCards = createSummaryCards(stats);
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>

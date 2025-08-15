@@ -46,7 +46,7 @@ export default function DashboardPage() {
           name={"ワークアウトを作成"}
         />
       </Box>
-      <SummaryCards workouts={workouts} />
+      <SummaryCards />
       <WorkoutChart workouts={workouts} />
       <WorkoutList workouts={workouts} onCreateWorkout={handleCreateWorkout} />
     </Box>

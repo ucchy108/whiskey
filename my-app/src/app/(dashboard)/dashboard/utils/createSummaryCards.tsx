@@ -5,6 +5,7 @@ import {
   LocalFireDepartment,
   EmojiEvents,
 } from "@mui/icons-material";
+import { DashboardStats } from "../hooks/useDashboardStats";
 
 type SummaryCardData = {
   title: string;
@@ -15,19 +16,12 @@ type SummaryCardData = {
   bgGradient: string;
 };
 
-type SummaryCardConfig = {
-  totalWorkouts: number;
-  thisWeekWorkouts: number;
-  totalExercises: number;
-  totalWeight: number;
-};
-
 export function createSummaryCards({
   totalWorkouts,
   thisWeekWorkouts,
   totalExercises,
   totalWeight,
-}: SummaryCardConfig): SummaryCardData[] {
+}: DashboardStats): SummaryCardData[] {
   return [
     {
       title: "総ワークアウト数",
