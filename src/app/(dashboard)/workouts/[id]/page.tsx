@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Box, Typography } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import { WorkoutItem } from "./components/WorkoutItem";
 import { useWorkout } from "./hooks/useWorkout";
 
@@ -13,29 +13,31 @@ export default function WorkoutDetailPage() {
 
   if (loading) {
     return (
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        minHeight: "200px",
-        p: 3
-      }}>
-        <Typography variant="h6" color="text.secondary">
-          読み込み中...
-        </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+          p: 3,
+        }}
+      >
+        <CircularProgress aria-label={"loading"} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        minHeight: "200px",
-        p: 3
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+          p: 3,
+        }}
+      >
         <Typography variant="h6" color="error">
           {error}
         </Typography>

@@ -1,16 +1,6 @@
 name: whiskey
 
 services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-      - "5555:5555"
-    volumes:
-      - ./my-app:/app
-    command: sleep infinity
-    depends_on:
-      - db
   db:
     image: mysql:latest
     environment:
@@ -21,7 +11,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-init db.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db-volume:/var/lib/mysql
 
 volumes:
