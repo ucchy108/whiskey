@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState, useEffect } from "react";
 import { 
   Box, 
   Card, 
@@ -22,41 +22,89 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 
+interface WorkoutStats {
+  totalSets: number;
+  totalReps: number;
+  totalWeight: number;
+  totalDuration: number;
+  exerciseCount: number;
+  intensity: {
+    level: number;
+    color: string;
+    text: string;
+  };
+  workoutType: {
+    type: string;
+    color: string;
+  };
+}
+
 function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
   const router = useRouter();
+  const [workoutStats, setWorkoutStats] = useState<WorkoutStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const handleWorkoutClick = useCallback(() => {
     router.push(`/workouts/${workout.id}`);
   }, [router, workout.id]);
 
-  // ワークアウトの統計を計算
-  const workoutStats = {
-    totalSets: workout.Detail.reduce((sum, detail) => sum + detail.sets, 0),
-    totalReps: workout.Detail.reduce((sum, detail) => sum + detail.reps, 0),
-    totalWeight: workout.Detail.reduce((sum, detail) => {
-      const weight = detail.weight || 0;
-      return sum + (weight * detail.sets);
-    }, 0),
-    totalDuration: workout.Detail.reduce((sum, detail) => sum + (detail.duration || 0), 0),
-  };
+  // APIから統計情報を取得
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/workouts/${workout.id}/stats`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
+        const data = await response.json();
+        setWorkoutStats(data.stats);
+      } catch (error) {
+        console.error('Error fetching workout stats:', error);
+        // フォールバック: ローカル計算
+        const fallbackStats: WorkoutStats = {
+          totalSets: workout.Detail.reduce((sum, detail) => sum + detail.sets, 0),
+          totalReps: workout.Detail.reduce((sum, detail) => sum + detail.reps, 0),
+          totalWeight: workout.Detail.reduce((sum, detail) => {
+            const weight = detail.weight || 0;
+            return sum + (weight * detail.sets);
+          }, 0),
+          totalDuration: workout.Detail.reduce((sum, detail) => sum + (detail.duration || 0), 0),
+          exerciseCount: workout.Detail.length,
+          intensity: {
+            level: Math.min(5, Math.ceil(workout.Detail.length / 2)),
+            color: Math.min(5, Math.ceil(workout.Detail.length / 2)) <= 2 ? '#4caf50' : 
+                   Math.min(5, Math.ceil(workout.Detail.length / 2)) <= 3 ? '#ff9800' : '#f44336',
+            text: Math.min(5, Math.ceil(workout.Detail.length / 2)) <= 2 ? '軽め' : 
+                  Math.min(5, Math.ceil(workout.Detail.length / 2)) <= 3 ? '普通' : '高強度',
+          },
+          workoutType: (() => {
+            const hasCardio = workout.Detail.some(detail => detail.duration && detail.duration > 0);
+            const hasWeights = workout.Detail.some(detail => detail.weight && detail.weight > 0);
+            if (hasCardio && hasWeights) return { type: 'ミックス', color: '#9c27b0' };
+            if (hasCardio) return { type: '有酸素', color: '#2196f3' };
+            if (hasWeights) return { type: '筋トレ', color: '#ff5722' };
+            return { type: '体重', color: '#607d8b' };
+          })(),
+        };
+        setWorkoutStats(fallbackStats);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 強度レベルを計算（1-5）
-  const intensityLevel = Math.min(5, Math.ceil(workout.Detail.length / 2));
-  const intensityColor = intensityLevel <= 2 ? '#4caf50' : intensityLevel <= 3 ? '#ff9800' : '#f44336';
-  const intensityText = intensityLevel <= 2 ? '軽め' : intensityLevel <= 3 ? '普通' : '高強度';
+    fetchStats();
+  }, [workout.id, workout.Detail]);
 
-  // ワークアウトタイプを判定
-  const getWorkoutType = () => {
-    const hasCardio = workout.Detail.some(detail => detail.duration && detail.duration > 0);
-    const hasWeights = workout.Detail.some(detail => detail.weight && detail.weight > 0);
-    
-    if (hasCardio && hasWeights) return { type: 'ミックス', color: '#9c27b0' };
-    if (hasCardio) return { type: '有酸素', color: '#2196f3' };
-    if (hasWeights) return { type: '筋トレ', color: '#ff5722' };
-    return { type: '体重', color: '#607d8b' };
-  };
-
-  const workoutType = getWorkoutType();
+  if (loading || !workoutStats) {
+    return (
+      <Card variant="outlined" sx={{ minHeight: 200 }}>
+        <CardContent>
+          <Typography>読み込み中...</Typography>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -79,7 +127,7 @@ function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
           left: 0,
           width: "100%",
           height: "4px",
-          background: `linear-gradient(90deg, ${workoutType.color} 0%, ${intensityColor} 100%)`,
+          background: `linear-gradient(90deg, ${workoutStats.workoutType.color} 0%, ${workoutStats.intensity.color} 100%)`,
         },
       }}
       onClick={handleWorkoutClick}
@@ -102,25 +150,25 @@ function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
               <Chip
-                label={workoutType.type}
+                label={workoutStats.workoutType.type}
                 size="small"
                 sx={{
-                  backgroundColor: workoutType.color,
+                  backgroundColor: workoutStats.workoutType.color,
                   color: "white",
                   fontWeight: "bold",
                 }}
               />
               <Chip
-                label={intensityText}
+                label={workoutStats.intensity.text}
                 size="small"
                 sx={{
-                  backgroundColor: intensityColor,
+                  backgroundColor: workoutStats.intensity.color,
                   color: "white",
                   fontWeight: "bold",
                 }}
               />
               <Chip
-                label={`${workout.Detail.length}種目`}
+                label={`${workoutStats.exerciseCount}種目`}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -129,7 +177,7 @@ function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
           </Box>
           <Avatar
             sx={{
-              backgroundColor: workoutType.color,
+              backgroundColor: workoutStats.workoutType.color,
               width: 48,
               height: 48,
             }}
@@ -170,13 +218,13 @@ function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={(intensityLevel / 5) * 100}
+              value={(workoutStats.intensity.level / 5) * 100}
               sx={{
                 height: 6,
                 borderRadius: 3,
                 backgroundColor: "grey.200",
                 "& .MuiLinearProgress-bar": {
-                  backgroundColor: intensityColor,
+                  backgroundColor: workoutStats.intensity.color,
                   borderRadius: 3,
                 },
               }}
