@@ -1,29 +1,16 @@
 import { auth } from "@/lib/auth/auth";
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { workoutService } from "@/services/WorkoutService";
 
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const workouts = await prisma.workout.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      include: {
-        Detail: {
-          include: {
-            Exercise: true,
-          },
-        },
-      },
-      orderBy: {
-        date: "desc",
-      },
-    });
+    // サービス層を使用してビジネスロジックを実行
+    const workouts = await workoutService.getWorkoutsByUserId(session.user.id);
 
     return NextResponse.json(
       { message: "Success", workouts: workouts },

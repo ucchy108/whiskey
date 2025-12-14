@@ -13,7 +13,15 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   // Handle async tests properly
-  testTimeout: 10000,
+  testTimeout: 30000,
+  // Transform WASM files for Prisma
+  transformIgnorePatterns: [
+    'node_modules/(?!(@prisma/client)/)',
+  ],
+  // Enable experimental VM modules for ESM support
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons'],
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

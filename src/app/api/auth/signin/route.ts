@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import * as bcrypt from "bcrypt";
 import { signInFormSchema } from "@/app/(auth)/signin/components/SignInForm/formSchema";
+import { authService } from "@/services/AuthService";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,26 +13,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password } = parsedCredentials.data;
-    const auth = await prisma.auth.findUnique({
-      where: { email },
-      include: {
-        user: true,
-      },
-    });
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      auth?.password || ""
-    );
-    if (!isPasswordValid || !auth?.user) {
-      return NextResponse.json({ error: "Invalid SignIn" }, { status: 401 });
-    }
+    // サービス層を使用してビジネスロジックを実行
+    const auth = await authService.signIn(email, password);
 
     return NextResponse.json(
       { message: "Success", user: auth.user },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "Invalid credentials") {
+      return NextResponse.json({ error: "Invalid SignIn" }, { status: 401 });
+    }
+
+    console.error("SignIn error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signUpFormSchema } from "@/app/(auth)/signup/components/SignUpForm/formSchema";
-import { prisma } from "@/lib/prisma";
-import { hash } from "bcrypt";
+import { authService } from "@/services/AuthService";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,42 +14,30 @@ export async function POST(request: NextRequest) {
 
     const { email, password, name, age, weight, height } =
       parsedCredentials.data;
-    const passwordHash = await hash(password, 12);
 
-    const existingUser = await prisma.auth.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "Email already exists" },
-        { status: 409 }
-      );
-    }
-
-    const auth = await prisma.auth.create({
-      data: {
-        email: email,
-        password: passwordHash,
-        user: {
-          create: {
-            name: name,
-            age: parseInt(age),
-            weight: parseFloat(weight),
-            height: parseFloat(height),
-          },
-        },
-      },
-      include: {
-        user: true,
-      },
+    // サービス層を使用してビジネスロジックを実行
+    const auth = await authService.signUp({
+      email,
+      password,
+      name,
+      age,
+      weight,
+      height,
     });
 
     return NextResponse.json(
       { message: "Success", user: auth.user },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "Email already exists") {
+      return NextResponse.json(
+        { error: "Email already exists" },
+        { status: 409 }
+      );
+    }
+
+    console.error("SignUp error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
