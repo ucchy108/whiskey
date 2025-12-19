@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} src/lib/prisma/seed.ts"
@@ -38,17 +40,19 @@
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@types/bcrypt": "^5.0.2",
-    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/ui": "^4.0.15",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
-    "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
+    "happy-dom": "^20.0.11",
     "prisma": "^7.0.0",
     "react-hook-form": "^7.54.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.15"
   }
 }

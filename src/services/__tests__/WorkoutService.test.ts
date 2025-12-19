@@ -1,19 +1,18 @@
 import { WorkoutService } from "../WorkoutService";
 import { workoutRepository } from "@/repositories/workoutRepository";
+import { vi, type MockedObject } from "vitest";
 
 // workoutRepositoryをモック化
-jest.mock("@/repositories/workoutRepository");
+vi.mock("@/repositories/workoutRepository");
 
-const mockedWorkoutRepository = workoutRepository as jest.Mocked<
-  typeof workoutRepository
->;
+const mockedWorkoutRepository = workoutRepository as MockedObject<typeof workoutRepository>;
 
 describe("WorkoutService", () => {
   let workoutService: WorkoutService;
 
   beforeEach(() => {
     workoutService = new WorkoutService();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockUserId = "user-1";

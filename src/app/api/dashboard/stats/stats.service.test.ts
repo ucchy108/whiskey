@@ -1,24 +1,33 @@
 import { getDashboardStats } from "./stats.service";
 import { prisma } from "@/lib/prisma";
+import { vi, type Mock } from "vitest";
 
 // Prismaクライアントをモック
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     workout: {
-      count: jest.fn(),
+      count: vi.fn(),
     },
     workoutDetail: {
-      count: jest.fn(),
-      findMany: jest.fn(),
+      count: vi.fn(),
+      findMany: vi.fn(),
     },
   },
 }));
 
-const mockedPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockedPrisma = prisma as unknown as {
+  workout: {
+    count: Mock;
+  };
+  workoutDetail: {
+    count: Mock;
+    findMany: Mock;
+  };
+};
 
 describe("Dashboard Stats Service", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("getDashboardStats", () => {

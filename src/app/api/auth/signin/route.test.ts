@@ -1,15 +1,17 @@
+import { vi, type Mock } from "vitest";
+
 // Prismaのモック
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     auth: {
-      findUnique: jest.fn(),
+      findUnique: vi.fn(),
     },
   },
 }));
 
 // bcryptのモック
-jest.mock("bcrypt", () => ({
-  compare: jest.fn(),
+vi.mock("bcrypt", () => ({
+  compare: vi.fn(),
 }));
 
 import { POST } from "./route";
@@ -18,12 +20,12 @@ import { prisma } from "@/lib/prisma";
 import * as bcrypt from "bcrypt";
 
 // モック関数の型アサーション
-const mockFindUnique = prisma.auth.findUnique as jest.Mock;
-const mockCompare = bcrypt.compare as jest.Mock;
+const mockFindUnique = prisma.auth.findUnique as unknown as Mock;
+const mockCompare = bcrypt.compare as unknown as Mock;
 
 describe("/api/auth/signin", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const createRequest = (body: Record<string, unknown>) => {

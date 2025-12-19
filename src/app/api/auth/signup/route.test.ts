@@ -1,28 +1,36 @@
+import { vi, type Mock } from "vitest";
+
 // Mock Prisma
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     auth: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
     },
   },
 }));
 
 // Mock bcrypt
-jest.mock("bcrypt", () => ({
-  hash: jest.fn().mockResolvedValue("hashed_password"),
+vi.mock("bcrypt", () => ({
+  hash: vi.fn().mockResolvedValue("hashed_password"),
 }));
 
 import { NextRequest } from "next/server";
 import { POST } from "./route";
 import { prisma } from "@/lib/prisma";
-import type { Auth, User } from "@prisma/client";
+import type { AuthModel } from "@/generated/prisma/models/Auth";
+import type { UserModel } from "@/generated/prisma/models/User";
 
-const mockedPrisma = jest.mocked(prisma);
+const mockedPrisma = prisma as unknown as {
+  auth: {
+    findUnique: Mock;
+    create: Mock;
+  };
+};
 
 describe("/api/auth/signup", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const validSignupData = {
@@ -34,7 +42,7 @@ describe("/api/auth/signup", () => {
     height: 175,
   };
 
-  const mockUser: User = {
+  const mockUser: UserModel = {
     id: "1",
     name: "Test User",
     age: 25,
@@ -57,7 +65,7 @@ describe("/api/auth/signup", () => {
       // Mock: 既存ユーザーなし
       mockedPrisma.auth.findUnique.mockResolvedValue(null);
       // Mock: ユーザー作成成功
-      const mockAuthWithUser: Auth & { user: User } = {
+      const mockAuthWithUser: AuthModel & { user: UserModel } = {
         id: "1",
         userId: "1",
         email: validSignupData.email,
@@ -157,7 +165,7 @@ describe("/api/auth/signup", () => {
   describe("ビジネスロジックエラー", () => {
     test("メールアドレスが既に存在する場合409エラー", async () => {
       // Mock: 既存ユーザーが存在
-      const existingAuth: Auth = {
+      const existingAuth: AuthModel = {
         id: "existing-user",
         userId: "existing-user-id",
         email: validSignupData.email,

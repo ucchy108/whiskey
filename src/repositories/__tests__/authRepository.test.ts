@@ -1,66 +1,42 @@
 import { authRepository } from "../authRepository";
-import { prisma } from "@/lib/prisma";
-
-// Prismaをモック化
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    auth: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      count: jest.fn(),
-    },
-  },
-}));
-
-const mockedPrisma = prisma as jest.Mocked<typeof prisma>;
+import { cleanupTestData, createTestAuthWithUser } from "./helpers/testDb";
 
 describe("authRepository", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  // 各テスト後にデータをクリーンアップ
+  afterEach(async () => {
+    await cleanupTestData();
   });
 
   describe("findByEmail", () => {
-    const mockEmail = "test@example.com";
-    const mockAuth = {
-      id: "auth-1",
-      userId: "user-1",
-      email: mockEmail,
-      password: "$2b$12$hashedpassword",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      user: {
-        id: "user-1",
+    const testEmail = "test@example.com";
+
+    beforeEach(async () => {
+      // テストデータを作成
+      await createTestAuthWithUser({
+        email: testEmail,
+        password: "$2b$12$hashedpassword",
         name: "Test User",
         age: 25,
         weight: 70,
         height: 175,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    };
-
-    it("メールアドレスで認証情報を検索できる", async () => {
-      mockedPrisma.auth.findUnique.mockResolvedValue(mockAuth);
-
-      const result = await authRepository.findByEmail(mockEmail);
-
-      expect(result).toEqual(mockAuth);
-      expect(mockedPrisma.auth.findUnique).toHaveBeenCalledWith({
-        where: { email: mockEmail },
-        include: { user: true },
       });
     });
 
-    it("存在しないメールアドレスの場合はnullを返す", async () => {
-      mockedPrisma.auth.findUnique.mockResolvedValue(null);
+    it("メールアドレスで認証情報を検索できる", async () => {
+      const result = await authRepository.findByEmail(testEmail);
 
+      expect(result).not.toBeNull();
+      expect(result?.email).toBe(testEmail);
+      expect(result?.user.name).toBe("Test User");
+      expect(result?.user.age).toBe(25);
+      expect(result?.user.weight).toBe(70);
+      expect(result?.user.height).toBe(175);
+    });
+
+    it("存在しないメールアドレスの場合はnullを返す", async () => {
       const result = await authRepository.findByEmail("notfound@example.com");
 
       expect(result).toBeNull();
-      expect(mockedPrisma.auth.findUnique).toHaveBeenCalledWith({
-        where: { email: "notfound@example.com" },
-        include: { user: true },
-      });
     });
   });
 
@@ -76,92 +52,56 @@ describe("authRepository", () => {
       },
     };
 
-    const mockCreatedAuth = {
-      id: "auth-2",
-      userId: "user-2",
-      email: createInput.email,
-      password: createInput.password,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      user: {
-        id: "user-2",
-        name: createInput.user.name,
-        age: createInput.user.age,
-        weight: createInput.user.weight,
-        height: createInput.user.height,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    };
-
     it("認証情報とユーザーを作成できる", async () => {
-      mockedPrisma.auth.create.mockResolvedValue(mockCreatedAuth as any);
-
       const result = await authRepository.create(createInput);
 
-      expect(result).toEqual(mockCreatedAuth);
-      expect(mockedPrisma.auth.create).toHaveBeenCalledWith({
-        data: {
-          email: createInput.email,
-          password: createInput.password,
-          user: {
-            create: {
-              name: createInput.user.name,
-              age: createInput.user.age,
-              weight: createInput.user.weight,
-              height: createInput.user.height,
-            },
-          },
-        },
-        include: { user: true },
-      });
+      expect(result).toBeDefined();
+      expect(result.email).toBe(createInput.email);
+      expect(result.password).toBe(createInput.password);
+      expect(result.user.name).toBe(createInput.user.name);
+      expect(result.user.age).toBe(createInput.user.age);
+      expect(result.user.weight).toBe(createInput.user.weight);
+      expect(result.user.height).toBe(createInput.user.height);
+
+      // DBに実際に保存されているか確認
+      const found = await authRepository.findByEmail(createInput.email);
+      expect(found).not.toBeNull();
+      expect(found?.email).toBe(createInput.email);
     });
 
-    it("正しいデータ構造でPrismaを呼び出す", async () => {
-      mockedPrisma.auth.create.mockResolvedValue(mockCreatedAuth as any);
-
+    it("同じメールアドレスで複数作成するとエラーになる", async () => {
       await authRepository.create(createInput);
 
-      const createCall = mockedPrisma.auth.create.mock.calls[0][0];
-      expect(createCall).toHaveProperty("data");
-      expect(createCall).toHaveProperty("include");
-      expect(createCall.data).toHaveProperty("user.create");
+      // 同じメールアドレスで再度作成を試みる
+      await expect(authRepository.create(createInput)).rejects.toThrow();
     });
   });
 
   describe("existsByEmail", () => {
-    it("メールアドレスが存在する場合はtrueを返す", async () => {
-      mockedPrisma.auth.count.mockResolvedValue(1);
+    const testEmail = "exists@example.com";
 
-      const result = await authRepository.existsByEmail("exists@example.com");
+    it("メールアドレスが存在する場合はtrueを返す", async () => {
+      // テストデータを作成
+      await createTestAuthWithUser({
+        email: testEmail,
+        password: "$2b$12$hashedpassword",
+        name: "Test User",
+        age: 25,
+        weight: 70,
+        height: 175,
+      });
+
+      const result = await authRepository.existsByEmail(testEmail);
 
       expect(result).toBe(true);
-      expect(mockedPrisma.auth.count).toHaveBeenCalledWith({
-        where: { email: "exists@example.com" },
-      });
     });
 
     it("メールアドレスが存在しない場合はfalseを返す", async () => {
-      mockedPrisma.auth.count.mockResolvedValue(0);
-
       const result = await authRepository.existsByEmail(
         "notexists@example.com"
       );
 
       expect(result).toBe(false);
-      expect(mockedPrisma.auth.count).toHaveBeenCalledWith({
-        where: { email: "notexists@example.com" },
-      });
-    });
-
-    it("複数件存在する場合もtrueを返す", async () => {
-      mockedPrisma.auth.count.mockResolvedValue(2);
-
-      const result = await authRepository.existsByEmail(
-        "duplicate@example.com"
-      );
-
-      expect(result).toBe(true);
     });
   });
 });
