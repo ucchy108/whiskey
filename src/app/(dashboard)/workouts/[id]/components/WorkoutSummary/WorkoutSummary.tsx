@@ -8,12 +8,12 @@ import {
   Stack,
 } from "@mui/material";
 import { BarChart } from "@mui/icons-material";
-import { WorkoutDetailWithExercise } from "@/app/(dashboard)/dashboard/types";
 import { useWorkoutStats } from "../../hooks/useWorkoutStats";
 import { createWorkoutMetrics } from "../../utils/workoutMetrics";
+import { WorkoutDetail } from "@/repositories/workoutRepository";
 
 interface WorkoutSummaryProps {
-  exercises: WorkoutDetailWithExercise[];
+  exercises: WorkoutDetail[];
 }
 
 function WorkoutSummary({ exercises }: WorkoutSummaryProps) {
@@ -21,15 +21,26 @@ function WorkoutSummary({ exercises }: WorkoutSummaryProps) {
   const metrics = createWorkoutMetrics(stats);
 
   return (
-    <Card sx={{ mb: 3, background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+    <Card
+      sx={{
+        mb: 3,
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      }}
+    >
       <CardContent sx={{ color: "white" }}>
-        <Stack direction="row" alignItems="center" spacing={2} justifyContent="center" mb={3}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          justifyContent="center"
+          mb={3}
+        >
           <BarChart sx={{ fontSize: 28 }} />
           <Typography variant="h6" fontWeight="bold">
             ワークアウトサマリー
           </Typography>
         </Stack>
-        
+
         <Grid container spacing={2}>
           {metrics.map((metric, index) => (
             <Grid size={{ xs: 6, sm: 3 }} key={index}>

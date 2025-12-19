@@ -11,6 +11,10 @@ export default function WorkoutDetailPage() {
 
   const { workout, loading, error } = useWorkout(workoutId);
 
+  if (!workout) {
+    return <>データがありません</>;
+  }
+
   if (loading) {
     return (
       <Box

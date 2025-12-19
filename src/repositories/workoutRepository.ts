@@ -1,27 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import type { WorkoutModel } from "@/generated/prisma/models/Workout";
+import { ExerciseModel, WorkoutDetailModel } from "@/generated/prisma/models";
 
 export type WorkoutWithDetails = WorkoutModel & {
-  Detail: Array<{
-    id: string;
-    workoutId: string;
-    exerciseId: string;
-    sets: number;
-    reps: number;
-    weight: number | null;
-    duration: number | null;
-    notes: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    Exercise: {
-      id: string;
-      name: string;
-      description: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    };
-  }>;
+  Detail: WorkoutDetail[];
 };
+
+export type WorkoutDetail = WorkoutDetailModel & {
+  Exercise: Exercise;
+};
+
+export type Exercise = ExerciseModel;
 
 /**
  * ワークアウトのデータアクセス層

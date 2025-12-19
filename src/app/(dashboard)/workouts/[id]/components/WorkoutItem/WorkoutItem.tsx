@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { WorkoutWithExercises } from "@/app/(dashboard)/dashboard/types";
 import {
   Card,
   CardContent,
@@ -13,9 +12,10 @@ import { WorkoutHeader } from "../WorkoutHeader";
 import { WorkoutMemo } from "../WorkoutMemo";
 import { ExerciseList } from "../ExerciseList";
 import { WorkoutSummary } from "../WorkoutSummary";
+import { WorkoutWithDetails } from "@/repositories/workoutRepository";
 
 type WorkoutDetailProps = {
-  workout: WorkoutWithExercises;
+  workout: WorkoutWithDetails;
 };
 
 function WorkoutItem({ workout }: WorkoutDetailProps) {

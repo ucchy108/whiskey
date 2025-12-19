@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { WorkoutWithExercises } from "@/app/(dashboard)/dashboard/types";
+import { WorkoutWithDetails } from "@/repositories/workoutRepository";
 
 interface WorkoutReturn {
-  workout: WorkoutWithExercises;
+  workout: WorkoutWithDetails | null;
   loading: boolean;
   error: string | null;
 }
 
 export const useWorkout = (workoutId: string): WorkoutReturn => {
-  const [workout, setWorkout] = useState<WorkoutWithExercises>(
-    {} as WorkoutWithExercises
-  );
+  const [workout, setWorkout] = useState<WorkoutWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

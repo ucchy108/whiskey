@@ -1,4 +1,4 @@
-import { WorkoutWithDetails } from "../types";
+import { WorkoutWithDetails } from "@/repositories/workoutRepository";
 import { useCallback, useEffect, useState } from "react";
 
 interface WorkoutReturn {
