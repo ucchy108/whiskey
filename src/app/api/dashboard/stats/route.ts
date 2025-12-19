@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
-import { getDashboardStats } from "./stats.service";
+import { statsService } from "@/services/StatsService";
 
 /**
  * ダッシュボード統計APIエンドポイント
@@ -23,7 +23,7 @@ export async function GET() {
     }
 
     // サービス層で統計データを取得
-    const stats = await getDashboardStats(userId);
+    const stats = await statsService.getDashboardStats(userId);
 
     return NextResponse.json(stats);
   } catch (error) {
