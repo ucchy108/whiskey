@@ -1,4 +1,4 @@
-import { prisma } from ".";
+import { prisma } from "../src/lib/prisma";
 import { hash } from "bcrypt";
 
 async function main() {
