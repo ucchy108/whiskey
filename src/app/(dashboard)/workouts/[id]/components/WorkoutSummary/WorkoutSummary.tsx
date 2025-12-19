@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { BarChart } from "@mui/icons-material";
 import { useWorkoutStats } from "../../hooks/useWorkoutStats";
-import { createWorkoutMetrics } from "../../utils/workoutMetrics";
+import { createWorkoutMetrics } from "./workoutMetrics";
 import { WorkoutDetail } from "@/repositories/workoutRepository";
 
 interface WorkoutSummaryProps {

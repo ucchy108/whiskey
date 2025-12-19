@@ -5,7 +5,7 @@ import {
   LocalFireDepartment,
   EmojiEvents,
 } from "@mui/icons-material";
-import { DashboardStats } from "../hooks/useDashboardStats";
+import { DashboardStats } from "../../hooks/useDashboardStats";
 
 type SummaryCardData = {
   title: string;

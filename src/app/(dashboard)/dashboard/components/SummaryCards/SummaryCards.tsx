@@ -10,7 +10,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useDashboardStats } from "../../hooks/useDashboardStats";
-import { createSummaryCards } from "../../utils/createSummaryCards";
+import { createSummaryCards } from "./createSummaryCards";
 
 function SummaryCards() {
   const { stats, loading, error } = useDashboardStats();

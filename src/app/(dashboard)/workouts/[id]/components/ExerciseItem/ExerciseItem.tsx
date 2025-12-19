@@ -15,10 +15,10 @@ import {
   Numbers,
   MonitorWeight,
 } from "@mui/icons-material";
-import { WorkoutDetailWithExercise } from "@/app/(dashboard)/dashboard/types";
+import { WorkoutDetail } from "@/repositories/workoutRepository";
 
 interface ExerciseItemProps {
-  detail: WorkoutDetailWithExercise;
+  detail: WorkoutDetail;
   index: number;
   isLast: boolean;
 }
@@ -29,17 +29,17 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
   const volumeProgress = Math.min((totalVolume / maxVolume) * 100, 100);
 
   return (
-    <Card 
-      sx={{ 
+    <Card
+      sx={{
         mb: isLast ? 0 : 2,
         boxShadow: 2,
         borderLeft: 4,
-        borderLeftColor: 'primary.main',
-        transition: 'all 0.3s ease',
-        '&:hover': {
+        borderLeftColor: "primary.main",
+        transition: "all 0.3s ease",
+        "&:hover": {
           boxShadow: 4,
-          transform: 'translateY(-2px)',
-        }
+          transform: "translateY(-2px)",
+        },
       }}
     >
       <CardContent>
@@ -49,7 +49,7 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
             label={`#${index + 1}`}
             size="small"
             color="primary"
-            sx={{ fontWeight: 'bold' }}
+            sx={{ fontWeight: "bold" }}
           />
           <Typography variant="h6" component="h3" fontWeight="bold" flex={1}>
             {detail.Exercise.name}
@@ -63,7 +63,11 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
             <Box textAlign="center" p={1}>
               <Stack alignItems="center" spacing={0.5}>
                 <Repeat fontSize="small" color="secondary" />
-                <Typography variant="h5" fontWeight="bold" color="secondary.main">
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  color="secondary.main"
+                >
                   {detail.sets}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -72,7 +76,7 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
               </Stack>
             </Box>
           </Grid>
-          
+
           <Grid size={4}>
             <Box textAlign="center" p={1}>
               <Stack alignItems="center" spacing={0.5}>
@@ -86,7 +90,7 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
               </Stack>
             </Box>
           </Grid>
-          
+
           <Grid size={4}>
             <Box textAlign="center" p={1}>
               <Stack alignItems="center" spacing={0.5}>
@@ -105,7 +109,12 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
         {/* ボリューム表示 */}
         {totalVolume > 0 && (
           <Box>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
               <Typography variant="body2" color="text.secondary">
                 総ボリューム
               </Typography>
@@ -113,17 +122,17 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
                 {totalVolume.toLocaleString()} kg
               </Typography>
             </Stack>
-            <LinearProgress 
-              variant="determinate" 
-              value={volumeProgress} 
-              sx={{ 
-                height: 6, 
+            <LinearProgress
+              variant="determinate"
+              value={volumeProgress}
+              sx={{
+                height: 6,
                 borderRadius: 3,
-                backgroundColor: 'grey.200',
-                '& .MuiLinearProgress-bar': {
+                backgroundColor: "grey.200",
+                "& .MuiLinearProgress-bar": {
                   borderRadius: 3,
-                }
-              }} 
+                },
+              }}
             />
           </Box>
         )}
