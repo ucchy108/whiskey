@@ -1,20 +1,14 @@
-import { statsRepository } from "../statsRepository";
+import { statsRepository } from "../../statsRepository";
 import {
-  cleanupTestData,
   createTestUser,
   createTestExercise,
   createTestWorkout,
   createTestWorkoutWithDetails,
-} from "./helpers/testDb";
+} from "../helpers/testDb";
 
 describe("statsRepository", () => {
   let testUserId: string;
   let testExerciseId: string;
-
-  // テスト開始前に全データをクリーンアップ
-  beforeAll(async () => {
-    await cleanupTestData();
-  });
 
   beforeEach(async () => {
     // テストユーザーを作成
@@ -32,11 +26,6 @@ describe("statsRepository", () => {
       description: "Chest exercise",
     });
     testExerciseId = exercise.id;
-  });
-
-  // 各テスト後にデータをクリーンアップ
-  afterEach(async () => {
-    await cleanupTestData();
   });
 
   describe("countTotalWorkouts", () => {
@@ -258,7 +247,9 @@ describe("statsRepository", () => {
       expect(result).toHaveLength(2);
 
       // 順序は保証されないので、ソートしてから検証
-      const sortedResult = result.sort((a, b) => (a.weight ?? 0) - (b.weight ?? 0));
+      const sortedResult = result.sort(
+        (a, b) => (a.weight ?? 0) - (b.weight ?? 0)
+      );
 
       expect(sortedResult[0].weight).toBe(50);
       expect(sortedResult[0].sets).toBe(3);

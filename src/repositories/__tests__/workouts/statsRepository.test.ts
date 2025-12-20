@@ -1,6 +1,5 @@
 import { statsRepository } from "@/repositories/workouts/statsRepository";
 import {
-  cleanupTestData,
   createTestExercise,
   createTestUser,
   createTestWorkoutWithDetails,
@@ -9,11 +8,6 @@ import {
 describe("statsRepository", () => {
   let testUserId: string;
   let testWorkoutId: string;
-
-  // テスト開始前に全データをクリーンアップ
-  beforeAll(async () => {
-    await cleanupTestData();
-  });
 
   beforeEach(async () => {
     const user = await createTestUser({
@@ -49,10 +43,6 @@ describe("statsRepository", () => {
       ],
     });
     testWorkoutId = workout.id;
-  });
-
-  afterEach(async () => {
-    await cleanupTestData();
   });
 
   describe("findWorkoutDetails", () => {

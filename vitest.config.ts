@@ -17,7 +17,10 @@ export default defineConfig({
     globals: true, // describe, it, expect をグローバルに
 
     // セットアップ
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: [
+      './vitest.setup.ts',
+      './vitest.repository-setup.ts', // Repository層テスト用
+    ],
 
     // テストパターン
     include: ['**/*.test.ts', '**/*.test.tsx'],

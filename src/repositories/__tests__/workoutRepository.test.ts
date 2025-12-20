@@ -1,6 +1,5 @@
 import { workoutRepository } from "../workoutRepository";
 import {
-  cleanupTestData,
   createTestUser,
   createTestExercise,
   createTestWorkout,
@@ -10,11 +9,6 @@ import {
 describe("workoutRepository", () => {
   let testUserId: string;
   let testExerciseId: string;
-
-  // テスト開始前に全データをクリーンアップ
-  beforeAll(async () => {
-    await cleanupTestData();
-  });
 
   beforeEach(async () => {
     // テストユーザーを作成
@@ -32,11 +26,6 @@ describe("workoutRepository", () => {
       description: "Chest exercise",
     });
     testExerciseId = exercise.id;
-  });
-
-  // 各テスト後にデータをクリーンアップ
-  afterEach(async () => {
-    await cleanupTestData();
   });
 
   describe("findAllByUserId", () => {

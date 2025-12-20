@@ -1,17 +1,7 @@
 import { authRepository } from "../authRepository";
-import { cleanupTestData, createTestAuthWithUser } from "./helpers/testDb";
+import { createTestAuthWithUser } from "./helpers/testDb";
 
 describe("authRepository", () => {
-  // テスト開始前に全データをクリーンアップ
-  beforeAll(async () => {
-    await cleanupTestData();
-  });
-
-  // 各テスト後にデータをクリーンアップ
-  afterEach(async () => {
-    await cleanupTestData();
-  });
-
   describe("findByEmail", () => {
     const testEmail = "test@example.com";
 
