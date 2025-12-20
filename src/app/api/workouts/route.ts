@@ -26,22 +26,44 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, type, duration, date } = await request.json();
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  // 新しいワークアウトを作成
-  const newWorkout = {
-    id: Date.now().toString(),
-    name,
-    type,
-    duration,
-    date,
-  };
+    const { date, dialy, details } = await request.json();
 
-  // TODO: 保存処理を実装する
-  console.log("New workout created:", newWorkout);
+    // バリデーション
+    if (!date) {
+      return NextResponse.json(
+        { error: "Date is required" },
+        { status: 400 }
+      );
+    }
 
-  return new Response(JSON.stringify(newWorkout), {
-    status: 201,
-    headers: { "Content-Type": "application/json" },
-  });
+    // 詳細がある場合とない場合で処理を分岐
+    const workout =
+      details && details.length > 0
+        ? await workoutService.createWorkoutWithDetails(session.user.id, {
+            date: new Date(date),
+            dialy,
+            details,
+          })
+        : await workoutService.createWorkout(session.user.id, {
+            date: new Date(date),
+            dialy,
+          });
+
+    return NextResponse.json(
+      { message: "Workout created", workout },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating workout:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

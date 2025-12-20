@@ -48,13 +48,42 @@ export class WorkoutService {
     userId: string,
     data: {
       date: Date;
-      memo?: string;
+      dialy?: string;
     }
   ): Promise<WorkoutModel> {
     return await workoutRepository.create({
       userId,
       date: data.date,
-      memo: data.memo,
+      dialy: data.dialy,
+    });
+  }
+
+  /**
+   * ワークアウトを詳細と一緒に作成
+   * @param userId ユーザーID
+   * @param data ワークアウトデータと詳細
+   * @returns 作成されたワークアウト（詳細含む）
+   */
+  async createWorkoutWithDetails(
+    userId: string,
+    data: {
+      date: Date;
+      dialy?: string;
+      details: {
+        exerciseId: string;
+        sets: number;
+        reps: number;
+        weight?: number;
+        duration?: number;
+        notes?: string;
+      }[];
+    }
+  ): Promise<WorkoutWithDetails> {
+    return await workoutRepository.createWithDetails({
+      userId,
+      date: data.date,
+      dialy: data.dialy,
+      details: data.details,
     });
   }
 
@@ -71,7 +100,7 @@ export class WorkoutService {
     userId: string,
     data: {
       date?: Date;
-      memo?: string;
+      dialy?: string;
     }
   ): Promise<WorkoutModel> {
     // 権限チェック: ユーザーのワークアウトか確認

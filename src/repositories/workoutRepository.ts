@@ -65,10 +65,45 @@ export const workoutRepository = {
   async create(data: {
     userId: string;
     date: Date;
-    memo?: string;
+    dialy?: string;
   }): Promise<WorkoutModel> {
     return await prisma.workout.create({
       data,
+    });
+  },
+
+  /**
+   * ワークアウトを詳細と一緒に作成
+   */
+  async createWithDetails(data: {
+    userId: string;
+    date: Date;
+    dialy?: string;
+    details: {
+      exerciseId: string;
+      sets: number;
+      reps: number;
+      weight?: number;
+      duration?: number;
+      notes?: string;
+    }[];
+  }): Promise<WorkoutWithDetails> {
+    return await prisma.workout.create({
+      data: {
+        userId: data.userId,
+        date: data.date,
+        dialy: data.dialy,
+        Detail: {
+          create: data.details,
+        },
+      },
+      include: {
+        Detail: {
+          include: {
+            Exercise: true,
+          },
+        },
+      },
     });
   },
 
