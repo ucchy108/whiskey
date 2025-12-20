@@ -11,6 +11,11 @@ describe("statsRepository", () => {
   let testUserId: string;
   let testExerciseId: string;
 
+  // テスト開始前に全データをクリーンアップ
+  beforeAll(async () => {
+    await cleanupTestData();
+  });
+
   beforeEach(async () => {
     // テストユーザーを作成
     const user = await createTestUser({
@@ -251,10 +256,14 @@ describe("statsRepository", () => {
       const result = await statsRepository.findWeightDetails(testUserId);
 
       expect(result).toHaveLength(2);
-      expect(result[0].weight).toBe(50);
-      expect(result[0].sets).toBe(3);
-      expect(result[1].weight).toBe(60);
-      expect(result[1].sets).toBe(4);
+
+      // 順序は保証されないので、ソートしてから検証
+      const sortedResult = result.sort((a, b) => (a.weight ?? 0) - (b.weight ?? 0));
+
+      expect(sortedResult[0].weight).toBe(50);
+      expect(sortedResult[0].sets).toBe(3);
+      expect(sortedResult[1].weight).toBe(60);
+      expect(sortedResult[1].sets).toBe(4);
     });
 
     it("重量がnullの詳細は含まれない", async () => {

@@ -11,6 +11,11 @@ describe("workoutRepository", () => {
   let testUserId: string;
   let testExerciseId: string;
 
+  // テスト開始前に全データをクリーンアップ
+  beforeAll(async () => {
+    await cleanupTestData();
+  });
+
   beforeEach(async () => {
     // テストユーザーを作成
     const user = await createTestUser({
@@ -180,7 +185,7 @@ describe("workoutRepository", () => {
       const createData = {
         userId: testUserId,
         date: new Date("2024-01-20"),
-        memo: "New workout",
+        dialy: "New workout",
       };
 
       const result = await workoutRepository.create(createData);
@@ -222,7 +227,7 @@ describe("workoutRepository", () => {
 
       const updateData = {
         date: new Date("2024-01-21"),
-        memo: "Updated workout",
+        dialy: "Updated workout",
       };
 
       const result = await workoutRepository.update(workout.id, updateData);
@@ -258,13 +263,15 @@ describe("workoutRepository", () => {
         dialy: "Original memo",
       });
 
-      const memoOnlyUpdate = { memo: "Only memo updated" };
+      const dialyOnlyUpdate = { dialy: "Only dialy updated" };
 
-      const result = await workoutRepository.update(workout.id, memoOnlyUpdate);
+      const result = await workoutRepository.update(
+        workout.id,
+        dialyOnlyUpdate
+      );
 
-      // memoはdialyフィールドとしてPrismaスキーマに定義されている
-      // repositoryはmemoを受け取るが、内部的にdialyとして保存される
       expect(result).toBeDefined();
+      expect(result.dialy).toBe("Only dialy updated");
     });
   });
 

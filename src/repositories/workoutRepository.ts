@@ -79,7 +79,7 @@ export const workoutRepository = {
     id: string,
     data: {
       date?: Date;
-      memo?: string;
+      dialy?: string;
     }
   ): Promise<WorkoutModel> {
     return await prisma.workout.update({

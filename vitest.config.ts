@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import path from 'path';
+import 'dotenv/config';
 
 export default defineConfig({
   plugins: [
@@ -38,9 +39,10 @@ export default defineConfig({
       ],
     },
 
-    // 並列実行
-    threads: true,
-    isolate: true,
+    // 並列実行を無効化（Repository層テストはDBを使うため）
+    threads: false,
+    isolate: false,
+    fileParallelism: false,
 
     // モックリセット
     clearMocks: true,

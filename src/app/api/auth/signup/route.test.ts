@@ -1,235 +1,342 @@
-import { vi, type Mock } from "vitest";
+import { POST } from "./route";
+import { authService } from "@/services/AuthService";
+import { NextRequest } from "next/server";
+import { vi } from "vitest";
 
-// Mock Prisma
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    auth: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-    },
+// AuthServiceをモック
+vi.mock("@/services/AuthService", () => ({
+  authService: {
+    signUp: vi.fn(),
   },
 }));
 
-// Mock bcrypt
-vi.mock("bcrypt", () => ({
-  hash: vi.fn().mockResolvedValue("hashed_password"),
-}));
+const mockedAuthService = vi.mocked(authService);
 
-import { NextRequest } from "next/server";
-import { POST } from "./route";
-import { prisma } from "@/lib/prisma";
-import type { AuthModel } from "@/generated/prisma/models/Auth";
-import type { UserModel } from "@/generated/prisma/models/User";
-
-const mockedPrisma = prisma as unknown as {
-  auth: {
-    findUnique: Mock;
-    create: Mock;
-  };
-};
-
-describe("/api/auth/signup", () => {
+describe("POST /api/auth/signup", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const validSignupData = {
-    email: "test@example.com",
-    password: "password123",
-    name: "Test User",
-    age: 25,
-    weight: 70,
-    height: 175,
-  };
-
-  const mockUser: UserModel = {
-    id: "1",
-    name: "Test User",
-    age: 25,
-    weight: 70,
-    height: 175,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  const createRequest = (body: Record<string, unknown>): NextRequest => {
+  // ヘルパー関数: NextRequestを作成
+  const createRequest = (body: unknown) => {
     return new NextRequest("http://localhost:3000/api/auth/signup", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     });
   };
 
   describe("正常系", () => {
-    test("有効なデータでアカウント作成が成功する", async () => {
-      // Mock: 既存ユーザーなし
-      mockedPrisma.auth.findUnique.mockResolvedValue(null);
-      // Mock: ユーザー作成成功
-      const mockAuthWithUser: AuthModel & { user: UserModel } = {
-        id: "1",
-        userId: "1",
-        email: validSignupData.email,
-        password: "hashed_password",
-        user: mockUser,
+    it("有効なユーザー情報でサインアップに成功する", async () => {
+      // Arrange
+      const validUserData = {
+        email: "newuser@example.com",
+        password: "password123",
+        name: "New User",
+        age: "25",
+        weight: "70.5",
+        height: "175.0",
+      };
+
+      const mockAuth = {
+        id: "auth-1",
+        userId: "user-1",
+        email: "newuser@example.com",
+        password: "$2b$12$hashedpassword",
         createdAt: new Date(),
         updatedAt: new Date(),
+        user: {
+          id: "user-1",
+          name: "New User",
+          age: 25,
+          weight: 70.5,
+          height: 175.0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       };
-      mockedPrisma.auth.create.mockResolvedValue(mockAuthWithUser);
 
-      const request = createRequest(validSignupData);
+      mockedAuthService.signUp.mockResolvedValue(mockAuth);
+
+      // Act
+      const request = createRequest(validUserData);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(201);
-      expect(data.message).toBe("Success");
-      expect(data.user).toEqual({
-        ...mockUser,
-        createdAt: mockUser.createdAt.toISOString(),
-        updatedAt: mockUser.updatedAt.toISOString(),
-      });
-      expect(mockedPrisma.auth.findUnique).toHaveBeenCalledWith({
-        where: { email: validSignupData.email },
-      });
-      expect(mockedPrisma.auth.create).toHaveBeenCalledWith({
-        data: {
-          email: validSignupData.email,
-          password: "hashed_password",
-          user: {
-            create: {
-              name: validSignupData.name,
-              age: validSignupData.age,
-              weight: validSignupData.weight,
-              height: validSignupData.height,
-            },
-          },
+      expect(data).toEqual({
+        message: "Success",
+        user: {
+          ...mockAuth.user,
+          createdAt: mockAuth.user.createdAt.toISOString(),
+          updatedAt: mockAuth.user.updatedAt.toISOString(),
         },
-        include: {
-          user: true,
-        },
+      });
+      expect(mockedAuthService.signUp).toHaveBeenCalledWith({
+        email: validUserData.email,
+        password: validUserData.password,
+        name: validUserData.name,
+        age: validUserData.age,
+        weight: validUserData.weight,
+        height: validUserData.height,
       });
     });
   });
 
   describe("バリデーションエラー", () => {
-    test("メールアドレスが無効な場合400エラー", async () => {
-      const invalidData = { ...validSignupData, email: "invalid-email" };
-      const request = createRequest(invalidData);
+    it("メールアドレスが不正な場合は400エラーを返す", async () => {
+      // Arrange
+      const invalidEmail = {
+        email: "invalid-email",
+        password: "password123",
+        name: "Test User",
+        age: "25",
+        weight: "70",
+        height: "175",
+      };
+
+      // Act
+      const request = createRequest(invalidEmail);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid SignUp");
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
     });
 
-    test("パスワードが短すぎる場合400エラー", async () => {
-      const invalidData = { ...validSignupData, password: "123" };
-      const request = createRequest(invalidData);
+    it("パスワードが6文字未満の場合は400エラーを返す", async () => {
+      // Arrange
+      const shortPassword = {
+        email: "test@example.com",
+        password: "12345",
+        name: "Test User",
+        age: "25",
+        weight: "70",
+        height: "175",
+      };
+
+      // Act
+      const request = createRequest(shortPassword);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid SignUp");
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
     });
 
-    test("名前が空の場合400エラー", async () => {
-      const invalidData = { ...validSignupData, name: "" };
-      const request = createRequest(invalidData);
+    it("名前が空の場合は400エラーを返す", async () => {
+      // Arrange
+      const emptyName = {
+        email: "test@example.com",
+        password: "password123",
+        name: "",
+        age: "25",
+        weight: "70",
+        height: "175",
+      };
+
+      // Act
+      const request = createRequest(emptyName);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid SignUp");
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
     });
 
-    test("年齢が負の数の場合400エラー", async () => {
-      const invalidData = { ...validSignupData, age: -1 };
-      const request = createRequest(invalidData);
+    it("年齢が範囲外の場合は400エラーを返す", async () => {
+      // Arrange
+      const invalidAge = {
+        email: "test@example.com",
+        password: "password123",
+        name: "Test User",
+        age: "200",
+        weight: "70",
+        height: "175",
+      };
+
+      // Act
+      const request = createRequest(invalidAge);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid SignUp");
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
     });
 
-    test("必須フィールドが不足している場合400エラー", async () => {
-      const invalidData = { email: "test@example.com" }; // passwordなど不足
-      const request = createRequest(invalidData);
+    it("体重が範囲外の場合は400エラーを返す", async () => {
+      // Arrange
+      const invalidWeight = {
+        email: "test@example.com",
+        password: "password123",
+        name: "Test User",
+        age: "25",
+        weight: "0",
+        height: "175",
+      };
+
+      // Act
+      const request = createRequest(invalidWeight);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid SignUp");
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
+    });
+
+    it("身長が範囲外の場合は400エラーを返す", async () => {
+      // Arrange
+      const invalidHeight = {
+        email: "test@example.com",
+        password: "password123",
+        name: "Test User",
+        age: "25",
+        weight: "70",
+        height: "400",
+      };
+
+      // Act
+      const request = createRequest(invalidHeight);
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
+    });
+
+    it("必須フィールドが欠けている場合は400エラーを返す", async () => {
+      // Arrange
+      const missingFields = {
+        email: "test@example.com",
+        password: "password123",
+      };
+
+      // Act
+      const request = createRequest(missingFields);
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data).toEqual({ error: "Invalid SignUp" });
+      expect(mockedAuthService.signUp).not.toHaveBeenCalled();
     });
   });
 
   describe("ビジネスロジックエラー", () => {
-    test("メールアドレスが既に存在する場合409エラー", async () => {
-      // Mock: 既存ユーザーが存在
-      const existingAuth: AuthModel = {
-        id: "existing-user",
-        userId: "existing-user-id",
-        email: validSignupData.email,
-        password: "existing_password",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    it("メールアドレスが既に存在する場合は409エラーを返す", async () => {
+      // Arrange
+      const existingEmail = {
+        email: "existing@example.com",
+        password: "password123",
+        name: "Test User",
+        age: "25",
+        weight: "70",
+        height: "175",
       };
-      mockedPrisma.auth.findUnique.mockResolvedValue(existingAuth);
 
-      const request = createRequest(validSignupData);
+      mockedAuthService.signUp.mockRejectedValue(
+        new Error("Email already exists")
+      );
+
+      // Act
+      const request = createRequest(existingEmail);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(409);
-      expect(data.error).toBe("Email already exists");
-      expect(mockedPrisma.auth.create).not.toHaveBeenCalled();
+      expect(data).toEqual({ error: "Email already exists" });
+      expect(mockedAuthService.signUp).toHaveBeenCalled();
     });
   });
 
-  describe("システムエラー", () => {
-    test("データベースエラーの場合500エラー", async () => {
-      // Mock: データベースエラー
-      mockedPrisma.auth.findUnique.mockRejectedValue(
+  describe("サーバーエラー", () => {
+    it("予期しないエラーが発生した場合は500エラーを返す", async () => {
+      // Arrange
+      const validUserData = {
+        email: "newuser@example.com",
+        password: "password123",
+        name: "New User",
+        age: "25",
+        weight: "70",
+        height: "175",
+      };
+
+      mockedAuthService.signUp.mockRejectedValue(
         new Error("Database connection failed")
       );
 
-      const request = createRequest(validSignupData);
+      // Act
+      const request = createRequest(validUserData);
       const response = await POST(request);
       const data = await response.json();
 
+      // Assert
       expect(response.status).toBe(500);
-      expect(data.error).toBe("Internal Server Error");
-    });
-
-    test("ユーザー作成時のエラーで500エラー", async () => {
-      // Mock: 既存ユーザーなし
-      mockedPrisma.auth.findUnique.mockResolvedValue(null);
-      // Mock: ユーザー作成エラー
-      mockedPrisma.auth.create.mockRejectedValue(
-        new Error("User creation failed")
-      );
-
-      const request = createRequest(validSignupData);
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(500);
-      expect(data.error).toBe("Internal Server Error");
+      expect(data).toEqual({ error: "Internal Server Error" });
+      expect(mockedAuthService.signUp).toHaveBeenCalled();
     });
   });
 
-  describe("エッジケース", () => {
-    test("JSONパースエラーの場合500エラー", async () => {
-      const request = new NextRequest("http://localhost:3000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "invalid-json",
-      });
+  describe("レスポンス形式", () => {
+    it("成功時のレスポンスに必要なフィールドが含まれている", async () => {
+      // Arrange
+      const validUserData = {
+        email: "newuser@example.com",
+        password: "password123",
+        name: "New User",
+        age: "25",
+        weight: "70",
+        height: "175",
+      };
 
+      const mockAuth = {
+        id: "auth-1",
+        userId: "user-1",
+        email: "newuser@example.com",
+        password: "$2b$12$hashedpassword",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        user: {
+          id: "user-1",
+          name: "New User",
+          age: 25,
+          weight: 70,
+          height: 175,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      };
+
+      mockedAuthService.signUp.mockResolvedValue(mockAuth);
+
+      // Act
+      const request = createRequest(validUserData);
       const response = await POST(request);
       const data = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(data.error).toBe("Internal Server Error");
+      // Assert
+      expect(data).toHaveProperty("message");
+      expect(data).toHaveProperty("user");
+      expect(data.user).toHaveProperty("id");
+      expect(data.user).toHaveProperty("name");
+      expect(data.user).not.toHaveProperty("password");
     });
   });
 });

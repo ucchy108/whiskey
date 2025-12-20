@@ -2,15 +2,20 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * テストデータのクリーンアップ
- * テスト実行後にデータを削除
+ * テスト実行前/後にデータを削除
  */
 export async function cleanupTestData() {
   // 外部キー制約の関係で、子テーブルから削除
-  await prisma.workoutDetail.deleteMany({});
-  await prisma.workout.deleteMany({});
-  await prisma.auth.deleteMany({});
-  await prisma.user.deleteMany({});
-  await prisma.exercise.deleteMany({});
+  try {
+    await prisma.workoutDetail.deleteMany({});
+    await prisma.workout.deleteMany({});
+    await prisma.auth.deleteMany({});
+    await prisma.user.deleteMany({});
+    await prisma.exercise.deleteMany({});
+  } catch (error) {
+    console.error("Failed to cleanup test data:", error);
+    throw error;
+  }
 }
 
 /**
