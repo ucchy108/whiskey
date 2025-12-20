@@ -9,15 +9,15 @@ type WorkoutStats = {
   totalWeight: number;
   totalDuration: number;
   exerciseCount: number;
-  intensity: {
-    level: number;
-    color: string;
-    text: string;
-  };
-  workoutType: {
-    type: string;
-    color: string;
-  };
+  // intensity: {
+  //   level: number;
+  //   color: string;
+  //   text: string;
+  // };
+  // workoutType: {
+  //   type: string;
+  //   color: string;
+  // };
 };
 
 class StatsService {
@@ -99,8 +99,8 @@ class StatsService {
 
     const details = result.Detail;
     const exerciseCount = details.length;
-    const intensity = this.getIntensity(exerciseCount);
-    const workoutType = this.getWorkType(details);
+    // const intensity = this.getIntensity(exerciseCount);
+    // const workoutType = this.getWorkType(details);
 
     return {
       totalStats: this.getTotalStats(details),
@@ -108,8 +108,8 @@ class StatsService {
       totalWeight: this.getTotalWeight(details),
       totalDuration: this.getTotalDuration(details),
       exerciseCount: exerciseCount,
-      intensity: intensity,
-      workoutType: workoutType,
+      // intensity: intensity,
+      // workoutType: workoutType,
     };
   }
 }

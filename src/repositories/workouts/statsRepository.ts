@@ -1,11 +1,17 @@
-import { WorkoutDetailModel, WorkoutModel } from "@/generated/prisma/models";
+import {
+  WorkoutDetailModel,
+  WorkoutModel,
+  ExerciseModel,
+} from "@/generated/prisma/models";
 import { prisma } from "@/lib/prisma";
+
+export type WorkoutDetail = WorkoutDetailModel & {
+  Exercise: ExerciseModel;
+};
 
 export type Workouts = WorkoutModel & {
   Detail: WorkoutDetail[];
 };
-
-export type WorkoutDetail = WorkoutDetailModel;
 
 export const statsRepository = {
   async findWorkoutDetails(
