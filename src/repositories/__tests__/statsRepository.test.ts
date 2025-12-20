@@ -1,10 +1,10 @@
-import { statsRepository } from "../../statsRepository";
+import { statsRepository } from "../statsRepository";
 import {
   createTestUser,
   createTestExercise,
   createTestWorkout,
   createTestWorkoutWithDetails,
-} from "../helpers/testDb";
+} from "./helpers/testDb";
 
 describe("statsRepository", () => {
   let testUserId: string;
