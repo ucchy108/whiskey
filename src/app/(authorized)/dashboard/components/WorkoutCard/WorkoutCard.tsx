@@ -58,120 +58,120 @@ export function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
       onClick={handleWorkoutClick}
     >
       <CardContent sx={{ pt: 3 }}>
-        {/* ヘッダー部分 */}
-        <Box
-          sx={{
-            mb: 2,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" component="h3" sx={{ mb: 0.5 }}>
-              {format(new Date(workout.date), "yyyy年M月d日 (E)", {
-                locale: ja,
-              })}
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <Chip
-                label={workoutStats.workoutType.type}
-                size="small"
-                sx={{
-                  backgroundColor: workoutStats.workoutType.color,
-                  color: "white",
-                  fontWeight: "bold",
-                }}
-              />
-              <Chip
-                label={workoutStats.intensity.text}
-                size="small"
-                sx={{
-                  backgroundColor: workoutStats.intensity.color,
-                  color: "white",
-                  fontWeight: "bold",
-                }}
-              />
-              <Chip
-                label={`${workoutStats.exerciseCount}種目`}
-                size="small"
-                color="primary"
-                variant="outlined"
-              />
-            </Stack>
-          </Box>
-          <Avatar
+        <Stack spacing={1}>
+          <Box
             sx={{
-              backgroundColor: workoutStats.workoutType.color,
-              width: 48,
-              height: 48,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
-            <FitnessCenter />
-          </Avatar>
-        </Box>
+            <Stack spacing={1}>
+              <Typography variant="h6" component="h3">
+                {format(new Date(workout.date), "yyyy年M月d日 (E)", {
+                  locale: ja,
+                })}
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <Chip
+                  label={workoutStats.workoutType.type}
+                  size="small"
+                  sx={{
+                    backgroundColor: workoutStats.workoutType.color,
+                    color: "white",
+                    fontWeight: "bold",
+                  }}
+                />
+                <Chip
+                  label={workoutStats.intensity.text}
+                  size="small"
+                  sx={{
+                    backgroundColor: workoutStats.intensity.color,
+                    color: "white",
+                    fontWeight: "bold",
+                  }}
+                />
+                <Chip
+                  label={`${workoutStats.exerciseCount}種目`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              </Stack>
+            </Stack>
+            <Avatar
+              sx={{
+                backgroundColor: workoutStats.workoutType.color,
+                width: 48,
+                height: 48,
+              }}
+            >
+              <FitnessCenter />
+            </Avatar>
+          </Box>
 
-        {/* 統計サマリー */}
-        <Box sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <TrendingUp sx={{ fontSize: 16, color: "text.secondary" }} />
-              <Typography variant="caption" color="text.secondary">
-                {workoutStats.totalSets}セット
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <MonitorWeight sx={{ fontSize: 16, color: "text.secondary" }} />
-              <Typography variant="caption" color="text.secondary">
-                {Math.round(workoutStats.totalWeight)}kg
-              </Typography>
-            </Box>
-            {workoutStats.totalDuration > 0 && (
+          {/* 統計サマリー */}
+          <Box>
+            <Stack direction="row" spacing={2}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Schedule sx={{ fontSize: 16, color: "text.secondary" }} />
+                <TrendingUp sx={{ fontSize: 16, color: "text.secondary" }} />
                 <Typography variant="caption" color="text.secondary">
-                  {Math.round(workoutStats.totalDuration / 60)}分
+                  {workoutStats.totalSets}セット
                 </Typography>
               </Box>
-            )}
-          </Stack>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <MonitorWeight sx={{ fontSize: 16, color: "text.secondary" }} />
+                <Typography variant="caption" color="text.secondary">
+                  {Math.round(workoutStats.totalWeight)}kg
+                </Typography>
+              </Box>
+              {workoutStats.totalDuration > 0 && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <Schedule sx={{ fontSize: 16, color: "text.secondary" }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {Math.round(workoutStats.totalDuration / 60)}分
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
 
-          {/* プログレスバー */}
-          <Box sx={{ mb: 1 }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mb: 0.5, display: "block" }}
-            >
-              強度レベル
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={(workoutStats.intensity.level / 5) * 100}
-              sx={{
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: "grey.200",
-                "& .MuiLinearProgress-bar": {
-                  backgroundColor: workoutStats.intensity.color,
+            {/* プログレスバー */}
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 0.5, display: "block" }}
+              >
+                強度レベル
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={(workoutStats.intensity.level / 5) * 100}
+                sx={{
+                  height: 6,
                   borderRadius: 3,
-                },
-              }}
-            />
+                  backgroundColor: "grey.200",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: workoutStats.intensity.color,
+                    borderRadius: 3,
+                  },
+                }}
+              />
+            </Box>
           </Box>
-        </Box>
 
-        {workout.dialy && (
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            メモ: {workout.dialy}
-          </Typography>
-        )}
+          {workout.dialy && (
+            <Typography variant="body2" color="textSecondary">
+              メモ: {workout.dialy}
+            </Typography>
+          )}
 
-        <List dense>
-          {workout.Detail.map((detail) => (
-            <WorkoutItem key={detail.id} detail={detail} />
-          ))}
-        </List>
+          <List dense>
+            {workout.Detail.map((detail) => (
+              <WorkoutItem key={detail.id} detail={detail} />
+            ))}
+          </List>
+        </Stack>
       </CardContent>
     </Card>
   );
