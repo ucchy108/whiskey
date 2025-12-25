@@ -69,3 +69,4 @@ Claude Codeの`work-log` Skillにより、以下のタイミングで自動的�
 ### 2025-12
 
 - [2025-12-25: Work Log Skill作成](./2025-12-25-work-log-skill-setup.md) - 作業ログ記録Skillの導入
+- [2025-12-25: Storybook v10導入](./2025-12-25-storybook-v10-setup.md) - Storybook v10のセットアップとMaterial-UI統合
