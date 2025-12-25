@@ -14,7 +14,7 @@ import {
   EmojiEvents,
   Timeline,
 } from "@mui/icons-material";
-import WorkoutCreateButton from "../../../dashboard/components/WorkoutCreateButton/WorkoutCreateButton";
+import WorkoutCreateButton from "../WorkoutCreateButton/WorkoutCreateButton";
 
 interface EmptyStateProps {
   onCreateWorkout: () => void;
@@ -110,7 +110,6 @@ export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
           今日から健康的な生活をスタートしませんか？
         </Typography>
 
-        {/* CTAボタン */}
         <WorkoutCreateButton
           name={"最初のワークアウトを記録"}
           onClick={onCreateWorkout}

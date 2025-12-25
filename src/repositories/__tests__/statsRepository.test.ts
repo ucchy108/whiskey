@@ -337,4 +337,172 @@ describe("statsRepository", () => {
       expect(result[0].weight).toBe(50);
     });
   });
+
+  describe("findWorkoutsWithDetailsForStats", () => {
+    it("指定期間のワークアウトと詳細を取得できる", async () => {
+      const exercise1 = await createTestExercise({
+        name: "Squat",
+        description: "Leg exercise",
+      });
+      const exercise2 = await createTestExercise({
+        name: "Deadlift",
+        description: "Back exercise",
+      });
+
+      const startDate = new Date("2024-01-15");
+
+      // 期間内のワークアウト
+      await createTestWorkoutWithDetails({
+        userId: testUserId,
+        date: new Date("2024-01-20"),
+        details: [
+          {
+            exerciseId: exercise1.id,
+            sets: 3,
+            reps: 10,
+            weight: 100,
+          },
+          {
+            exerciseId: exercise2.id,
+            sets: 4,
+            reps: 8,
+            weight: 120,
+          },
+        ],
+      });
+
+      // 期間外のワークアウト（取得されない）
+      await createTestWorkoutWithDetails({
+        userId: testUserId,
+        date: new Date("2024-01-10"),
+        details: [
+          {
+            exerciseId: exercise1.id,
+            sets: 3,
+            reps: 10,
+            weight: 100,
+          },
+        ],
+      });
+
+      const result = await statsRepository.findWorkoutsWithDetailsForStats(
+        testUserId,
+        startDate
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].Detail).toHaveLength(2);
+      expect(result[0].Detail[0].Exercise.name).toBe("Squat");
+      expect(result[0].Detail[1].Exercise.name).toBe("Deadlift");
+    });
+
+    it("必要最小限のフィールドのみを取得する", async () => {
+      const startDate = new Date("2024-01-01");
+
+      await createTestWorkoutWithDetails({
+        userId: testUserId,
+        date: new Date("2024-01-15"),
+        details: [
+          {
+            exerciseId: testExerciseId,
+            sets: 3,
+            reps: 10,
+            weight: 50,
+            duration: 60,
+          },
+        ],
+      });
+
+      const result = await statsRepository.findWorkoutsWithDetailsForStats(
+        testUserId,
+        startDate
+      );
+
+      expect(result).toHaveLength(1);
+
+      // 必要なフィールドが存在することを確認
+      expect(result[0]).toHaveProperty("id");
+      expect(result[0]).toHaveProperty("date");
+      expect(result[0].Detail[0]).toHaveProperty("id");
+      expect(result[0].Detail[0]).toHaveProperty("sets");
+      expect(result[0].Detail[0]).toHaveProperty("reps");
+      expect(result[0].Detail[0]).toHaveProperty("weight");
+      expect(result[0].Detail[0]).toHaveProperty("duration");
+      expect(result[0].Detail[0].Exercise).toHaveProperty("id");
+      expect(result[0].Detail[0].Exercise).toHaveProperty("name");
+    });
+
+    it("日付の降順でソートされる", async () => {
+      const startDate = new Date("2024-01-01");
+
+      await createTestWorkout({
+        userId: testUserId,
+        date: new Date("2024-01-10"),
+      });
+      await createTestWorkout({
+        userId: testUserId,
+        date: new Date("2024-01-20"),
+      });
+      await createTestWorkout({
+        userId: testUserId,
+        date: new Date("2024-01-15"),
+      });
+
+      const result = await statsRepository.findWorkoutsWithDetailsForStats(
+        testUserId,
+        startDate
+      );
+
+      expect(result).toHaveLength(3);
+      expect(result[0].date.getTime()).toBeGreaterThan(
+        result[1].date.getTime()
+      );
+      expect(result[1].date.getTime()).toBeGreaterThan(
+        result[2].date.getTime()
+      );
+    });
+
+    it("他のユーザーのワークアウトは含まれない", async () => {
+      const otherUser = await createTestUser({
+        name: "Other User",
+        age: 30,
+        weight: 75,
+        height: 180,
+      });
+
+      const startDate = new Date("2024-01-01");
+
+      await createTestWorkout({
+        userId: testUserId,
+        date: new Date("2024-01-15"),
+      });
+      await createTestWorkout({
+        userId: otherUser.id,
+        date: new Date("2024-01-16"),
+      });
+
+      const result = await statsRepository.findWorkoutsWithDetailsForStats(
+        testUserId,
+        startDate
+      );
+
+      expect(result).toHaveLength(1);
+    });
+
+    it("期間内にワークアウトがない場合は空配列を返す", async () => {
+      const startDate = new Date("2024-01-15");
+
+      await createTestWorkout({
+        userId: testUserId,
+        date: new Date("2024-01-10"),
+      });
+
+      const result = await statsRepository.findWorkoutsWithDetailsForStats(
+        testUserId,
+        startDate
+      );
+
+      expect(result).toEqual([]);
+    });
+  });
 });

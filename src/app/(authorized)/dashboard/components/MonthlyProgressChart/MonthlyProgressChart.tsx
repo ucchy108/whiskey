@@ -7,7 +7,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { TrendingUp } from "@mui/icons-material";
-import { MonthlyProgress } from "../../hooks/useWorkoutChart";
+import type { MonthlyProgress } from "@/repositories/statsRepository";
 
 interface MonthlyProgressChartProps {
   monthlyProgresses: MonthlyProgress[];

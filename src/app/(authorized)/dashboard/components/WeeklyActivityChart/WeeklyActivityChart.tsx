@@ -7,7 +7,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { CalendarMonth } from "@mui/icons-material";
-import { WeeklyActivity } from "../../hooks/useWorkoutChart";
+import type { WeeklyActivity } from "@/repositories/statsRepository";
 
 interface WeeklyActivityChartProps {
   weeklyActivities: WeeklyActivity[];

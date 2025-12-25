@@ -8,7 +8,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { BarChart } from "@mui/icons-material";
-import { ExerciseDistribution } from "../../hooks/useWorkoutChart";
+import type { ExerciseDistribution } from "@/repositories/statsRepository";
 
 interface ExerciseRankingChartProps {
   exerciseDistributions: ExerciseDistribution[];

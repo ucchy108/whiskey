@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { WorkoutChart } from "./WorkoutChart";
-import { WorkoutWithDetails } from "@/repositories/workoutRepository";
+import { DashboardStatsWithCharts } from "@/repositories/statsRepository";
 
 const meta = {
   title: "Dashboard/WorkoutChart",
@@ -11,137 +11,255 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// サンプルワークアウトデータの生成ヘルパー
-const createWorkout = (
-  id: string,
-  daysAgo: number,
-  exerciseName: string,
-  sets: number,
-  reps: number,
-  weight: number | null
-): WorkoutWithDetails => {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-
-  return {
-    id,
-    userId: "user-1",
-    date,
-    dialy: null,
-    createdAt: date,
-    updatedAt: date,
-    Detail: [
-      {
-        id: `detail-${id}`,
-        workoutId: id,
-        exerciseId: `exercise-${id}`,
-        sets,
-        reps,
-        weight,
-        duration: null,
-        notes: null,
-        createdAt: date,
-        updatedAt: date,
-        Exercise: {
-          id: `exercise-${id}`,
-          name: exerciseName,
-          description: "",
-          createdAt: date,
-          updatedAt: date,
-        },
-      },
-    ],
-  };
+// 空のデータ
+const emptyStats: DashboardStatsWithCharts = {
+  totalWorkouts: 0,
+  thisWeekWorkouts: 0,
+  totalExercises: 0,
+  totalWeight: 0,
+  weeklyActivities: [],
+  monthlyProgresses: [],
+  exerciseDistributions: [],
+  maxWeeklyWorkouts: 1,
+  maxMonthlyVolume: 1,
 };
 
-// 過去7日間の週間データ
-const weeklyWorkouts: WorkoutWithDetails[] = [
-  createWorkout("w1", 0, "ベンチプレス", 3, 10, 50),
-  createWorkout("w2", 1, "スクワット", 4, 12, 100),
-  createWorkout("w3", 3, "デッドリフト", 3, 8, 120),
-  createWorkout("w4", 5, "ベンチプレス", 3, 10, 50),
-];
+// 標準的なデータ
+const normalStats: DashboardStatsWithCharts = {
+  totalWorkouts: 24,
+  thisWeekWorkouts: 3,
+  totalExercises: 72,
+  totalWeight: 12500,
+  weeklyActivities: [
+    {
+      day: "日",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "月",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 250,
+      isToday: false,
+    },
+    {
+      day: "火",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "水",
+      date: new Date(),
+      workouts: 2,
+      totalWeight: 500,
+      isToday: false,
+    },
+    {
+      day: "木",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "金",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 350,
+      isToday: true,
+    },
+    {
+      day: "土",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+  ],
+  monthlyProgresses: [
+    { week: "第1週", workouts: 4, volume: 3200 },
+    { week: "第2週", workouts: 5, volume: 4100 },
+    { week: "第3週", workouts: 3, volume: 2800 },
+    { week: "第4週", workouts: 4, volume: 3500 },
+  ],
+  exerciseDistributions: [
+    { name: "ベンチプレス", count: 15, percentage: 35 },
+    { name: "スクワット", count: 12, percentage: 28 },
+    { name: "デッドリフト", count: 10, percentage: 23 },
+    { name: "ショルダープレス", count: 4, percentage: 9 },
+    { name: "バーベルロウ", count: 2, percentage: 5 },
+  ],
+  maxWeeklyWorkouts: 2,
+  maxMonthlyVolume: 4100,
+};
 
-// 過去30日間の月間データ
-const monthlyWorkouts: WorkoutWithDetails[] = [
-  ...weeklyWorkouts,
-  createWorkout("m1", 7, "スクワット", 4, 12, 100),
-  createWorkout("m2", 8, "ベンチプレス", 3, 10, 50),
-  createWorkout("m3", 10, "デッドリフト", 3, 8, 120),
-  createWorkout("m4", 14, "ベンチプレス", 3, 10, 50),
-  createWorkout("m5", 15, "スクワット", 4, 12, 100),
-  createWorkout("m6", 17, "ショルダープレス", 3, 10, 40),
-  createWorkout("m7", 21, "バーベルロウ", 3, 10, 60),
-  createWorkout("m8", 22, "ベンチプレス", 3, 10, 50),
-  createWorkout("m9", 24, "スクワット", 4, 12, 100),
-  createWorkout("m10", 28, "デッドリフト", 3, 8, 120),
-];
+// 高頻度トレーニング
+const highFrequencyStats: DashboardStatsWithCharts = {
+  totalWorkouts: 180,
+  thisWeekWorkouts: 7,
+  totalExercises: 540,
+  totalWeight: 95000,
+  weeklyActivities: [
+    {
+      day: "日",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 600,
+      isToday: false,
+    },
+    {
+      day: "月",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 550,
+      isToday: false,
+    },
+    {
+      day: "火",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 700,
+      isToday: false,
+    },
+    {
+      day: "水",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 650,
+      isToday: false,
+    },
+    {
+      day: "木",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 600,
+      isToday: false,
+    },
+    {
+      day: "金",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 750,
+      isToday: true,
+    },
+    {
+      day: "土",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 800,
+      isToday: false,
+    },
+  ],
+  monthlyProgresses: [
+    { week: "第1週", workouts: 7, volume: 5200 },
+    { week: "第2週", workouts: 7, volume: 5500 },
+    { week: "第3週", workouts: 6, volume: 4800 },
+    { week: "第4週", workouts: 7, volume: 5300 },
+  ],
+  exerciseDistributions: [
+    { name: "ベンチプレス", count: 60, percentage: 30 },
+    { name: "スクワット", count: 55, percentage: 27 },
+    { name: "デッドリフト", count: 50, percentage: 25 },
+    { name: "ショルダープレス", count: 20, percentage: 10 },
+    { name: "バーベルロウ", count: 15, percentage: 8 },
+  ],
+  maxWeeklyWorkouts: 1,
+  maxMonthlyVolume: 5500,
+};
 
-// 多様な種目データ（人気種目ランキング用）
-const diverseWorkouts: WorkoutWithDetails[] = [
-  // ベンチプレス: 5回
-  createWorkout("d1", 1, "ベンチプレス", 3, 10, 50),
-  createWorkout("d2", 3, "ベンチプレス", 3, 10, 50),
-  createWorkout("d3", 5, "ベンチプレス", 3, 10, 50),
-  createWorkout("d4", 7, "ベンチプレス", 3, 10, 50),
-  createWorkout("d5", 9, "ベンチプレス", 3, 10, 50),
-  // スクワット: 4回
-  createWorkout("d6", 2, "スクワット", 4, 12, 100),
-  createWorkout("d7", 4, "スクワット", 4, 12, 100),
-  createWorkout("d8", 6, "スクワット", 4, 12, 100),
-  createWorkout("d9", 8, "スクワット", 4, 12, 100),
-  // デッドリフト: 3回
-  createWorkout("d10", 10, "デッドリフト", 3, 8, 120),
-  createWorkout("d11", 12, "デッドリフト", 3, 8, 120),
-  createWorkout("d12", 14, "デッドリフト", 3, 8, 120),
-  // ショルダープレス: 2回
-  createWorkout("d13", 16, "ショルダープレス", 3, 10, 40),
-  createWorkout("d14", 18, "ショルダープレス", 3, 10, 40),
-  // バーベルロウ: 1回
-  createWorkout("d15", 20, "バーベルロウ", 3, 10, 60),
-];
+// 単一ワークアウト
+const singleWorkoutStats: DashboardStatsWithCharts = {
+  totalWorkouts: 1,
+  thisWeekWorkouts: 1,
+  totalExercises: 3,
+  totalWeight: 450,
+  weeklyActivities: [
+    {
+      day: "日",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "月",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "火",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "水",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "木",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+    {
+      day: "金",
+      date: new Date(),
+      workouts: 1,
+      totalWeight: 450,
+      isToday: true,
+    },
+    {
+      day: "土",
+      date: new Date(),
+      workouts: 0,
+      totalWeight: 0,
+      isToday: false,
+    },
+  ],
+  monthlyProgresses: [
+    { week: "第1週", workouts: 0, volume: 0 },
+    { week: "第2週", workouts: 0, volume: 0 },
+    { week: "第3週", workouts: 0, volume: 0 },
+    { week: "第4週", workouts: 1, volume: 1350 },
+  ],
+  exerciseDistributions: [{ name: "ベンチプレス", count: 1, percentage: 100 }],
+  maxWeeklyWorkouts: 1,
+  maxMonthlyVolume: 1350,
+};
 
 export const Empty: Story = {
   args: {
-    workouts: [],
+    stats: emptyStats,
   },
 };
 
-export const WeeklyData: Story = {
+export const Normal: Story = {
   args: {
-    workouts: weeklyWorkouts,
-  },
-};
-
-export const MonthlyData: Story = {
-  args: {
-    workouts: monthlyWorkouts,
-  },
-};
-
-export const DiverseExercises: Story = {
-  args: {
-    workouts: diverseWorkouts,
-  },
-};
-
-export const SingleWorkout: Story = {
-  args: {
-    workouts: [createWorkout("s1", 0, "ベンチプレス", 3, 10, 50)],
+    stats: normalStats,
   },
 };
 
 export const HighFrequency: Story = {
   args: {
-    workouts: [
-      // 毎日トレーニング（過去7日間）
-      createWorkout("hf1", 0, "ベンチプレス", 3, 10, 50),
-      createWorkout("hf2", 1, "スクワット", 4, 12, 100),
-      createWorkout("hf3", 2, "デッドリフト", 3, 8, 120),
-      createWorkout("hf4", 3, "ショルダープレス", 3, 10, 40),
-      createWorkout("hf5", 4, "バーベルロウ", 3, 10, 60),
-      createWorkout("hf6", 5, "ベンチプレス", 3, 10, 50),
-      createWorkout("hf7", 6, "スクワット", 4, 12, 100),
-    ],
+    stats: highFrequencyStats,
+  },
+};
+
+export const SingleWorkout: Story = {
+  args: {
+    stats: singleWorkoutStats,
   },
 };

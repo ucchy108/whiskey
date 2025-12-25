@@ -5,7 +5,7 @@ import {
   LocalFireDepartment,
   EmojiEvents,
 } from "@mui/icons-material";
-import { DashboardStats } from "../../hooks/useDashboardStats";
+import type { DashboardStats } from "@/repositories/statsRepository";
 import { gradients } from "@/theme";
 
 type SummaryCardData = {

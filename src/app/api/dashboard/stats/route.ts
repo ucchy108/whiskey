@@ -22,8 +22,8 @@ export async function GET() {
       );
     }
 
-    // サービス層で統計データを取得
-    const stats = await statsService.getDashboardStats(userId);
+    // サービス層で統計データとチャートデータを取得
+    const stats = await statsService.getDashboardStatsWithCharts(userId);
 
     return NextResponse.json(stats);
   } catch (error) {

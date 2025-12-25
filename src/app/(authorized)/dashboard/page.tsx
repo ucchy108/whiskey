@@ -2,19 +2,12 @@
 
 import { Box, Typography, CircularProgress, Stack } from "@mui/material";
 import { SummaryCards } from "./components/SummaryCards";
-import { useWorkouts } from "./hooks/useWorkouts";
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useDashboardStats } from "./hooks/useDashboardStats";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { WorkoutChart } from "./components/WorkoutChart";
 
 export default function DashboardPage() {
-  const { workouts, loading, error } = useWorkouts();
-  const router = useRouter();
-
-  const handleCreateWorkout = useCallback(() => {
-    router.push("/workouts/new");
-  }, [router]);
+  const { stats, loading, error } = useDashboardStats();
 
   if (loading) {
     return (
@@ -35,11 +28,15 @@ export default function DashboardPage() {
     );
   }
 
+  if (!stats) {
+    return null;
+  }
+
   return (
     <Stack spacing={4}>
-      <DashboardHeader onClick={handleCreateWorkout} />
-      <SummaryCards />
-      <WorkoutChart workouts={workouts} />
+      <DashboardHeader />
+      <SummaryCards stats={stats} />
+      <WorkoutChart stats={stats} />
     </Stack>
   );
 }

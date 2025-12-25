@@ -1,12 +1,7 @@
 import { Avatar, Box, Paper, Typography, useTheme } from "@mui/material";
-import WorkoutCreateButton from "../WorkoutCreateButton/WorkoutCreateButton";
 import { Dashboard as DashboardIcon } from "@mui/icons-material";
 
-interface DashboardHeaderProps {
-  onClick: () => void;
-}
-
-export function DashboardHeader({ onClick }: DashboardHeaderProps) {
+export function DashboardHeader() {
   const theme = useTheme();
 
   return (
@@ -21,34 +16,24 @@ export function DashboardHeader({ onClick }: DashboardHeaderProps) {
         overflow: "hidden",
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "relative",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar
-            sx={{
-              bgcolor: "rgba(255, 255, 255, 0.2)",
-              width: 48,
-              height: 48,
-            }}
-          >
-            <DashboardIcon sx={{ fontSize: 28 }} />
-          </Avatar>
-          <Box>
-            <Typography variant="h4" fontWeight="bold">
-              ダッシュボード
-            </Typography>
-            <Typography variant="body2">
-              あなたのワークアウトの記録を確認しましょう
-            </Typography>
-          </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Avatar
+          sx={{
+            bgcolor: "rgba(255, 255, 255, 0.2)",
+            width: 48,
+            height: 48,
+          }}
+        >
+          <DashboardIcon sx={{ fontSize: 28 }} />
+        </Avatar>
+        <Box>
+          <Typography variant="h4" fontWeight="bold">
+            ダッシュボード
+          </Typography>
+          <Typography variant="body2">
+            あなたのワークアウトの記録を確認しましょう
+          </Typography>
         </Box>
-        <WorkoutCreateButton onClick={onClick} name={"ワークアウトを作成"} />
       </Box>
     </Paper>
   );

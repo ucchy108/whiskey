@@ -1,22 +1,21 @@
 import { Grid2 as Grid } from "@mui/material";
-import { WorkoutWithDetails } from "@/repositories/workoutRepository";
-import { useWorkoutChart } from "../../hooks/useWorkoutChart";
 import { MonthlyProgressChart } from "../MonthlyProgressChart";
 import { WeeklyActivityChart } from "../WeeklyActivityChart";
 import { ExerciseRankingChart } from "../ExerciseRankingChart";
+import { DashboardStatsWithCharts } from "@/repositories/statsRepository";
 
 interface WorkoutChartProps {
-  workouts: WorkoutWithDetails[];
+  stats: DashboardStatsWithCharts;
 }
 
-export function WorkoutChart({ workouts }: WorkoutChartProps) {
+export function WorkoutChart({ stats }: WorkoutChartProps) {
   const {
     weeklyActivities,
     monthlyProgresses,
     exerciseDistributions,
     maxWeeklyWorkouts,
     maxMonthlyVolume,
-  } = useWorkoutChart(workouts);
+  } = stats;
 
   return (
     <Grid container spacing={3}>
@@ -35,9 +34,7 @@ export function WorkoutChart({ workouts }: WorkoutChartProps) {
       </Grid>
 
       <Grid size={{ xs: 12 }}>
-        <ExerciseRankingChart
-          exerciseDistributions={exerciseDistributions}
-        />
+        <ExerciseRankingChart exerciseDistributions={exerciseDistributions} />
       </Grid>
     </Grid>
   );

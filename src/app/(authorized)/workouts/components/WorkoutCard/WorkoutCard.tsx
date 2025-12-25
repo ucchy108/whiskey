@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { WorkoutWithDetails } from "@/repositories/workoutRepository";
-import { useWorkoutCardStats } from "../../../dashboard/hooks/useWorkoutCardStats";
+import { useWorkoutCardStats } from "../../hooks/useWorkoutCardStats";
 
 export function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
   const router = useRouter();

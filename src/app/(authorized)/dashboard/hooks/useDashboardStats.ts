@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
-
-export interface DashboardStats {
-  totalWorkouts: number;
-  thisWeekWorkouts: number;
-  totalExercises: number;
-  totalWeight: number;
-}
+import type { DashboardStatsWithCharts } from "@/repositories/statsRepository";
 
 interface UseDashboardStatsReturn {
-  stats: DashboardStats | null;
+  stats: DashboardStatsWithCharts | null;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -19,7 +13,7 @@ interface UseDashboardStatsReturn {
  * @returns 統計データ、ローディング状態、エラー状態、リフェッチ関数
  */
 export function useDashboardStats(): UseDashboardStatsReturn {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<DashboardStatsWithCharts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +33,7 @@ export function useDashboardStats(): UseDashboardStatsReturn {
         throw new Error(`統計データの取得に失敗しました: ${response.status}`);
       }
 
-      const data: DashboardStats = await response.json();
+      const data: DashboardStatsWithCharts = await response.json();
       setStats(data);
     } catch (err) {
       const errorMessage =

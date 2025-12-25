@@ -5,31 +5,15 @@ import {
   Typography,
   Box,
   Stack,
-  CircularProgress,
-  Alert,
 } from "@mui/material";
-import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { createSummaryCards } from "./createSummaryCards";
+import { DashboardStatsWithCharts } from "@/repositories/statsRepository";
 
-export function SummaryCards() {
-  const { stats, loading, error } = useDashboardStats();
+interface SummaryCardsProps {
+  stats: DashboardStatsWithCharts;
+}
 
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  if (!stats) {
-    return null;
-  }
-
+export function SummaryCards({ stats }: SummaryCardsProps) {
   const summaryCards = createSummaryCards(stats);
 
   return (
