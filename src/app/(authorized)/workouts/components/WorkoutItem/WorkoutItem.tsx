@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Box,
   Chip,
@@ -13,7 +12,7 @@ type WorkoutItemProps = {
   detail: WorkoutDetail;
 };
 
-function WorkoutItem({ detail }: WorkoutItemProps) {
+export function WorkoutItem({ detail }: WorkoutItemProps) {
   return (
     <ListItem
       key={detail.id}
@@ -74,7 +73,3 @@ function WorkoutItem({ detail }: WorkoutItemProps) {
     </ListItem>
   );
 }
-
-const MemoizedWorkoutItem = memo(WorkoutItem);
-
-export { MemoizedWorkoutItem as WorkoutItem };

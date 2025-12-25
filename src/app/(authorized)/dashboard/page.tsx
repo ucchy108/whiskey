@@ -1,7 +1,6 @@
 "use client";
 
 import { Box, Typography, CircularProgress, Stack } from "@mui/material";
-import { WorkoutList } from "./components/WorkoutList";
 import { SummaryCards } from "./components/SummaryCards";
 import { useWorkouts } from "./hooks/useWorkouts";
 import { useCallback } from "react";
@@ -41,7 +40,6 @@ export default function DashboardPage() {
       <DashboardHeader onClick={handleCreateWorkout} />
       <SummaryCards />
       <WorkoutChart workouts={workouts} />
-      <WorkoutList workouts={workouts} onCreateWorkout={handleCreateWorkout} />
     </Stack>
   );
 }

@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Box,
   Typography,
@@ -15,13 +14,13 @@ import {
   EmojiEvents,
   Timeline,
 } from "@mui/icons-material";
-import WorkoutCreateButton from "../WorkoutCreateButton/WorkoutCreateButton";
+import WorkoutCreateButton from "../../../dashboard/components/WorkoutCreateButton/WorkoutCreateButton";
 
 interface EmptyStateProps {
   onCreateWorkout: () => void;
 }
 
-function EmptyState({ onCreateWorkout }: EmptyStateProps) {
+export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
   const tips = [
     {
       icon: <Psychology />,
@@ -226,7 +225,3 @@ function EmptyState({ onCreateWorkout }: EmptyStateProps) {
     </Fade>
   );
 }
-
-const MemoizedEmptyState = memo(EmptyState);
-
-export { MemoizedEmptyState as EmptyState };
