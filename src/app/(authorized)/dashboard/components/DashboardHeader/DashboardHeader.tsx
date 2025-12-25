@@ -16,21 +16,9 @@ export function DashboardHeader({ onClick }: DashboardHeaderProps) {
         background: theme.gradients.ocean,
         color: "#fff",
         p: 3,
-        mb: 3,
         borderRadius: 2,
         position: "relative",
         overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          right: 0,
-          width: "150px",
-          height: "150px",
-          background: "rgba(255, 255, 255, 0.1)",
-          borderRadius: "50%",
-          transform: "translate(50px, -50px)",
-        },
       }}
     >
       <Box
@@ -39,7 +27,6 @@ export function DashboardHeader({ onClick }: DashboardHeaderProps) {
           alignItems: "center",
           justifyContent: "space-between",
           position: "relative",
-          zIndex: 1,
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -56,7 +43,7 @@ export function DashboardHeader({ onClick }: DashboardHeaderProps) {
             <Typography variant="h4" fontWeight="bold">
               ダッシュボード
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+            <Typography variant="body2">
               あなたのワークアウトの記録を確認しましょう
             </Typography>
           </Box>

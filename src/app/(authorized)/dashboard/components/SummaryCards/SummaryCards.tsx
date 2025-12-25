@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Grid2 as Grid,
   Card,
@@ -12,7 +11,7 @@ import {
 import { useDashboardStats } from "../../hooks/useDashboardStats";
 import { createSummaryCards } from "./createSummaryCards";
 
-function SummaryCards() {
+export function SummaryCards() {
   const { stats, loading, error } = useDashboardStats();
 
   if (loading) {
@@ -24,11 +23,7 @@ function SummaryCards() {
   }
 
   if (error) {
-    return (
-      <Alert severity="error" sx={{ mb: 4 }}>
-        {error}
-      </Alert>
-    );
+    return <Alert severity="error">{error}</Alert>;
   }
 
   if (!stats) {
@@ -38,7 +33,7 @@ function SummaryCards() {
   const summaryCards = createSummaryCards(stats);
 
   return (
-    <Grid container spacing={3} sx={{ mb: 4 }}>
+    <Grid container spacing={3}>
       {summaryCards.map((card, index) => (
         <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
           <Card
@@ -47,17 +42,6 @@ function SummaryCards() {
               color: card.color,
               position: "relative",
               overflow: "hidden",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: "100px",
-                height: "100px",
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                transform: "translate(30px, -30px)",
-              },
             }}
           >
             <CardContent sx={{ position: "relative", zIndex: 1 }}>
@@ -97,7 +81,3 @@ function SummaryCards() {
     </Grid>
   );
 }
-
-const MemoizedSummaryCards = memo(SummaryCards);
-
-export { MemoizedSummaryCards as SummaryCards };
