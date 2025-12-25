@@ -1,7 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
 import { Providers } from "@/app/components/Providers";
-import { NavigationBar } from "./components/NavigationBar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,10 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <NavigationBar />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
