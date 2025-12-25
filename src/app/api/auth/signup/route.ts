@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signUpFormSchema } from "@/app/(auth)/signup/components/SignUpForm/formSchema";
 import { authService } from "@/services/AuthService";
+import { signUpFormSchema } from "@/app/(unauthorized)/signup/components/SignUpForm/formSchema";
 
 export async function POST(request: NextRequest) {
   try {

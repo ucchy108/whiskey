@@ -2,15 +2,15 @@
 
 import { memo, startTransition, useCallback } from "react";
 import NextLink from "next/link";
-import { EmailTextField } from "@/app/(auth)/components/EmailTextField";
-import { PasswordTextField } from "@/app/(auth)/components/PasswordTextField";
-import { SubmitButton } from "@/app/(auth)/components/SubmitButton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, Typography } from "@mui/material";
 import { FieldError, useForm } from "react-hook-form";
 import { useSignIn } from "../../hooks/useSignIn";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { signInFormSchema, SignInFormSchema } from "./formSchema";
+import { EmailTextField } from "@/app/(unauthorized)/components/EmailTextField";
+import { PasswordTextField } from "@/app/(unauthorized)/components/PasswordTextField";
+import { SubmitButton } from "@/app/(unauthorized)/components/SubmitButton";
 
 function SignInForm() {
   const {
@@ -28,7 +28,7 @@ function SignInForm() {
 
   const { signIn, isLoading } = useSignIn();
 
-  const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
+  const { openErrorSnackbar } = useErrorSnackbar();
 
   const onSubmit = useCallback(
     (values: SignInFormSchema) => {
@@ -78,7 +78,6 @@ function SignInForm() {
           </Typography>
         </Stack>
       </form>
-      <ErrorSnackbar />
     </>
   );
 }

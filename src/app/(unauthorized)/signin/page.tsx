@@ -5,9 +5,11 @@ import { useTheme } from "@mui/material/styles";
 import { SignInForm } from "./components/SignInForm/SignInForm";
 import { useSuccessNotification } from "./hooks/useSuccessNotification";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 
 function SignInPage() {
   const { SuccessSnackbar } = useSuccessNotification();
+  const { ErrorSnackbar } = useErrorSnackbar();
   const theme = useTheme();
 
   return (
@@ -97,6 +99,7 @@ function SignInPage() {
         </Card>
       </Box>
       <SuccessSnackbar />
+      <ErrorSnackbar />
     </>
   );
 }
