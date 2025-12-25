@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Container } from "@mui/material";
-import { TabNavigation } from "@/app/(dashboard)/components/TabNavigation/TabNavigation";
+import { TabNavigation } from "@/app/(authorized)/components/TabNavigation/TabNavigation";
 import { NavigationBar } from "./components/NavigationBar";
 
 export default function DashboardLayout({
