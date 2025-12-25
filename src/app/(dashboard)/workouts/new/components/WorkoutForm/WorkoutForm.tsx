@@ -14,6 +14,7 @@ import {
   IconButton,
   Paper,
   Divider,
+  Chip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -21,6 +22,17 @@ import { workoutFormSchema, WorkoutFormSchema } from "./formSchema";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
 import { useExercises } from "../../hooks/useExercises";
+import { gradients } from "@/theme";
+
+// 運動詳細カードのグラデーションカラーを順番に適用
+const detailGradients = [
+  gradients.blue,
+  gradients.green,
+  gradients.pink,
+  gradients.orange,
+  gradients.ocean,
+  gradients.purple,
+];
 
 function WorkoutForm() {
   const router = useRouter();
@@ -130,27 +142,56 @@ function WorkoutForm() {
             </Typography>
             <Stack spacing={2}>
               {fields.map((field, index) => (
-                <Paper key={field.id} sx={{ p: 2 }} variant="outlined">
-                  <Stack spacing={2}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="subtitle1">
+                <Paper
+                  key={field.id}
+                  elevation={2}
+                  sx={{
+                    overflow: "hidden",
+                    border: "none",
+                  }}
+                >
+                  {/* カラフルなヘッダー */}
+                  <Box
+                    sx={{
+                      background:
+                        detailGradients[index % detailGradients.length],
+                      color: "#fff",
+                      p: 2,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={index + 1}
+                        size="small"
+                        sx={{
+                          bgcolor: "rgba(255, 255, 255, 0.3)",
+                          color: "#fff",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <Typography variant="subtitle1" fontWeight="bold">
                         運動 {index + 1}
                       </Typography>
-                      <IconButton
-                        onClick={() => remove(index)}
-                        color="error"
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
                     </Box>
+                    <IconButton
+                      onClick={() => remove(index)}
+                      size="small"
+                      sx={{
+                        color: "#fff",
+                        "&:hover": {
+                          bgcolor: "rgba(255, 255, 255, 0.2)",
+                        },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
 
+                  {/* フォーム内容 */}
+                  <Stack spacing={2} sx={{ p: 2 }}>
                     <Controller
                       name={`details.${index}.exerciseId`}
                       control={control}

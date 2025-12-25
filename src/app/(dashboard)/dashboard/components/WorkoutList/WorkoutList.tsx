@@ -2,10 +2,10 @@
 
 import { memo } from "react";
 import { Box, Stack, Typography } from "@mui/material";
-import { WorkoutWithDetails } from "../../types";
 import { WorkoutCard } from "../WorkoutCard";
 import { EmptyState } from "../EmptyState";
 import { History } from "@mui/icons-material";
+import { WorkoutWithDetails } from "@/repositories/workoutRepository";
 
 interface WorkoutListProps {
   workouts: WorkoutWithDetails[];

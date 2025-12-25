@@ -6,6 +6,7 @@ import {
   EmojiEvents,
 } from "@mui/icons-material";
 import { DashboardStats } from "../../hooks/useDashboardStats";
+import { gradients } from "@/theme";
 
 type SummaryCardData = {
   title: string;
@@ -29,7 +30,7 @@ export function createSummaryCards({
       subtitle: "回のトレーニング",
       icon: <FitnessCenter sx={{ fontSize: 32 }} />,
       color: "#fff",
-      bgGradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      bgGradient: gradients.purple,
     },
     {
       title: "今週の活動",
@@ -37,7 +38,7 @@ export function createSummaryCards({
       subtitle: "回のセッション",
       icon: <LocalFireDepartment sx={{ fontSize: 32 }} />,
       color: "#fff",
-      bgGradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      bgGradient: gradients.pink,
     },
     {
       title: "総運動種目数",
@@ -45,7 +46,7 @@ export function createSummaryCards({
       subtitle: "種目を実施",
       icon: <EmojiEvents sx={{ fontSize: 32 }} />,
       color: "#fff",
-      bgGradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      bgGradient: gradients.blue,
     },
     {
       title: "累計重量",
@@ -53,7 +54,7 @@ export function createSummaryCards({
       subtitle: "総合重量",
       icon: <TrendingUp sx={{ fontSize: 32 }} />,
       color: "#fff",
-      bgGradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      bgGradient: gradients.green,
     },
   ];
 }

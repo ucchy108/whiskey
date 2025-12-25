@@ -46,16 +46,16 @@ function SignInForm() {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={2}>
+        <Stack spacing={3}>
           <Typography
             variant="h5"
+            fontWeight="bold"
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItem: "center",
+              textAlign: "center",
+              color: "text.primary",
             }}
           >
-            Sign In
+            ログイン
           </Typography>
           <EmailTextField
             control={control}

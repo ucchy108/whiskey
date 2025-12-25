@@ -14,8 +14,10 @@ import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { signUpFormSchema, SignUpFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useSignUpSteps } from "../../hooks/useSignUpSteps";
+import { useTheme } from "@mui/material/styles";
 
 function SignUpForm() {
+  const theme = useTheme();
   const {
     control,
     handleSubmit,
@@ -89,13 +91,13 @@ function SignUpForm() {
       <Stack spacing={3}>
         <Typography
           variant="h5"
+          fontWeight="bold"
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            textAlign: "center",
+            color: "text.primary",
           }}
         >
-          Sign Up
+          アカウント作成
         </Typography>
 
         <SignUpStepper activeStep={activeStep} steps={steps} />
@@ -108,17 +110,47 @@ function SignUpForm() {
               {isFirstStep ? (
                 <Box />
               ) : (
-                <Button onClick={handleBack} variant="outlined">
+                <Button
+                  onClick={handleBack}
+                  variant="outlined"
+                  sx={{
+                    borderColor: theme.customColors.blue.main,
+                    color: theme.customColors.blue.main,
+                    "&:hover": {
+                      borderColor: theme.customColors.blue.dark,
+                      bgcolor: "rgba(79, 172, 254, 0.08)",
+                    },
+                  }}
+                >
                   戻る
                 </Button>
               )}
 
               {isLastStep ? (
-                <SubmitButton loading={isSubmitting}>
+                <SubmitButton
+                  loading={isSubmitting}
+                  sx={{
+                    background: theme.gradients.blue,
+                    "&:hover": {
+                      background: theme.gradients.blue,
+                    },
+                  }}
+                >
                   アカウント作成
                 </SubmitButton>
               ) : (
-                <Button onClick={handleNext} variant="contained">
+                <Button
+                  onClick={handleNext}
+                  variant="contained"
+                  sx={{
+                    background: theme.gradients.blue,
+                    boxShadow: "0 4px 14px 0 rgba(79, 172, 254, 0.39)",
+                    "&:hover": {
+                      background: theme.gradients.blue,
+                      boxShadow: "0 6px 20px rgba(79, 172, 254, 0.5)",
+                    },
+                  }}
+                >
                   次へ
                 </Button>
               )}
