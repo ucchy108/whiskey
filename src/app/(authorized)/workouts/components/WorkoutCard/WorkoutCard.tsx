@@ -52,7 +52,7 @@ export function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
           left: 0,
           width: "100%",
           height: "4px",
-          background: `linear-gradient(90deg, ${workoutStats.workoutType.color} 0%, ${workoutStats.intensity.color} 100%)`,
+          background: workoutStats.workoutType.color,
         },
       }}
       onClick={handleWorkoutClick}

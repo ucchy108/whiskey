@@ -6,6 +6,7 @@ import { useWorkouts } from "./hooks/useWorkouts";
 import { useRouter } from "next/navigation";
 import { WorkoutList } from "./components/WorkoutList";
 import { WorkoutHeader } from "./components/WorkoutHeader";
+import WorkoutCreateButton from "./components/WorkoutCreateButton/WorkoutCreateButton";
 
 export default function WorkoutPage() {
   const { workouts, loading, error } = useWorkouts();
@@ -35,8 +36,14 @@ export default function WorkoutPage() {
   }
 
   return (
-    <Stack spacing={4}>
-      <WorkoutHeader onClick={handleCreateWorkout} />
+    <Stack spacing={3}>
+      <WorkoutHeader />
+      <Box sx={{ px: 2 }}>
+        <WorkoutCreateButton
+          onClick={handleCreateWorkout}
+          name="ワークアウトを作成"
+        />
+      </Box>
       <WorkoutList workouts={workouts} onCreateWorkout={handleCreateWorkout} />
     </Stack>
   );

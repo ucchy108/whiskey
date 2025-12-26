@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { WorkoutWithDetails } from "@/repositories/workoutRepository";
+import { chartColors } from "@/theme";
 
 export interface WorkoutStats {
   totalSets: number;
@@ -51,10 +52,10 @@ export function useWorkoutCardStats(workout: WorkoutWithDetails): WorkoutStats {
       level: intensityLevel,
       color:
         intensityLevel <= 2
-          ? "#4caf50"
+          ? chartColors.low
           : intensityLevel <= 3
-          ? "#ff9800"
-          : "#f44336",
+          ? chartColors.medium
+          : chartColors.high,
       text:
         intensityLevel <= 2 ? "軽め" : intensityLevel <= 3 ? "普通" : "高強度",
     };
@@ -67,13 +68,15 @@ export function useWorkoutCardStats(workout: WorkoutWithDetails): WorkoutStats {
       (detail) => detail.weight && detail.weight > 0
     );
 
-    let workoutType = { type: "体重", color: "#607d8b" };
+    let workoutType;
     if (hasCardio && hasWeights) {
-      workoutType = { type: "ミックス", color: "#9c27b0" };
+      workoutType = { type: "ミックス", color: chartColors.mixed };
     } else if (hasCardio) {
-      workoutType = { type: "有酸素", color: "#2196f3" };
+      workoutType = { type: "有酸素", color: chartColors.cardio };
     } else if (hasWeights) {
-      workoutType = { type: "筋トレ", color: "#ff5722" };
+      workoutType = { type: "筋トレ", color: chartColors.strength };
+    } else {
+      workoutType = { type: "体重", color: chartColors.bodyweight };
     }
 
     return {

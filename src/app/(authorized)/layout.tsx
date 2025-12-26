@@ -13,7 +13,7 @@ export default function DashboardLayout({
       <NavigationBar />
       <Box component="main" sx={{ paddingTop: "64px" }}>
         <TabNavigation />
-        <Container sx={{ mt: 3 }}>{children}</Container>
+        <Container sx={{ py: 3 }}>{children}</Container>
       </Box>
     </>
   );

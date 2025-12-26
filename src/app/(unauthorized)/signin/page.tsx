@@ -20,7 +20,7 @@ function SignInPage() {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
-          background: theme.gradients.purple,
+          background: theme.happyHues.button,
           position: "relative",
           overflow: "hidden",
           "&::before": {
@@ -69,7 +69,7 @@ function SignInPage() {
             >
               <Avatar
                 sx={{
-                  bgcolor: theme.customColors.purple.main,
+                  bgcolor: theme.happyHues.button,
                   width: 64,
                   height: 64,
                   mb: 2,
@@ -81,10 +81,7 @@ function SignInPage() {
                 variant="h4"
                 fontWeight="bold"
                 sx={{
-                  background: theme.gradients.purple,
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  color: theme.happyHues.button,
                   mb: 1,
                 }}
               >

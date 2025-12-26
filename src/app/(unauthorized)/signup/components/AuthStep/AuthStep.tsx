@@ -1,8 +1,8 @@
-import { EmailTextField } from "@/app/(auth)/components/EmailTextField";
-import { PasswordTextField } from "@/app/(auth)/components/PasswordTextField";
 import { Stack } from "@mui/material";
 import { Control, FieldError } from "react-hook-form";
 import { SignUpFormSchema } from "../SignUpForm/formSchema";
+import { EmailTextField } from "@/app/(unauthorized)/components/EmailTextField";
+import { PasswordTextField } from "@/app/(unauthorized)/components/PasswordTextField";
 
 interface AuthStepProps {
   control: Control<SignUpFormSchema>;

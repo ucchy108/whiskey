@@ -15,6 +15,7 @@ import {
   Timeline,
 } from "@mui/icons-material";
 import WorkoutCreateButton from "../WorkoutCreateButton/WorkoutCreateButton";
+import { chartColors } from "@/theme";
 
 interface EmptyStateProps {
   onCreateWorkout: () => void;
@@ -26,19 +27,19 @@ export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
       icon: <Psychology />,
       title: "目標を設定しよう",
       description: "小さな目標から始めて、徐々にレベルアップ",
-      color: "#9c27b0",
+      color: chartColors.chart1,
     },
     {
       icon: <Timeline />,
       title: "記録を続けよう",
       description: "継続は力なり！毎日の積み重ねが大切",
-      color: "#2196f3",
+      color: chartColors.cardio,
     },
     {
       icon: <TrendingUp />,
       title: "進捗を追跡しよう",
       description: "データで自分の成長を実感できる",
-      color: "#ff9800",
+      color: chartColors.chart2,
     },
   ];
 
@@ -58,7 +59,7 @@ export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
               width: 120,
               height: 120,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: (theme) => theme.happyHues.button,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -72,8 +73,7 @@ export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
                 right: -10,
                 bottom: -10,
                 borderRadius: "50%",
-                background:
-                  "linear-gradient(135deg, #667eea20 0%, #764ba220 100%)",
+                background: (theme) => theme.happyHues.secondary,
                 animation: "pulse 2s infinite",
               },
               "@keyframes pulse": {
@@ -215,9 +215,9 @@ export function EmptyState({ onCreateWorkout }: EmptyStateProps) {
         {/* アイコン装飾 */}
         <Box sx={{ mt: 4, opacity: 0.3 }}>
           <Stack direction="row" justifyContent="center" spacing={3}>
-            <EmojiEvents sx={{ fontSize: 32, color: "#ffd700" }} />
-            <TrendingUp sx={{ fontSize: 32, color: "#4caf50" }} />
-            <FitnessCenter sx={{ fontSize: 32, color: "#2196f3" }} />
+            <EmojiEvents sx={{ fontSize: 32, color: chartColors.gold }} />
+            <TrendingUp sx={{ fontSize: 32, color: chartColors.success }} />
+            <FitnessCenter sx={{ fontSize: 32, color: chartColors.info }} />
           </Stack>
         </Box>
       </Box>

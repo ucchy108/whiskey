@@ -15,22 +15,22 @@ export function SignUpStepper({ activeStep, steps }: SignUpStepperProps) {
       alternativeLabel
       sx={{
         "& .MuiStepIcon-root": {
-          color: "rgba(79, 172, 254, 0.3)",
+          color: "rgba(98, 70, 234, 0.3)",
           "&.Mui-active": {
-            color: theme.customColors.blue.main,
+            color: theme.happyHues.button,
           },
           "&.Mui-completed": {
-            color: theme.customColors.blue.main,
+            color: theme.happyHues.button,
           },
         },
         "& .MuiStepConnector-line": {
-          borderColor: "rgba(79, 172, 254, 0.3)",
+          borderColor: "rgba(98, 70, 234, 0.3)",
         },
         "& .Mui-active .MuiStepConnector-line": {
-          borderColor: theme.customColors.blue.main,
+          borderColor: theme.happyHues.button,
         },
         "& .Mui-completed .MuiStepConnector-line": {
-          borderColor: theme.customColors.blue.main,
+          borderColor: theme.happyHues.button,
         },
       }}
     >

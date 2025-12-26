@@ -1,5 +1,5 @@
+import { baseFormSchema } from "@/app/(unauthorized)/schema";
 import * as z from "zod";
-import { baseFormSchema } from "@/app/(auth)/schema";
 
 export const nameSchema = z.string().min(1, {
   message: "名前は必須です。",

@@ -6,7 +6,7 @@ import {
   EmojiEvents,
 } from "@mui/icons-material";
 import type { DashboardStats } from "@/repositories/statsRepository";
-import { gradients } from "@/theme";
+import { happyHuesColors } from "@/theme";
 
 type SummaryCardData = {
   title: string;
@@ -14,7 +14,7 @@ type SummaryCardData = {
   subtitle: string;
   icon: React.ReactElement;
   color: string;
-  bgGradient: string;
+  bgColor: string;
 };
 
 export function createSummaryCards({
@@ -29,32 +29,32 @@ export function createSummaryCards({
       value: totalWorkouts,
       subtitle: "回のトレーニング",
       icon: <FitnessCenter sx={{ fontSize: 32 }} />,
-      color: "#fff",
-      bgGradient: gradients.purple,
+      color: happyHuesColors.buttonText,
+      bgColor: happyHuesColors.button,
     },
     {
       title: "今週の活動",
       value: thisWeekWorkouts,
       subtitle: "回のセッション",
       icon: <LocalFireDepartment sx={{ fontSize: 32 }} />,
-      color: "#fff",
-      bgGradient: gradients.pink,
+      color: happyHuesColors.buttonText,
+      bgColor: happyHuesColors.tertiary,
     },
     {
       title: "総運動種目数",
       value: totalExercises,
       subtitle: "種目を実施",
       icon: <EmojiEvents sx={{ fontSize: 32 }} />,
-      color: "#fff",
-      bgGradient: gradients.blue,
+      color: happyHuesColors.headline,
+      bgColor: happyHuesColors.secondary,
     },
     {
       title: "累計重量",
       value: `${totalWeight}kg`,
       subtitle: "総合重量",
       icon: <TrendingUp sx={{ fontSize: 32 }} />,
-      color: "#fff",
-      bgGradient: gradients.green,
+      color: happyHuesColors.buttonText,
+      bgColor: happyHuesColors.button,
     },
   ];
 }

@@ -21,13 +21,6 @@ function WorkoutCreateButton({ onClick, name }: WorkoutCreateButtonProps) {
         borderRadius: 3,
         fontSize: "1.1rem",
         fontWeight: "bold",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        "&:hover": {
-          background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-          transform: "translateY(-2px)",
-          boxShadow: "0 8px 25px rgba(102, 126, 234, 0.3)",
-        },
-        transition: "all 0.3s ease-in-out",
       }}
     >
       {name}

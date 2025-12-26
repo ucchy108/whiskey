@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { CalendarMonth } from "@mui/icons-material";
 import type { WeeklyActivity } from "@/repositories/statsRepository";
+import { chartColors } from "@/theme";
 
 interface WeeklyActivityChartProps {
   weeklyActivities: WeeklyActivity[];
@@ -56,7 +57,7 @@ export function WeeklyActivityChart({
                   borderRadius: 4,
                   backgroundColor: "grey.200",
                   "& .MuiLinearProgress-bar": {
-                    backgroundColor: day.isToday ? "#2196f3" : "#4caf50",
+                    backgroundColor: day.isToday ? chartColors.info : chartColors.success,
                     borderRadius: 4,
                   },
                 }}

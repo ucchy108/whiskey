@@ -2,7 +2,7 @@
 
 import { memo, startTransition, useCallback } from "react";
 import NextLink from "next/link";
-import { SubmitButton } from "@/app/(auth)/components/SubmitButton";
+// import { SubmitButton } from "@/app/(auth)/components/SubmitButton";
 import { AuthStep } from "../AuthStep";
 import { AccountStep } from "../AccountStep";
 import { SignUpStepper } from "../SignUpStepper";
@@ -14,10 +14,9 @@ import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { signUpFormSchema, SignUpFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useSignUpSteps } from "../../hooks/useSignUpSteps";
-import { useTheme } from "@mui/material/styles";
+import { SubmitButton } from "@/app/(unauthorized)/components/SubmitButton";
 
 function SignUpForm() {
-  const theme = useTheme();
   const {
     control,
     handleSubmit,
@@ -110,47 +109,17 @@ function SignUpForm() {
               {isFirstStep ? (
                 <Box />
               ) : (
-                <Button
-                  onClick={handleBack}
-                  variant="outlined"
-                  sx={{
-                    borderColor: theme.customColors.blue.main,
-                    color: theme.customColors.blue.main,
-                    "&:hover": {
-                      borderColor: theme.customColors.blue.dark,
-                      bgcolor: "rgba(79, 172, 254, 0.08)",
-                    },
-                  }}
-                >
+                <Button onClick={handleBack} variant="outlined">
                   戻る
                 </Button>
               )}
 
               {isLastStep ? (
-                <SubmitButton
-                  loading={isSubmitting}
-                  sx={{
-                    background: theme.gradients.blue,
-                    "&:hover": {
-                      background: theme.gradients.blue,
-                    },
-                  }}
-                >
+                <SubmitButton loading={isSubmitting}>
                   アカウント作成
                 </SubmitButton>
               ) : (
-                <Button
-                  onClick={handleNext}
-                  variant="contained"
-                  sx={{
-                    background: theme.gradients.blue,
-                    boxShadow: "0 4px 14px 0 rgba(79, 172, 254, 0.39)",
-                    "&:hover": {
-                      background: theme.gradients.blue,
-                      boxShadow: "0 6px 20px rgba(79, 172, 254, 0.5)",
-                    },
-                  }}
-                >
+                <Button onClick={handleNext} variant="contained">
                   次へ
                 </Button>
               )}

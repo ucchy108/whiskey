@@ -8,8 +8,8 @@ export function DashboardHeader() {
     <Paper
       elevation={0}
       sx={{
-        background: theme.gradients.ocean,
-        color: "#fff",
+        background: theme.happyHues.button,
+        color: theme.happyHues.buttonText,
         p: 3,
         borderRadius: 2,
         position: "relative",

@@ -5,6 +5,7 @@ import {
   Timeline,
   Repeat,
 } from "@mui/icons-material";
+import { chartColors } from "@/theme";
 
 export interface WorkoutMetric {
   label: string;

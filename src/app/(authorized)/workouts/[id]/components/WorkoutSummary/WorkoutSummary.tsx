@@ -24,10 +24,10 @@ function WorkoutSummary({ exercises }: WorkoutSummaryProps) {
     <Card
       sx={{
         mb: 3,
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background: (theme) => theme.happyHues.button,
       }}
     >
-      <CardContent sx={{ color: "white" }}>
+      <CardContent sx={{ color: (theme) => theme.happyHues.buttonText }}>
         <Stack
           direction="row"
           alignItems="center"

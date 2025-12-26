@@ -37,10 +37,12 @@ function WorkoutItem({ workout }: WorkoutDetailProps) {
       <Card
         sx={{
           mb: 3,
-          background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+          background: (theme) => theme.happyHues.button,
         }}
       >
-        <CardContent sx={{ color: "white", textAlign: "center" }}>
+        <CardContent
+          sx={{ color: (theme) => theme.happyHues.buttonText, textAlign: "center" }}
+        >
           <Stack
             direction="row"
             alignItems="center"

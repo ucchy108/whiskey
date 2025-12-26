@@ -29,7 +29,7 @@ function NavigationBar() {
       elevation={0}
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        background: theme.gradients.purple,
+        background: theme.happyHues.button,
         backdropFilter: "blur(10px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
       }}

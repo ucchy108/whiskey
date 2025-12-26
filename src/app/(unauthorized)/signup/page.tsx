@@ -16,29 +16,9 @@ function SignUpPage() {
         alignItems: "center",
         minHeight: "100vh",
         py: 4,
-        background: theme.gradients.blue,
+        background: theme.happyHues.secondary,
         position: "relative",
         overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: "-50%",
-          right: "-10%",
-          width: "600px",
-          height: "600px",
-          background: "rgba(255, 255, 255, 0.05)",
-          borderRadius: "50%",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          bottom: "-30%",
-          left: "-5%",
-          width: "400px",
-          height: "400px",
-          background: "rgba(255, 255, 255, 0.05)",
-          borderRadius: "50%",
-        },
       }}
     >
       <Card
@@ -65,7 +45,7 @@ function SignUpPage() {
           >
             <Avatar
               sx={{
-                bgcolor: theme.customColors.blue.main,
+                bgcolor: theme.happyHues.button,
                 width: 64,
                 height: 64,
                 mb: 2,
@@ -77,10 +57,7 @@ function SignUpPage() {
               variant="h4"
               fontWeight="bold"
               sx={{
-                background: theme.gradients.blue,
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                color: theme.happyHues.button,
                 mb: 1,
               }}
             >

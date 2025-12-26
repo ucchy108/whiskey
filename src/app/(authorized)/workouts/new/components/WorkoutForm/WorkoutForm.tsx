@@ -22,16 +22,16 @@ import { workoutFormSchema, WorkoutFormSchema } from "./formSchema";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
 import { useExercises } from "../../hooks/useExercises";
-import { gradients } from "@/theme";
+import { happyHuesColors } from "@/theme";
 
-// 運動詳細カードのグラデーションカラーを順番に適用
-const detailGradients = [
-  gradients.blue,
-  gradients.green,
-  gradients.pink,
-  gradients.orange,
-  gradients.ocean,
-  gradients.purple,
+// 運動詳細カードの背景色を順番に適用
+const detailColors = [
+  happyHuesColors.button,
+  happyHuesColors.secondary,
+  happyHuesColors.tertiary,
+  happyHuesColors.button,
+  happyHuesColors.secondary,
+  happyHuesColors.tertiary,
 ];
 
 function WorkoutForm() {
@@ -153,9 +153,11 @@ function WorkoutForm() {
                   {/* カラフルなヘッダー */}
                   <Box
                     sx={{
-                      background:
-                        detailGradients[index % detailGradients.length],
-                      color: "#fff",
+                      background: detailColors[index % detailColors.length],
+                      color:
+                        index % 3 === 1
+                          ? happyHuesColors.headline
+                          : happyHuesColors.buttonText,
                       p: 2,
                       display: "flex",
                       justifyContent: "space-between",

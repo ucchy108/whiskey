@@ -9,53 +9,63 @@ const roboto = Roboto({
   display: "swap",
 });
 
-// カスタムグラデーションカラーの定義
-export const gradients = {
-  purple: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-  pink: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-  blue: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-  green: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-  orange: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-  ocean: "linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)",
+// Happy Hues Palette 6 配色定義
+// https://www.happyhues.co/palettes/6
+export const happyHuesColors = {
+  background: "#fffffe",
+  headline: "#2b2c34",
+  paragraph: "#2b2c34",
+  button: "#6246ea",
+  buttonText: "#fffffe",
+  stroke: "#2b2c34",
+  main: "#fffffe",
+  highlight: "#6246ea",
+  secondary: "#d1d1e9",
+  tertiary: "#e45858",
 } as const;
 
-// カスタムカラーパレット
-export const customColors = {
-  purple: {
-    main: "#667eea",
-    dark: "#764ba2",
-    light: "#8b9bff",
-    contrastText: "#fff",
-  },
-  pink: {
-    main: "#f093fb",
-    dark: "#f5576c",
-    light: "#ffc4ff",
-    contrastText: "#fff",
-  },
-  blue: {
-    main: "#4facfe",
-    dark: "#00f2fe",
-    light: "#82dfff",
-    contrastText: "#fff",
-  },
-  green: {
-    main: "#43e97b",
-    dark: "#38f9d7",
-    light: "#76ffac",
-    contrastText: "#fff",
-  },
+// チャート・統計用拡張カラーパレット
+// Happy Hues Palette 6の色味に基づいた補完色
+export const chartColors = {
+  // 強度・レベル表示用
+  high: "#5a3fd6", // button色の濃いバリエーション
+  medium: "#b8a7f5", // button色の薄いバリエーション
+  low: "#e8e2fc", // button色の最も薄いバリエーション
+
+  // ワークアウトタイプ用
+  strength: "#e45858", // tertiary (筋トレ)
+  cardio: "#7d6ce8", // button寄りの紫 (有酸素)
+  mixed: "#a995ee", // buttonとtertiaryの中間 (ミックス)
+  bodyweight: "#9b9ba8", // strokeベースのグレー (体重)
+
+  // チャート・グラフ用
+  chart1: "#6246ea", // button (プライマリ)
+  chart2: "#e45858", // tertiary (セカンダリ)
+  chart3: "#d1d1e9", // secondary (背景)
+  chart4: "#a68eec", // button薄め (補助1)
+  chart5: "#f08585", // tertiary薄め (補助2)
+
+  // 統計メトリクス用
+  metric1: "#6246ea", // button (青紫)
+  metric2: "#8871e9", // button薄め (ライトパープル)
+  metric3: "#d1a0e8", // 紫ピンク系
+  metric4: "#e45858", // tertiary (赤)
+
+  // 装飾・アイコン用
+  gold: "#f5c84c", // ゴールド（暖色系のアクセント）
+  success: "#6bbb6e", // 成功（緑系）
+  info: "#6246ea", // 情報（button）
 } as const;
 
 // TypeScript の型拡張
 declare module "@mui/material/styles" {
   interface Theme {
-    gradients: typeof gradients;
-    customColors: typeof customColors;
+    happyHues: typeof happyHuesColors;
+    chartColors: typeof chartColors;
   }
   interface ThemeOptions {
-    gradients?: typeof gradients;
-    customColors?: typeof customColors;
+    happyHues?: typeof happyHuesColors;
+    chartColors?: typeof chartColors;
   }
 }
 
@@ -65,17 +75,35 @@ export const theme = createTheme({
     colorSchemeSelector: "class",
   },
   palette: {
+    mode: "light",
     primary: {
-      main: customColors.purple.main,
-      dark: customColors.purple.dark,
-      light: customColors.purple.light,
+      main: happyHuesColors.highlight,
+      dark: happyHuesColors.button,
+      light: happyHuesColors.secondary,
+      contrastText: happyHuesColors.buttonText,
+    },
+    secondary: {
+      main: happyHuesColors.secondary,
+      contrastText: happyHuesColors.headline,
+    },
+    error: {
+      main: happyHuesColors.tertiary,
+      contrastText: happyHuesColors.buttonText,
+    },
+    background: {
+      default: happyHuesColors.background,
+      paper: happyHuesColors.main,
+    },
+    text: {
+      primary: happyHuesColors.headline,
+      secondary: happyHuesColors.paragraph,
     },
   },
   typography: {
     fontFamily: roboto.style.fontFamily,
   },
-  gradients,
-  customColors,
+  happyHues: happyHuesColors,
+  chartColors,
   components: {
     MuiAlert: {
       styleOverrides: {
@@ -84,7 +112,8 @@ export const theme = createTheme({
             {
               props: { severity: "info" },
               style: {
-                backgroundColor: "#60a5fa",
+                backgroundColor: happyHuesColors.button,
+                color: happyHuesColors.buttonText,
               },
             },
           ],
@@ -100,22 +129,27 @@ export const theme = createTheme({
           padding: "10px 24px",
         },
         contained: {
-          background: gradients.purple,
-          color: "#fff",
-          boxShadow: "0 4px 14px 0 rgba(102, 126, 234, 0.39)",
+          backgroundColor: happyHuesColors.button,
+          color: happyHuesColors.buttonText,
+          boxShadow: "none",
           "&:hover": {
-            background: gradients.purple,
-            boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
-            transform: "translateY(-2px)",
+            backgroundColor: happyHuesColors.button,
+            boxShadow: "none",
+            opacity: 0.9,
           },
           "&:active": {
-            transform: "translateY(0)",
+            opacity: 0.8,
           },
         },
         outlined: {
           borderWidth: 2,
+          borderColor: happyHuesColors.button,
+          color: happyHuesColors.button,
           "&:hover": {
             borderWidth: 2,
+            borderColor: happyHuesColors.button,
+            backgroundColor: happyHuesColors.secondary,
+            opacity: 0.3,
           },
         },
       },
@@ -124,6 +158,8 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
+          backgroundColor: happyHuesColors.background,
+          color: happyHuesColors.headline,
         },
       },
     },

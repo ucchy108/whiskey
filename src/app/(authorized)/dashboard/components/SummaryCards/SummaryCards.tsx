@@ -22,7 +22,7 @@ export function SummaryCards({ stats }: SummaryCardsProps) {
         <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
           <Card
             sx={{
-              background: card.bgGradient,
+              background: card.bgColor,
               color: card.color,
               position: "relative",
               overflow: "hidden",

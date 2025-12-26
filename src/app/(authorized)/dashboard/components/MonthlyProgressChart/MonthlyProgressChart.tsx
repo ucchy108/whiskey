@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { TrendingUp } from "@mui/icons-material";
 import type { MonthlyProgress } from "@/repositories/statsRepository";
+import { chartColors } from "@/theme";
 
 interface MonthlyProgressChartProps {
   monthlyProgresses: MonthlyProgress[];
@@ -51,7 +52,7 @@ export function MonthlyProgressChart({
                   borderRadius: 4,
                   backgroundColor: "grey.200",
                   "& .MuiLinearProgress-bar": {
-                    backgroundColor: "#ff9800",
+                    backgroundColor: chartColors.chart2,
                     borderRadius: 4,
                   },
                 }}
