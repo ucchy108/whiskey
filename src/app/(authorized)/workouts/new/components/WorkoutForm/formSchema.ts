@@ -1,19 +1,111 @@
 import { z } from "zod";
+import {
+  dateSchema,
+  dialySchema,
+  durationSchema,
+  exerciseIdSchema,
+  noteSchema,
+  repsSchema,
+  setsSchema,
+  weightSchema,
+} from "../../../schema";
 
-const workoutDetailSchema = z.object({
-  exerciseId: z.string().min(1, "運動種目を選択してください"),
-  sets: z.coerce.number().min(1, "セット数は1以上を入力してください"),
-  reps: z.coerce.number().min(1, "レップ数は1以上を入力してください"),
-  weight: z.coerce.number().optional(),
-  duration: z.coerce.number().optional(),
-  notes: z.string().optional(),
+const dateFormSchema = dateSchema.refine(
+  (val) => {
+    const date = new Date(val);
+    const today = new Date();
+
+    if (isNaN(date.getTime())) throw new Error("日付をきちんと設定して下さい");
+
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const todayOnly = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    if (dateOnly < todayOnly) return false;
+
+    return true;
+  },
+  {
+    message: "過去の日付は設定できません",
+  }
+);
+
+const durationFormSchema = durationSchema
+  .or(
+    z.string().transform((val) => {
+      const parsed = parseInt(val);
+
+      if (isNaN(parsed)) {
+        throw new Error("休憩時間は数値で入力してください");
+      }
+
+      return parsed;
+    })
+  )
+  .pipe(z.number().min(0, { message: "休憩時間は0秒以上で入力してください" }));
+
+const repsFormSchema = repsSchema
+  .or(
+    z.string().transform((val) => {
+      const parsed = parseInt(val);
+
+      if (isNaN(parsed)) {
+        throw new Error("回数は数値で入力してください");
+      }
+
+      return parsed;
+    })
+  )
+  .pipe(z.number().min(1, { message: "レップ数は0以上で入力してください" }));
+
+const weightFormSchema = weightSchema
+  .or(
+    z.string().transform((val) => {
+      const parsed = parseInt(val);
+
+      if (isNaN(parsed)) {
+        throw new Error("回数は数値で入力してください");
+      }
+
+      return parsed;
+    })
+  )
+  .pipe(z.number().min(1, { message: "重量は0以上で入力してください" }));
+
+const setsFormSchema = setsSchema
+  .or(
+    z.string().transform((val) => {
+      const parsed = parseInt(val);
+
+      if (isNaN(parsed)) {
+        throw new Error("回数は数値で入力してください");
+      }
+
+      return parsed;
+    })
+  )
+  .pipe(z.number().min(1, { message: "セット数は0以上で入力してください" }));
+
+const workoutDetailFormSchema = z.object({
+  exerciseId: exerciseIdSchema.min(1, "運動種目を選択してください"),
+  sets: setsFormSchema,
+  reps: repsFormSchema,
+  weight: weightFormSchema,
+  duration: durationFormSchema,
+  notes: noteSchema,
 });
+export type WorkoutDetailFormSchema = z.infer<typeof workoutDetailFormSchema>;
 
 export const workoutFormSchema = z.object({
-  date: z.string().min(1, "日付を入力してください"),
-  dialy: z.string().optional(),
-  details: z.array(workoutDetailSchema).optional(),
+  date: dateFormSchema,
+  dialy: dialySchema,
+  details: z.array(workoutDetailFormSchema).optional(),
 });
-
 export type WorkoutFormSchema = z.infer<typeof workoutFormSchema>;
-export type WorkoutDetailFormSchema = z.infer<typeof workoutDetailSchema>;

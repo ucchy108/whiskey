@@ -7,9 +7,11 @@ import { useRouter } from "next/navigation";
 import { WorkoutList } from "./components/WorkoutList";
 import { WorkoutHeader } from "./components/WorkoutHeader";
 import WorkoutCreateButton from "./components/WorkoutCreateButton/WorkoutCreateButton";
+import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
 
 export default function WorkoutPage() {
   const { workouts, loading, error } = useWorkouts();
+  const { SuccessSnackbar } = useSuccessSnackbar();
   const router = useRouter();
 
   const handleCreateWorkout = useCallback(() => {
@@ -36,15 +38,21 @@ export default function WorkoutPage() {
   }
 
   return (
-    <Stack spacing={3}>
-      <WorkoutHeader />
-      <Box sx={{ px: 2 }}>
-        <WorkoutCreateButton
-          onClick={handleCreateWorkout}
-          name="ワークアウトを作成"
+    <>
+      <Stack spacing={3}>
+        <WorkoutHeader />
+        <Box sx={{ px: 2 }}>
+          <WorkoutCreateButton
+            onClick={handleCreateWorkout}
+            name="ワークアウトを作成"
+          />
+        </Box>
+        <WorkoutList
+          workouts={workouts}
+          onCreateWorkout={handleCreateWorkout}
         />
-      </Box>
-      <WorkoutList workouts={workouts} onCreateWorkout={handleCreateWorkout} />
-    </Stack>
+      </Stack>
+      <SuccessSnackbar />
+    </>
   );
 }

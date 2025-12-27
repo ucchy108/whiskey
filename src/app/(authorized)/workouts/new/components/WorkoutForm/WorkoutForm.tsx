@@ -1,28 +1,34 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Box,
   Button,
-  TextField,
   Stack,
   Typography,
-  MenuItem,
-  IconButton,
-  Paper,
   Divider,
+  Paper,
   Chip,
+  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { workoutFormSchema, WorkoutFormSchema } from "./formSchema";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
-import { useExercises } from "../../hooks/useExercises";
+import { Exercise } from "@/repositories/workoutRepository";
+import { WorkoutDateField } from "../WorkoutDateField";
+import { DialyTextField } from "../DialyTextField";
+import { useCreateWorkout } from "../../hooks/useCreateWorkout";
 import { happyHuesColors } from "@/theme";
+import { ExerciseTextField } from "../ExerciseTextField";
+import { SetsTextField } from "../SetsTextField";
+import { RepsTextField } from "../RepsTextField";
+import { WeightTextField } from "../WeightTextField";
+import { DurationTextField } from "../DurationTextField";
+import { NotesTextField } from "../NotesTextField";
 
 // 運動詳細カードの背景色を順番に適用
 const detailColors = [
@@ -34,11 +40,16 @@ const detailColors = [
   happyHuesColors.tertiary,
 ];
 
-function WorkoutForm() {
+interface WorkoutFormProps {
+  exercises: Exercise[];
+  loading: boolean;
+}
+
+export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
   const router = useRouter();
-  const { openErrorSnackbar, ErrorSnackbar } = useErrorSnackbar();
-  const { openSuccessSnackbar, SuccessSnackbar } = useSuccessSnackbar();
-  const { exercises, loading: exercisesLoading } = useExercises();
+  const { openErrorSnackbar } = useErrorSnackbar();
+  const { openSuccessSnackbar } = useSuccessSnackbar();
+  const { createWorkout, error } = useCreateWorkout();
 
   const {
     control,
@@ -59,37 +70,28 @@ function WorkoutForm() {
     name: "details",
   });
 
+  const createDefaultWorkoutDetail = useCallback(() => {
+    append({
+      exerciseId: exercises[0].id,
+      sets: 0,
+      reps: 0,
+      weight: 0,
+      duration: 0,
+      notes: "",
+    });
+  }, [append, exercises]);
+
   const onSubmit = useCallback(
     async (values: WorkoutFormSchema) => {
-      try {
-        const response = await fetch("/api/workouts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            date: values.date,
-            dialy: values.dialy || undefined,
-            details: values.details,
-          }),
-        });
+      createWorkout(values);
+      openSuccessSnackbar("ワークアウトを作成しました");
+      router.push("/workouts");
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "ワークアウトの作成に失敗しました");
-        }
-
-        openSuccessSnackbar("ワークアウトを作成しました");
-        router.push("/workouts");
-      } catch (error) {
-        openErrorSnackbar(
-          error instanceof Error
-            ? error.message
-            : "ワークアウトの作成に失敗しました"
-        );
+      if (error) {
+        openErrorSnackbar(error);
       }
     },
-    [openErrorSnackbar, openSuccessSnackbar, router]
+    [openErrorSnackbar, openSuccessSnackbar, router, createWorkout, error]
   );
 
   return (
@@ -97,40 +99,14 @@ function WorkoutForm() {
       <Box component="form" onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3}>
           {/* 基本情報 */}
-          <Controller
-            name="date"
+          <WorkoutDateField
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                type="date"
-                label="日付"
-                fullWidth
-                required
-                error={!!errors.date}
-                helperText={errors.date?.message}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            )}
+            error={errors.date as FieldError}
           />
 
-          <Controller
-            name="dialy"
+          <DialyTextField
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="メモ"
-                multiline
-                rows={3}
-                fullWidth
-                placeholder="今日のワークアウトについてメモを残しましょう"
-                error={!!errors.dialy}
-                helperText={errors.dialy?.message}
-              />
-            )}
+            error={errors.dialy as FieldError}
           />
 
           <Divider />
@@ -194,120 +170,45 @@ function WorkoutForm() {
 
                   {/* フォーム内容 */}
                   <Stack spacing={2} sx={{ p: 2 }}>
-                    <Controller
-                      name={`details.${index}.exerciseId`}
+                    <ExerciseTextField
+                      exercises={exercises}
                       control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          select
-                          label="運動種目"
-                          fullWidth
-                          required
-                          error={!!errors.details?.[index]?.exerciseId}
-                          helperText={
-                            errors.details?.[index]?.exerciseId?.message
-                          }
-                          disabled={exercisesLoading}
-                        >
-                          {exercises.map((exercise) => (
-                            <MenuItem key={exercise.id} value={exercise.id}>
-                              {exercise.name}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      )}
+                      error={errors.details?.[index]?.exerciseId}
+                      name={`details.${index}.exerciseId`}
                     />
 
                     <Box sx={{ display: "flex", gap: 2 }}>
-                      <Controller
-                        name={`details.${index}.sets`}
+                      <SetsTextField
                         control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            type="number"
-                            label="セット数"
-                            fullWidth
-                            required
-                            inputProps={{ min: 1 }}
-                            error={!!errors.details?.[index]?.sets}
-                            helperText={errors.details?.[index]?.sets?.message}
-                          />
-                        )}
+                        error={errors.details?.[index]?.sets}
+                        name={`details.${index}.sets`}
                       />
 
-                      <Controller
-                        name={`details.${index}.reps`}
+                      <RepsTextField
                         control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            type="number"
-                            label="レップ数"
-                            fullWidth
-                            required
-                            inputProps={{ min: 1 }}
-                            error={!!errors.details?.[index]?.reps}
-                            helperText={errors.details?.[index]?.reps?.message}
-                          />
-                        )}
+                        error={errors.details?.[index]?.reps}
+                        name={`details.${index}.reps`}
                       />
                     </Box>
 
                     <Box sx={{ display: "flex", gap: 2 }}>
-                      <Controller
-                        name={`details.${index}.weight`}
+                      <WeightTextField
                         control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            type="number"
-                            label="重量 (kg)"
-                            fullWidth
-                            inputProps={{ min: 0, step: 0.5 }}
-                            error={!!errors.details?.[index]?.weight}
-                            helperText={
-                              errors.details?.[index]?.weight?.message
-                            }
-                          />
-                        )}
+                        error={errors.details?.[index]?.weight}
+                        name={`details.${index}.weight`}
                       />
 
-                      <Controller
-                        name={`details.${index}.duration`}
+                      <DurationTextField
                         control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            type="number"
-                            label="時間 (秒)"
-                            fullWidth
-                            inputProps={{ min: 0 }}
-                            error={!!errors.details?.[index]?.duration}
-                            helperText={
-                              errors.details?.[index]?.duration?.message
-                            }
-                          />
-                        )}
+                        error={errors.details?.[index]?.duration}
+                        name={`details.${index}.duration`}
                       />
                     </Box>
 
-                    <Controller
-                      name={`details.${index}.notes`}
+                    <NotesTextField
                       control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="メモ"
-                          multiline
-                          rows={2}
-                          fullWidth
-                          placeholder="フォームや感想など"
-                          error={!!errors.details?.[index]?.notes}
-                          helperText={errors.details?.[index]?.notes?.message}
-                        />
-                      )}
+                      error={errors.details?.[index]?.notes}
+                      name={`details.${index}.notes`}
                     />
                   </Stack>
                 </Paper>
@@ -316,17 +217,8 @@ function WorkoutForm() {
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}
-                onClick={() =>
-                  append({
-                    exerciseId: "",
-                    sets: 0,
-                    reps: 0,
-                    weight: undefined,
-                    duration: undefined,
-                    notes: "",
-                  })
-                }
-                disabled={exercisesLoading}
+                onClick={createDefaultWorkoutDetail}
+                disabled={loading}
               >
                 運動を追加
               </Button>
@@ -350,11 +242,6 @@ function WorkoutForm() {
           </Box>
         </Stack>
       </Box>
-
-      <ErrorSnackbar />
-      <SuccessSnackbar />
     </>
   );
 }
-
-export default memo(WorkoutForm);

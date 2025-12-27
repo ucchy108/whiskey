@@ -1,1 +1,1 @@
-export { default as WorkoutForm } from "./WorkoutForm";
+export { WorkoutForm } from "./WorkoutForm";

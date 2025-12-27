@@ -1,6 +1,6 @@
-import { EmailSchema } from "@/app/(auth)/schema";
 import { TextField } from "@mui/material";
 import { Control, Controller, FieldError, FieldPath } from "react-hook-form";
+import { EmailSchema } from "../../schema";
 
 interface EmailTextFieldProps<Schema extends Record<"email", EmailSchema>> {
   control: Control<Schema>;

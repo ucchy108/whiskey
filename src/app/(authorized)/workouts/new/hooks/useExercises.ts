@@ -1,8 +1,8 @@
+import { Exercise } from "@/repositories/workoutRepository";
 import { useEffect, useState } from "react";
-import type { ExerciseModel } from "@/generated/prisma/models";
 
 export function useExercises() {
-  const [exercises, setExercises] = useState<ExerciseModel[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

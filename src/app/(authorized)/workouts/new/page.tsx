@@ -4,9 +4,15 @@ import { Box, Typography, Paper } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { WorkoutForm } from "./components/WorkoutForm";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import { useExercises } from "./hooks/useExercises";
+import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
+import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
 
 export default function NewWorkoutPage() {
   const theme = useTheme();
+  const { exercises, loading } = useExercises();
+  const { ErrorSnackbar } = useErrorSnackbar();
+  const { SuccessSnackbar } = useSuccessSnackbar();
 
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
@@ -44,7 +50,10 @@ export default function NewWorkoutPage() {
         </Box>
       </Paper>
 
-      <WorkoutForm />
+      <WorkoutForm exercises={exercises} loading={loading} />
+
+      <SuccessSnackbar />
+      <ErrorSnackbar />
     </Box>
   );
 }

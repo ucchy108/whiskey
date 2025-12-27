@@ -139,13 +139,15 @@ docs/work-logs/YYYY-MM-DD-<task-name>.md
 
 ### 1. 作業開始時（タスク開始直後）
 - ✅ ユーザーが新しいタスク・機能の実装を依頼した直後
-- ✅ 最初のツール（Read/Glob/Grep等）を実行する前に作業ログを作成
+- ✅ 最初のツール（Read/Glob/Grep等）を実行する**前に**作業ログを作成
 - ✅ 作業の目的と計画を記録
+- ✅ **TodoWriteで「作業ログ更新」todoを自動追加**
 
 ### 2. 作業完了時（タスク完了直後）
 - ✅ すべてのファイル編集が完了した時点
-- ✅ ユーザーに「完了しました」と報告する前に作業ログを更新
+- ✅ ユーザーに「完了しました」と報告する**前に**作業ログを更新
 - ✅ 完了サマリーを記録
+- ✅ **TodoWriteで「作業ログ更新」todoをcompletedに更新**
 
 ### 3. 重要な変更時（複数ファイル編集時）
 - ✅ 2つ以上のファイルを編集した場合
@@ -157,12 +159,80 @@ docs/work-logs/YYYY-MM-DD-<task-name>.md
 - ❌ ユーザーの明示的な指示を待ってはいけません
 - ❌ 作業開始時は計画を立てた直後、作業完了時はすべての編集完了直後に即座に実行してください
 
-**実行フロー例:**
+**実行フロー例（TodoWrite統合版）:**
 1. ユーザー: 「WorkoutChartのロジックをカスタムフックに切り出して」
-2. あなた: **即座に**作業ログを作成（作業開始の記録）
-3. あなた: コードのリファクタリング実施
-4. あなた: **即座に**作業ログを更新（完了サマリー追加）
-5. あなた: 「リファクタリングが完了しました」とユーザーに報告
+2. あなた: **即座に**work-logスキルを実行（作業開始の記録）
+3. あなた: **即座に**TodoWriteで「WorkoutChartリファクタリング」と「作業ログ更新」を追加
+4. あなた: コードのリファクタリング実施
+5. あなた: **即座に**TodoWriteで「作業ログ更新」をin_progressに変更
+6. あなた: **即座に**work-logスキルを実行（完了サマリー追加）
+7. あなた: **即座に**TodoWriteで「作業ログ更新」をcompletedに変更
+8. あなた: 「リファクタリングが完了しました」とユーザーに報告
+
+## TodoWriteとの統合
+
+### タスク開始時の自動Todo追加
+
+作業ログを作成した直後に、TodoWriteツールで以下のtodoを追加してください：
+
+```typescript
+{
+  "todos": [
+    {
+      "content": "[実タスク内容]",  // 例: "WorkoutFormリファクタリング"
+      "status": "in_progress",
+      "activeForm": "[実タスク内容]中"  // 例: "WorkoutFormリファクタリング中"
+    },
+    {
+      "content": "作業ログを完了時に更新",
+      "status": "pending",
+      "activeForm": "作業ログを更新中"
+    }
+  ]
+}
+```
+
+### タスク完了時のTodo更新
+
+作業ログを更新する前に、以下の手順でTodoWriteを使用してください：
+
+1. 「作業ログを完了時に更新」todoを`in_progress`に変更
+2. work-logスキルを実行（完了サマリー追加）
+3. 「作業ログを完了時に更新」todoを`completed`に変更
+
+**実装例:**
+
+```typescript
+// 1. タスク開始時
+TodoWrite({
+  todos: [
+    { content: "WorkoutFormリファクタリング", status: "in_progress", activeForm: "WorkoutFormリファクタリング中" },
+    { content: "作業ログを完了時に更新", status: "pending", activeForm: "作業ログを更新中" }
+  ]
+});
+
+// 2. タスク完了時
+TodoWrite({
+  todos: [
+    { content: "WorkoutFormリファクタリング", status: "completed", activeForm: "WorkoutFormリファクタリング中" },
+    { content: "作業ログを完了時に更新", status: "in_progress", activeForm: "作業ログを更新中" }
+  ]
+});
+
+// 3. work-logスキル実行後
+TodoWrite({
+  todos: [
+    { content: "WorkoutFormリファクタリング", status: "completed", activeForm: "WorkoutFormリファクタリング中" },
+    { content: "作業ログを完了時に更新", status: "completed", activeForm: "作業ログを更新中" }
+  ]
+});
+```
+
+### 利点
+
+- **視覚的リマインダー**: ユーザーが進捗を視覚的に確認できる
+- **忘れ防止**: 作業ログの更新を忘れることがなくなる
+- **透明性**: 作業の各ステップがtodoリストで明確になる
 
 ## 注意事項
 

@@ -405,6 +405,99 @@ DATABASE_URL=mysql://whiskey:password@localhost:3306/whiskey
 - **MySQL**: localhost:3306
 - **Prisma Studio**: http://localhost:5555（起動時）
 
+## 🔴 CRITICAL: 作業ログの自動記録（絶対遵守）
+
+### 実行タイミング（優先度: 最高）
+
+**Rule 1: タスク開始時（最優先）**
+```
+user: [任意のタスク依頼]
+↓
+assistant: [Skillツール: work-log] ← 必ず最初に実行
+assistant: [TodoWrite] ← 「作業ログ更新」todoを追加
+assistant: [その他のツール実行...]
+```
+
+**Rule 2: タスク完了時（最優先）**
+```
+assistant: [最後のEdit/Write]
+↓
+assistant: [Skillツール: work-log] ← 報告前に必ず実行
+assistant: [TodoWrite] ← 「作業ログ更新」をcompleted
+assistant: 「〜が完了しました」
+```
+
+### セルフチェック（毎回実行）
+
+各応答を送信する前に以下を確認：
+
+1. **新しいタスクを受け取った？**
+   - YES → work-log実行済み？ → NO → **今すぐ実行**
+
+2. **ファイルを編集した？（2つ以上）**
+   - YES → work-log実行済み？ → NO → **今すぐ実行**
+
+3. **完了報告する？**
+   - YES → work-log実行済み？ → NO → **今すぐ実行**
+
+### TodoWriteとの統合
+
+**タスク開始時の自動Todo追加:**
+```typescript
+{
+  "todos": [
+    {
+      "content": "[実タスク内容]",
+      "status": "in_progress",
+      "activeForm": "[実タスク内容]中"
+    },
+    {
+      "content": "作業ログを完了時に更新",
+      "status": "pending",
+      "activeForm": "作業ログを更新中"
+    }
+  ]
+}
+```
+
+**タスク完了時のTodo更新:**
+1. 最後のtodo「作業ログを完了時に更新」を`in_progress`に変更
+2. work-logスキルを実行
+3. todoを`completed`に変更
+
+### 実行例
+
+❌ **悪い例（従来）**:
+```
+user: WorkoutFormをリファクタリングして
+assistant: WorkoutFormを読み込みます
+assistant: [Read]
+assistant: リファクタリングしました
+assistant: [Edit]
+assistant: 完了しました
+```
+
+✅ **良い例（改善後）**:
+```
+user: WorkoutFormをリファクタリングして
+assistant: [Skill: work-log "WorkoutFormリファクタリング開始"]
+assistant: [TodoWrite: "WorkoutFormリファクタリング", "作業ログ更新"]
+assistant: WorkoutFormを読み込みます
+assistant: [Read]
+assistant: リファクタリングしました
+assistant: [Edit]
+assistant: [Skill: work-log "WorkoutFormリファクタリング完了"]
+assistant: [TodoWrite: "作業ログ更新" → completed]
+assistant: 完了しました
+```
+
+### 禁止事項
+
+- ❌ work-logの実行をスキップしない
+- ❌ 「作業ログを記録しますか？」と確認しない
+- ❌ ユーザーの指示を待たない
+- ❌ 作業ログの記録を忘れない
+
 ## Claude Code開発ガイドライン
 
 ### コマンド実行の原則
