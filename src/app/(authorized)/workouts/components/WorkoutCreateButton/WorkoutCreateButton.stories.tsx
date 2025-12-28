@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import WorkoutCreateButton from "./WorkoutCreateButton";
 
 const meta = {
-  title: "Dashboard/WorkoutCreateButton",
+  title: "Workout/WorkoutCreateButton",
   component: WorkoutCreateButton,
   tags: ["autodocs"],
   args: {

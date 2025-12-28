@@ -3,7 +3,7 @@ import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutWithDetails } from "@/repositories/workoutRepository";
 
 const meta = {
-  title: "Dashboard/WorkoutCard",
+  title: "Workout/WorkoutCard",
   component: WorkoutCard,
   tags: ["autodocs"],
   decorators: [

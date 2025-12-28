@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { EmptyState } from "./EmptyState";
 
 const meta = {
-  title: "Dashboard/EmptyState",
+  title: "Workout/EmptyState",
   component: EmptyState,
   tags: ["autodocs"],
   args: {
