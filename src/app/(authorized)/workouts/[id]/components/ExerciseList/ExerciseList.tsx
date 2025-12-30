@@ -1,15 +1,15 @@
 import { memo } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import { FitnessCenter } from "@mui/icons-material";
-import { WorkoutDetailWithExercise } from "@/app/(dashboard)/dashboard/types";
 import { ExerciseItem } from "../ExerciseItem";
+import { WorkoutDetail } from "@/repositories/workoutRepository";
 
 interface ExerciseListProps {
-  exercises: WorkoutDetailWithExercise[];
+  workoutDetails: WorkoutDetail[];
 }
 
-function ExerciseList({ exercises }: ExerciseListProps) {
-  if (!exercises || exercises.length === 0) {
+function ExerciseList({ workoutDetails }: ExerciseListProps) {
+  if (!workoutDetails || workoutDetails.length === 0) {
     return null;
   }
 
@@ -21,17 +21,17 @@ function ExerciseList({ exercises }: ExerciseListProps) {
           トレーニング詳細
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          ({exercises.length}種目)
+          ({workoutDetails.length}種目)
         </Typography>
       </Stack>
 
       <Box>
-        {exercises.map((detail, index) => (
+        {workoutDetails.map((detail, index) => (
           <ExerciseItem
             key={detail.id}
             detail={detail}
             index={index}
-            isLast={index === exercises.length - 1}
+            isLast={index === workoutDetails.length - 1}
           />
         ))}
       </Box>

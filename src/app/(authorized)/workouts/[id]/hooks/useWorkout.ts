@@ -19,7 +19,7 @@ export const useWorkout = (workoutId: string): WorkoutReturn => {
         throw new Error("ワークアウトの取得に失敗しました");
       }
       const data = await response.json();
-      setWorkout(data);
+      setWorkout(data.workout);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {

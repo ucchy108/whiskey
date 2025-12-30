@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { workoutService } from "@/services/WorkoutService";
 
 export async function GET() {
@@ -25,7 +25,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -36,10 +36,7 @@ export async function POST(request: Request) {
 
     // バリデーション
     if (!date) {
-      return NextResponse.json(
-        { error: "Date is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Date is required" }, { status: 400 });
     }
 
     // 詳細がある場合とない場合で処理を分岐

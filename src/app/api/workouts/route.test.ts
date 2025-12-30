@@ -46,10 +46,8 @@ describe("GET /api/workouts", () => {
         },
       ];
 
-      mockedAuth.mockResolvedValue(mockSession as any);
-      mockedWorkoutService.getWorkoutsByUserId.mockResolvedValue(
-        mockWorkouts as any
-      );
+      mockedAuth.mockResolvedValue(mockSession);
+      mockedWorkoutService.getWorkoutsByUserId.mockResolvedValue(mockWorkouts);
 
       // Act
       const response = await GET();
@@ -81,7 +79,7 @@ describe("GET /api/workouts", () => {
         },
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedWorkoutService.getWorkoutsByUserId.mockResolvedValue([]);
 
       // Act
@@ -121,7 +119,7 @@ describe("GET /api/workouts", () => {
         },
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
 
       // Act
       const response = await GET();
@@ -145,7 +143,7 @@ describe("GET /api/workouts", () => {
         },
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedWorkoutService.getWorkoutsByUserId.mockRejectedValue(
         new Error("Database error")
       );

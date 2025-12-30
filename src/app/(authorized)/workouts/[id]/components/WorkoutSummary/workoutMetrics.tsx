@@ -5,7 +5,7 @@ import {
   Timeline,
   Repeat,
 } from "@mui/icons-material";
-import { chartColors } from "@/theme";
+import { happyHuesColors } from "@/theme";
 
 export interface WorkoutMetric {
   label: string;
@@ -34,28 +34,28 @@ export function createWorkoutMetrics({
       value: totalExercises,
       unit: "種目",
       icon: <FitnessCenter />,
-      color: "#1976d2",
+      color: happyHuesColors.button,
     },
     {
       label: "総セット数",
       value: totalSets,
       unit: "セット",
       icon: <Repeat />,
-      color: "#388e3c",
+      color: happyHuesColors.tertiary,
     },
     {
       label: "総レップ数",
       value: totalReps,
       unit: "回",
       icon: <Timeline />,
-      color: "#f57c00",
+      color: happyHuesColors.paragraph,
     },
     {
       label: "総重量",
       value: totalWeight,
       unit: "kg",
       icon: <TrendingUp />,
-      color: "#d32f2f",
+      color: happyHuesColors.button,
     },
   ];
 }

@@ -1,15 +1,6 @@
-import { memo } from "react";
-import {
-  Card,
-  CardContent,
-  Container,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { Assessment } from "@mui/icons-material";
+import { Container, Paper, Stack, Typography } from "@mui/material";
 import { WorkoutHeader } from "../WorkoutHeader";
-import { WorkoutMemo } from "../WorkoutMemo";
+import { WorkoutDialy } from "../WorkoutDialy";
 import { ExerciseList } from "../ExerciseList";
 import { WorkoutSummary } from "../WorkoutSummary";
 import { WorkoutWithDetails } from "@/repositories/workoutRepository";
@@ -18,7 +9,7 @@ type WorkoutDetailProps = {
   workout: WorkoutWithDetails;
 };
 
-function WorkoutItem({ workout }: WorkoutDetailProps) {
+export function WorkoutItem({ workout }: WorkoutDetailProps) {
   if (!workout || !workout.Detail) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
@@ -32,51 +23,13 @@ function WorkoutItem({ workout }: WorkoutDetailProps) {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* ヘッダー部分 */}
-      <Card
-        sx={{
-          mb: 3,
-          background: (theme) => theme.happyHues.button,
-        }}
-      >
-        <CardContent
-          sx={{ color: (theme) => theme.happyHues.buttonText, textAlign: "center" }}
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={2}
-            justifyContent="center"
-            mb={1}
-          >
-            <Assessment sx={{ fontSize: 32 }} />
-            <Typography variant="h4" fontWeight="bold">
-              ワークアウトレポート
-            </Typography>
-          </Stack>
-          <WorkoutHeader date={workout.date} />
-        </CardContent>
-      </Card>
-
-      {/* サマリーカード */}
-      <WorkoutSummary exercises={workout.Detail} />
-
-      {/* メモ（ある場合） */}
-      {workout.dialy && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <WorkoutMemo memo={workout.dialy} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* エクササイズリスト */}
-      <ExerciseList exercises={workout.Detail} />
+    <Container maxWidth="lg">
+      <Stack spacing={4}>
+        <WorkoutHeader date={new Date(workout.date)} />
+        <WorkoutSummary exercises={workout.Detail} />
+        {workout.dialy && <WorkoutDialy memo={workout.dialy} />}
+        <ExerciseList workoutDetails={workout.Detail} />
+      </Stack>
     </Container>
   );
 }
-
-const memoizedWorkoutItem = memo(WorkoutItem);
-
-export { memoizedWorkoutItem as WorkoutItem };

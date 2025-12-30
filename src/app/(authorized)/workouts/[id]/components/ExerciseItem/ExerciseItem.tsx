@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Box,
   Card,
@@ -23,7 +22,7 @@ interface ExerciseItemProps {
   isLast: boolean;
 }
 
-function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
+export function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
   const totalVolume = (detail.weight || 0) * detail.sets * detail.reps;
   const maxVolume = 1000; // 仮の最大値、実際のデータに基づいて調整
   const volumeProgress = Math.min((totalVolume / maxVolume) * 100, 100);
@@ -140,7 +139,3 @@ function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
     </Card>
   );
 }
-
-const MemoizedExerciseItem = memo(ExerciseItem);
-
-export { MemoizedExerciseItem as ExerciseItem };
