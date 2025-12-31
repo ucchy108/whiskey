@@ -1,17 +1,34 @@
 "use client";
 
+import {
+  Box,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { EditHeader } from "./components/EditHeader";
+import { WorkoutForm } from "./components/WorkoutForm";
 import { useParams } from "next/navigation";
-import { Box, CircularProgress, Container, Typography } from "@mui/material";
-import { WorkoutItem } from "./components/WorkoutItem";
 import { useWorkout } from "./hooks/useWorkout";
+import { useExercises } from "./hooks/useExercises";
 
-export default function WorkoutDetailPage() {
+export default function WorkoutEditPage() {
   const params = useParams();
   const workoutId = params.id as string;
 
-  const { workout, loading, error } = useWorkout(workoutId);
+  const {
+    workout,
+    loading: workoutLoading,
+    error: workoutError,
+  } = useWorkout(workoutId);
+  const {
+    exercises,
+    loading: exercisesLoading,
+    error: exercisesError,
+  } = useExercises();
 
-  if (loading) {
+  if (workoutLoading || exercisesLoading) {
     return (
       <Box
         sx={{
@@ -27,7 +44,7 @@ export default function WorkoutDetailPage() {
     );
   }
 
-  if (error) {
+  if (workoutError || exercisesError) {
     return (
       <Box
         sx={{
@@ -39,7 +56,7 @@ export default function WorkoutDetailPage() {
         }}
       >
         <Typography variant="h6" color="error">
-          {error}
+          {workoutError || exercisesError}
         </Typography>
       </Box>
     );
@@ -50,8 +67,11 @@ export default function WorkoutDetailPage() {
   }
 
   return (
-    <Container maxWidth="lg">
-      <WorkoutItem workout={workout} />;
+    <Container maxWidth="md" sx={{ py: 3 }}>
+      <Stack spacing={4}>
+        <EditHeader />
+        <WorkoutForm workout={workout} exercises={exercises} />
+      </Stack>
     </Container>
   );
 }

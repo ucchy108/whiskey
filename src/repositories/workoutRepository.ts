@@ -115,11 +115,40 @@ export const workoutRepository = {
     data: {
       date?: Date;
       dialy?: string;
+      details?: {
+        id: string;
+        exerciseId: string;
+        sets: number;
+        reps: number;
+        weight?: number;
+        duration?: number;
+        notes?: string;
+      }[];
+      deleteIds?: string[];
     }
   ): Promise<WorkoutModel> {
     return await prisma.workout.update({
       where: { id },
-      data,
+      data: {
+        Detail: {
+          deleteMany: { id: { in: data.deleteIds } },
+          create: data.details,
+          update:
+            data.details
+              ?.filter((detail) => detail.id)
+              .map((detail) => ({
+                where: { id: detail.id! },
+                data: {
+                  exerciseId: detail.exerciseId,
+                  sets: detail.sets,
+                  reps: detail.reps,
+                  weight: detail.weight,
+                  duration: detail.duration,
+                  notes: detail.notes,
+                },
+              })) || [],
+        },
+      },
     });
   },
 

@@ -6,8 +6,9 @@ import { SignInForm } from "./components/SignInForm/SignInForm";
 import { useSuccessNotification } from "./hooks/useSuccessNotification";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
+import { Suspense } from "react";
 
-function SignInPage() {
+function SignInPageContent() {
   const { SuccessSnackbar } = useSuccessNotification();
   const { ErrorSnackbar } = useErrorSnackbar();
   const theme = useTheme();
@@ -98,6 +99,14 @@ function SignInPage() {
       <SuccessSnackbar />
       <ErrorSnackbar />
     </>
+  );
+}
+
+function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInPageContent />
+    </Suspense>
   );
 }
 

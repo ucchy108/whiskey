@@ -23,13 +23,11 @@ export function WorkoutItem({ workout }: WorkoutDetailProps) {
   }
 
   return (
-    <Container maxWidth="lg">
-      <Stack spacing={4}>
-        <WorkoutHeader date={new Date(workout.date)} />
-        <WorkoutSummary exercises={workout.Detail} />
-        {workout.dialy && <WorkoutDialy memo={workout.dialy} />}
-        <ExerciseList workoutDetails={workout.Detail} />
-      </Stack>
-    </Container>
+    <Stack spacing={4}>
+      <WorkoutHeader date={new Date(workout.date)} />
+      <WorkoutSummary exercises={workout.Detail} />
+      {workout.dialy && <WorkoutDialy memo={workout.dialy} />}
+      <ExerciseList workoutDetails={workout.Detail} />
+    </Stack>
   );
 }

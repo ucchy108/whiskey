@@ -2,6 +2,7 @@ import { GET } from "./route";
 import { statsService } from "@/services/StatsService";
 import { auth } from "@/lib/auth/auth";
 import { vi } from "vitest";
+import type { Session } from "next-auth";
 
 // StatsServiceとauthをモック
 vi.mock("@/services/StatsService", () => ({
@@ -25,12 +26,13 @@ describe("GET /api/dashboard/stats", () => {
   describe("正常系", () => {
     it("認証済みユーザーのダッシュボード統計を取得できる", async () => {
       // Arrange
-      const mockSession = {
+      const mockSession: Session = {
         user: {
           id: "user-1",
           name: "Test User",
           email: "test@example.com",
         },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
       const mockStats = {
@@ -40,7 +42,7 @@ describe("GET /api/dashboard/stats", () => {
         totalWeight: 5000,
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
 
       // Act
@@ -57,12 +59,13 @@ describe("GET /api/dashboard/stats", () => {
 
     it("統計が0件の場合は全て0を返す", async () => {
       // Arrange
-      const mockSession = {
+      const mockSession: Session = {
         user: {
           id: "user-1",
           name: "Test User",
           email: "test@example.com",
         },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
       const mockStats = {
@@ -72,7 +75,7 @@ describe("GET /api/dashboard/stats", () => {
         totalWeight: 0,
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
 
       // Act
@@ -102,9 +105,11 @@ describe("GET /api/dashboard/stats", () => {
 
     it("ユーザー情報がない場合は401エラーを返す", async () => {
       // Arrange
-      const mockSession = {};
+      const mockSession: Session = {
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
 
       // Act
       const response = await GET();
@@ -118,14 +123,15 @@ describe("GET /api/dashboard/stats", () => {
 
     it("ユーザーIDがない場合は401エラーを返す", async () => {
       // Arrange
-      const mockSession = {
+      const mockSession: Session = {
         user: {
           name: "Test User",
           email: "test@example.com",
         },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
 
       // Act
       const response = await GET();
@@ -141,15 +147,16 @@ describe("GET /api/dashboard/stats", () => {
   describe("サーバーエラー", () => {
     it("予期しないエラーが発生した場合は500エラーを返す", async () => {
       // Arrange
-      const mockSession = {
+      const mockSession: Session = {
         user: {
           id: "user-1",
           name: "Test User",
           email: "test@example.com",
         },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedStatsService.getDashboardStats.mockRejectedValue(
         new Error("Database error")
       );
@@ -167,12 +174,13 @@ describe("GET /api/dashboard/stats", () => {
   describe("レスポンス形式", () => {
     it("レスポンスに必要なフィールドが含まれている", async () => {
       // Arrange
-      const mockSession = {
+      const mockSession: Session = {
         user: {
           id: "user-1",
           name: "Test User",
           email: "test@example.com",
         },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       };
 
       const mockStats = {
@@ -182,7 +190,7 @@ describe("GET /api/dashboard/stats", () => {
         totalWeight: 5000,
       };
 
-      mockedAuth.mockResolvedValue(mockSession as any);
+      mockedAuth.mockResolvedValue(mockSession);
       mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
 
       // Act

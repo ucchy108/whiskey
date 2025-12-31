@@ -41,17 +41,15 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       exclude: ["node_modules", ".next", "src/generated/**", "**/*.config.*"],
     },
-    // 並列実行を無効化（Repository層テストはDBを使うため）
-    threads: false,
-    isolate: false,
-    fileParallelism: false,
     // モックリセット
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,
     // Prisma WASM対策
-    deps: {
-      inline: ["@prisma/client"],
+    server: {
+      deps: {
+        inline: ["@prisma/client"],
+      },
     },
     // projects: [{
     //   extends: true,

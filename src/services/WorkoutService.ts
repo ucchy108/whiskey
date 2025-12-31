@@ -101,6 +101,16 @@ export class WorkoutService {
     data: {
       date?: Date;
       dialy?: string;
+      details?: {
+        id: string;
+        exerciseId: string;
+        sets: number;
+        reps: number;
+        weight?: number;
+        duration?: number;
+        notes?: string;
+      }[];
+      deleteIds?: string[];
     }
   ): Promise<WorkoutModel> {
     // 権限チェック: ユーザーのワークアウトか確認
@@ -123,7 +133,10 @@ export class WorkoutService {
    * @returns 削除されたワークアウト
    * @throws エラーメッセージ
    */
-  async deleteWorkout(workoutId: string, userId: string): Promise<WorkoutModel> {
+  async deleteWorkout(
+    workoutId: string,
+    userId: string
+  ): Promise<WorkoutModel> {
     // 権限チェック: ユーザーのワークアウトか確認
     const existingWorkout = await workoutRepository.findByIdAndUserId(
       workoutId,

@@ -218,7 +218,7 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
                 variant="outlined"
                 startIcon={<AddIcon />}
                 onClick={createDefaultWorkoutDetail}
-                disabled={loading}
+                loading={loading}
               >
                 運動を追加
               </Button>
@@ -236,8 +236,8 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
             >
               キャンセル
             </Button>
-            <Button type="submit" variant="contained" disabled={isSubmitting}>
-              {isSubmitting ? "作成中..." : "作成"}
+            <Button type="submit" variant="contained" loading={isSubmitting}>
+              作成
             </Button>
           </Box>
         </Stack>

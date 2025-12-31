@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Paper } from "@mui/material";
+import { Box, Typography, Paper, Container } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { WorkoutForm } from "./components/WorkoutForm";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
@@ -15,7 +15,7 @@ export default function NewWorkoutPage() {
   const { SuccessSnackbar } = useSuccessSnackbar();
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
+    <Container maxWidth="md" sx={{ py: 3 }}>
       {/* ヘッダー */}
       <Paper
         elevation={0}
@@ -54,6 +54,6 @@ export default function NewWorkoutPage() {
 
       <SuccessSnackbar />
       <ErrorSnackbar />
-    </Box>
+    </Container>
   );
 }
