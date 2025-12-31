@@ -28,7 +28,7 @@ const durationFormSchema = durationSchema
       const parsed = parseInt(val);
 
       if (isNaN(parsed)) {
-        throw new Error("休憩時間は数値で入力してください");
+        return 0;
       }
 
       return parsed;
@@ -42,7 +42,7 @@ const repsFormSchema = repsSchema
       const parsed = parseInt(val);
 
       if (isNaN(parsed)) {
-        throw new Error("回数は数値で入力してください");
+        return 0;
       }
 
       return parsed;
@@ -56,7 +56,7 @@ const weightFormSchema = weightSchema
       const parsed = parseInt(val);
 
       if (isNaN(parsed)) {
-        throw new Error("回数は数値で入力してください");
+        return 0;
       }
 
       return parsed;
@@ -70,7 +70,7 @@ const setsFormSchema = setsSchema
       const parsed = parseInt(val);
 
       if (isNaN(parsed)) {
-        throw new Error("回数は数値で入力してください");
+        return 0;
       }
 
       return parsed;

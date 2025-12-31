@@ -26,6 +26,9 @@ import { ExerciseTextField } from "../ExerciseTextField";
 import { happyHuesColors } from "@/theme";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import { useUpdateWorkout } from "../../hooks/useUpdateWorkout";
+import { useSuccessSnackbar } from "@/app/hooks/useSuccessSnackbar";
+import { useErrorSnackbar } from "@/app/hooks/useErrorSnackbar";
 
 // 運動詳細カードの背景色を順番に適用
 const detailColors = [
@@ -44,6 +47,9 @@ interface WorkoutFormProps {
 
 export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
   const router = useRouter();
+  const { updateWorkout, error } = useUpdateWorkout();
+  const { openSuccessSnackbar } = useSuccessSnackbar();
+  const { openErrorSnackbar } = useErrorSnackbar();
 
   const {
     control,
@@ -93,9 +99,24 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
       const deleteIds = originalDetailIds.filter(
         (id) => !submittedDetailIds.includes(id)
       );
-      console.log(deleteIds);
+
+      updateWorkout(value, deleteIds);
+      openSuccessSnackbar("ワークアウトを更新しました");
+      router.push(`/workouts/${workout.id}`);
+
+      if (error) {
+        openErrorSnackbar(error);
+      }
     },
-    [workout.Detail]
+    [
+      workout.Detail,
+      workout.id,
+      updateWorkout,
+      openSuccessSnackbar,
+      router,
+      error,
+      openErrorSnackbar,
+    ]
   );
 
   return (

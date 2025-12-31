@@ -47,7 +47,14 @@ export async function PATCH(
     const { id: workoutId } = await params;
     const body = await req.json();
 
-    await workoutService.updateWorkout(workoutId, session.user.id, body);
+    // dateが文字列の場合、Date型に変換
+    const updateData = {
+      ...body,
+      date: body.date ? new Date(body.date) : undefined,
+    };
+
+    console.log("Updating workout with data:", updateData);
+    await workoutService.updateWorkout(workoutId, session.user.id, updateData);
 
     return NextResponse.json(
       { message: "Workout updated successfully" },

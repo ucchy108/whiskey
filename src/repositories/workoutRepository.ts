@@ -133,8 +133,8 @@ export const workoutRepository = {
         date: data.date,
         dialy: data.dialy,
         Detail: {
-          deleteMany: { id: { in: data.deleteIds } },
-          create: data.details,
+          deleteMany: { id: { in: data.deleteIds || [] } },
+          create: data.details?.filter((detail) => !detail.id) || [],
           update:
             data.details
               ?.filter((detail) => detail.id)
