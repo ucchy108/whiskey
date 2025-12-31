@@ -126,7 +126,7 @@ describe("WorkoutService", () => {
   describe("createWorkout", () => {
     const createData = {
       date: new Date("2024-01-20"),
-      memo: "New workout",
+      dialy: "New workout",
     };
 
     it("ワークアウトを作成できる", async () => {
@@ -138,7 +138,7 @@ describe("WorkoutService", () => {
       expect(mockedWorkoutRepository.create).toHaveBeenCalledWith({
         userId: mockUserId,
         date: createData.date,
-        memo: createData.memo,
+        dialy: createData.dialy,
       });
     });
 
@@ -151,7 +151,7 @@ describe("WorkoutService", () => {
       expect(mockedWorkoutRepository.create).toHaveBeenCalledWith({
         userId: mockUserId,
         date: dataWithoutMemo.date,
-        memo: undefined,
+        dialy: undefined,
       });
     });
   });

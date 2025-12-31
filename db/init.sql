@@ -1,3 +1,4 @@
--- Grant all privileges to whiskey user for Prisma migrations
+CREATE DATABASE IF NOT EXISTS whiskey;
+CREATE DATABASE IF NOT EXISTS whiskey_test;
 GRANT ALL PRIVILEGES ON *.* TO 'whiskey'@'%';
 FLUSH PRIVILEGES;

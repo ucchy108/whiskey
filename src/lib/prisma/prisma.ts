@@ -1,8 +1,8 @@
-import "dotenv/config";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../../generated/prisma/client";
 
 // DATABASE_URLをパースして接続情報を取得
+// Note: dotenv/configはvitest.config.tsまたはNext.js環境で読み込まれる
 const databaseUrl = process.env.DATABASE_URL || "";
 const url = new URL(databaseUrl);
 

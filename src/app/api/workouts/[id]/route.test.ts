@@ -12,12 +12,22 @@ import {
 } from "@/repositories/__tests__/helpers/testDb";
 import bcrypt from "bcrypt";
 import { AuthWithUser } from "@/repositories/authRepository";
+import { workoutService } from "@/services/WorkoutService";
+
+// WorkoutServiceをモック
+vi.mock("@/services/WorkoutService", () => ({
+  workoutService: {
+    getWorkoutById: vi.fn(),
+    updateWorkout: vi.fn(),
+  },
+}));
 
 // authをモック
 vi.mock("@/lib/auth/auth", () => ({
   auth: vi.fn(),
 }));
 
+const mockedWorkoutService = vi.mocked(workoutService);
 type AuthMock = ReturnType<typeof vi.fn<() => Promise<Session | null>>>;
 const mockedAuth = vi.mocked(auth) as unknown as AuthMock;
 
@@ -43,11 +53,11 @@ describe("GET /api/workouts/[id]", () => {
 
   describe("正常系", () => {
     it("認証済みユーザーが自分のワークアウトを取得できる", async () => {
-      // 実際のワークアウトを作成
-      const workout = await createTestWorkout({
+      const workout = await createTestWorkoutWithDetails({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Good workout",
+        dialy: "Strength training",
+        details: [],
       });
 
       // auth()をモック
@@ -55,6 +65,7 @@ describe("GET /api/workouts/[id]", () => {
         user: testAuth.user,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       });
+      mockedWorkoutService.getWorkoutById.mockResolvedValue(workout);
 
       // Act
       const response = await GET(
@@ -67,7 +78,7 @@ describe("GET /api/workouts/[id]", () => {
       expect(response.status).toBe(200);
       expect(data.message).toBe("Success");
       expect(data.workout.id).toBe(workout.id);
-      expect(data.workout.dialy).toBe("Good workout");
+      expect(data.workout.dialy).toBe("Strength training");
     });
 
     it("詳細情報を含むワークアウトを取得できる", async () => {
@@ -97,6 +108,7 @@ describe("GET /api/workouts/[id]", () => {
         user: testAuth.user,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       });
+      mockedWorkoutService.getWorkoutById.mockResolvedValue(workout);
 
       // Act
       const response = await GET(
@@ -156,6 +168,9 @@ describe("GET /api/workouts/[id]", () => {
         user: testAuth.user,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       });
+      mockedWorkoutService.getWorkoutById.mockRejectedValue(
+        new Error("Workout not found")
+      );
 
       // Act
       const response = await GET(
@@ -193,16 +208,13 @@ describe("PATCH /api/workouts/[id]", () => {
 
   // ヘルパー関数: NextRequestを作成
   const createRequest = (workoutId: string, body: unknown) => {
-    return new NextRequest(
-      "http://localhost:3000/api/workouts/" + workoutId,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    return new NextRequest("http://localhost:3000/api/workouts/" + workoutId, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   };
 
   describe("正常系", () => {
@@ -314,6 +326,9 @@ describe("PATCH /api/workouts/[id]", () => {
         user: testAuth.user,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       });
+      mockedWorkoutService.updateWorkout.mockRejectedValue(
+        new Error("Workout not found")
+      );
 
       // Arrange
       const updateData = {

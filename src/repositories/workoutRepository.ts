@@ -130,6 +130,8 @@ export const workoutRepository = {
     return await prisma.workout.update({
       where: { id },
       data: {
+        date: data.date,
+        dialy: data.dialy,
         Detail: {
           deleteMany: { id: { in: data.deleteIds } },
           create: data.details,

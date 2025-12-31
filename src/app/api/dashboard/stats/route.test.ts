@@ -8,6 +8,7 @@ import type { Session } from "next-auth";
 vi.mock("@/services/StatsService", () => ({
   statsService: {
     getDashboardStats: vi.fn(),
+    getDashboardStatsWithCharts: vi.fn(),
   },
 }));
 
@@ -16,7 +17,8 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 
 const mockedStatsService = vi.mocked(statsService);
-const mockedAuth = vi.mocked(auth);
+type AuthMock = ReturnType<typeof vi.fn<() => Promise<Session | null>>>;
+const mockedAuth = vi.mocked(auth) as unknown as AuthMock;
 
 describe("GET /api/dashboard/stats", () => {
   beforeEach(() => {
@@ -40,10 +42,15 @@ describe("GET /api/dashboard/stats", () => {
         thisWeekWorkouts: 3,
         totalExercises: 25,
         totalWeight: 5000,
+        weeklyActivities: [],
+        monthlyProgresses: [],
+        exerciseDistributions: [],
+        maxWeeklyWorkouts: 0,
+        maxMonthlyVolume: 0,
       };
 
       mockedAuth.mockResolvedValue(mockSession);
-      mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
+      mockedStatsService.getDashboardStatsWithCharts.mockResolvedValue(mockStats);
 
       // Act
       const response = await GET();
@@ -52,7 +59,7 @@ describe("GET /api/dashboard/stats", () => {
       // Assert
       expect(response.status).toBe(200);
       expect(data).toEqual(mockStats);
-      expect(mockedStatsService.getDashboardStats).toHaveBeenCalledWith(
+      expect(mockedStatsService.getDashboardStatsWithCharts).toHaveBeenCalledWith(
         "user-1"
       );
     });
@@ -73,10 +80,15 @@ describe("GET /api/dashboard/stats", () => {
         thisWeekWorkouts: 0,
         totalExercises: 0,
         totalWeight: 0,
+        weeklyActivities: [],
+        monthlyProgresses: [],
+        exerciseDistributions: [],
+        maxWeeklyWorkouts: 0,
+        maxMonthlyVolume: 0,
       };
 
       mockedAuth.mockResolvedValue(mockSession);
-      mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
+      mockedStatsService.getDashboardStatsWithCharts.mockResolvedValue(mockStats);
 
       // Act
       const response = await GET();
@@ -188,10 +200,15 @@ describe("GET /api/dashboard/stats", () => {
         thisWeekWorkouts: 3,
         totalExercises: 25,
         totalWeight: 5000,
+        weeklyActivities: [],
+        monthlyProgresses: [],
+        exerciseDistributions: [],
+        maxWeeklyWorkouts: 0,
+        maxMonthlyVolume: 0,
       };
 
       mockedAuth.mockResolvedValue(mockSession);
-      mockedStatsService.getDashboardStats.mockResolvedValue(mockStats);
+      mockedStatsService.getDashboardStatsWithCharts.mockResolvedValue(mockStats);
 
       // Act
       const response = await GET();
