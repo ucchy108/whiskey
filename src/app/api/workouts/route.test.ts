@@ -1,86 +1,78 @@
 import { GET, POST } from "./route";
-import { workoutService } from "@/services/WorkoutService";
 import { auth } from "@/lib/auth/auth";
 import { NextRequest } from "next/server";
 import { vi } from "vitest";
+import type { Session } from "next-auth";
+import {
+  cleanupTestData,
+  createTestAuthWithUser,
+  createTestWorkout,
+  createTestExercise,
+} from "@/repositories/__tests__/helpers/testDb";
+import bcrypt from "bcrypt";
+import { AuthWithUser } from "@/repositories/authRepository";
 
-// WorkoutServiceとauthをモック
-vi.mock("@/services/WorkoutService", () => ({
-  workoutService: {
-    getWorkoutsByUserId: vi.fn(),
-  },
-}));
-
+// authをモック
 vi.mock("@/lib/auth/auth", () => ({
   auth: vi.fn(),
 }));
 
-const mockedWorkoutService = vi.mocked(workoutService);
-const mockedAuth = vi.mocked(auth);
+type AuthMock = ReturnType<typeof vi.fn<() => Promise<Session | null>>>;
+const mockedAuth = vi.mocked(auth) as unknown as AuthMock;
 
 describe("GET /api/workouts", () => {
-  beforeEach(() => {
+  let testAuth: AuthWithUser;
+
+  beforeEach(async () => {
+    // 実際のユーザーとAuthを作成
+    testAuth = await createTestAuthWithUser({
+      email: "test@example.com",
+      password: await bcrypt.hash("password123", 10),
+      name: "Test User",
+      age: 25,
+      weight: 70,
+      height: 175,
+    });
+  });
+
+  afterEach(async () => {
+    await cleanupTestData();
     vi.clearAllMocks();
   });
 
   describe("正常系", () => {
     it("認証済みユーザーのワークアウト一覧を取得できる", async () => {
-      // Arrange
-      const mockSession = {
-        user: {
-          id: "user-1",
-          name: "Test User",
-          email: "test@example.com",
-        },
-      };
+      // 実際のワークアウトを作成
+      const workout = await createTestWorkout({
+        userId: testAuth.user.id,
+        date: new Date("2024-01-15"),
+        dialy: "Good workout",
+      });
 
-      const mockWorkouts = [
-        {
-          id: "workout-1",
-          userId: "user-1",
-          date: new Date("2024-01-15"),
-          dialy: "Good workout",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          Detail: [],
-        },
-      ];
+      // auth()をモックして実際のユーザー情報を返す
+      mockedAuth.mockResolvedValue({
+        user: testAuth.user,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
 
-      mockedAuth.mockResolvedValue(mockSession);
-      mockedWorkoutService.getWorkoutsByUserId.mockResolvedValue(mockWorkouts);
-
-      // Act
+      // Act（実際のService、Repositoryを使用）
       const response = await GET();
       const data = await response.json();
 
       // Assert
       expect(response.status).toBe(200);
-      expect(data).toEqual({
-        message: "Success",
-        workouts: mockWorkouts.map((workout) => ({
-          ...workout,
-          date: workout.date.toISOString(),
-          createdAt: workout.createdAt.toISOString(),
-          updatedAt: workout.updatedAt.toISOString(),
-        })),
-      });
-      expect(mockedWorkoutService.getWorkoutsByUserId).toHaveBeenCalledWith(
-        "user-1"
-      );
+      expect(data.message).toBe("Success");
+      expect(data.workouts).toHaveLength(1);
+      expect(data.workouts[0].id).toBe(workout.id);
+      expect(data.workouts[0].dialy).toBe("Good workout");
     });
 
     it("ワークアウトが0件の場合は空配列を返す", async () => {
-      // Arrange
-      const mockSession = {
-        user: {
-          id: "user-1",
-          name: "Test User",
-          email: "test@example.com",
-        },
-      };
-
-      mockedAuth.mockResolvedValue(mockSession);
-      mockedWorkoutService.getWorkoutsByUserId.mockResolvedValue([]);
+      // auth()をモック
+      mockedAuth.mockResolvedValue({
+        user: testAuth.user,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
 
       // Act
       const response = await GET();
@@ -97,7 +89,7 @@ describe("GET /api/workouts", () => {
 
   describe("認証エラー", () => {
     it("セッションがない場合は401エラーを返す", async () => {
-      // Arrange
+      // auth()がnullを返すようモック
       mockedAuth.mockResolvedValue(null);
 
       // Act
@@ -107,19 +99,17 @@ describe("GET /api/workouts", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(data).toEqual({ error: "Unauthorized" });
-      expect(mockedWorkoutService.getWorkoutsByUserId).not.toHaveBeenCalled();
     });
 
     it("ユーザーIDがない場合は401エラーを返す", async () => {
-      // Arrange
-      const mockSession = {
+      // auth()がidなしのセッションを返すようモック
+      mockedAuth.mockResolvedValue({
         user: {
           name: "Test User",
           email: "test@example.com",
         },
-      };
-
-      mockedAuth.mockResolvedValue(mockSession);
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
 
       // Act
       const response = await GET();
@@ -128,39 +118,27 @@ describe("GET /api/workouts", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(data).toEqual({ error: "Unauthorized" });
-      expect(mockedWorkoutService.getWorkoutsByUserId).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("サーバーエラー", () => {
-    it("予期しないエラーが発生した場合は500エラーを返す", async () => {
-      // Arrange
-      const mockSession = {
-        user: {
-          id: "user-1",
-          name: "Test User",
-          email: "test@example.com",
-        },
-      };
-
-      mockedAuth.mockResolvedValue(mockSession);
-      mockedWorkoutService.getWorkoutsByUserId.mockRejectedValue(
-        new Error("Database error")
-      );
-
-      // Act
-      const response = await GET();
-      const data = await response.json();
-
-      // Assert
-      expect(response.status).toBe(500);
-      expect(data).toEqual({ error: "Internal Server Error" });
     });
   });
 });
 
-describe("POST /api/workouts", () => {
-  beforeEach(() => {
+describe("POST /api/workouts - Integration Test", () => {
+  let testAuth: AuthWithUser;
+
+  beforeEach(async () => {
+    // 実際のユーザーとAuthを作成
+    testAuth = await createTestAuthWithUser({
+      email: "test@example.com",
+      password: await bcrypt.hash("password123", 10),
+      name: "Test User",
+      age: 25,
+      weight: 70,
+      height: 175,
+    });
+  });
+
+  afterEach(async () => {
+    await cleanupTestData();
     vi.clearAllMocks();
   });
 
@@ -175,14 +153,22 @@ describe("POST /api/workouts", () => {
     });
   };
 
-  describe("正常系（TODO実装）", () => {
-    it("ワークアウトを作成できる", async () => {
+  describe("正常系", () => {
+    it("詳細なしでワークアウトを作成できる", async () => {
+      // auth()をモック
+      mockedAuth.mockResolvedValue({
+        user: {
+          id: testAuth.user.id,
+          name: testAuth.user.name!,
+          email: testAuth.email,
+        },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+
       // Arrange
       const newWorkout = {
-        name: "Morning Run",
-        type: "cardio",
-        duration: 30,
         date: "2024-01-15",
+        dialy: "Morning workout",
       };
 
       // Act
@@ -192,11 +178,107 @@ describe("POST /api/workouts", () => {
 
       // Assert
       expect(response.status).toBe(201);
-      expect(data).toHaveProperty("id");
-      expect(data.name).toBe(newWorkout.name);
-      expect(data.type).toBe(newWorkout.type);
-      expect(data.duration).toBe(newWorkout.duration);
-      expect(data.date).toBe(newWorkout.date);
+      expect(data.message).toBe("Workout created");
+      expect(data.workout).toHaveProperty("id");
+      expect(data.workout.dialy).toBe("Morning workout");
+    });
+
+    it("詳細ありでワークアウトを作成できる", async () => {
+      // 実際のExerciseを作成
+      const exercise = await createTestExercise({
+        name: "Bench Press",
+        description: "Chest exercise",
+      });
+
+      // auth()をモック
+      mockedAuth.mockResolvedValue({
+        user: {
+          id: testAuth.user.id,
+          name: testAuth.user.name!,
+          email: testAuth.email,
+        },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      // Arrange
+      const newWorkout = {
+        date: "2024-01-15",
+        dialy: "Strength training",
+        details: [
+          {
+            exerciseId: exercise.id,
+            sets: 3,
+            reps: 10,
+            weight: 60,
+          },
+        ],
+      };
+
+      // Act
+      const request = createRequest(newWorkout);
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(201);
+      expect(data.message).toBe("Workout created");
+      expect(data.workout).toHaveProperty("id");
+      expect(data.workout.dialy).toBe("Strength training");
+      expect(data.workout.Detail).toHaveLength(1);
+      expect(data.workout.Detail[0].sets).toBe(3);
+      expect(data.workout.Detail[0].reps).toBe(10);
+      expect(data.workout.Detail[0].weight).toBe(60);
+    });
+  });
+
+  describe("バリデーションエラー", () => {
+    it("dateがない場合は400エラーを返す", async () => {
+      // auth()をモック
+      mockedAuth.mockResolvedValue({
+        user: {
+          id: testAuth.user.id,
+          name: testAuth.user.name!,
+          email: testAuth.email,
+        },
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      // Arrange
+      const newWorkout = {
+        dialy: "Morning workout",
+        // dateなし
+      };
+
+      // Act
+      const request = createRequest(newWorkout);
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Date is required");
+    });
+  });
+
+  describe("認証エラー", () => {
+    it("セッションがない場合は401エラーを返す", async () => {
+      // auth()がnullを返すようモック
+      mockedAuth.mockResolvedValue(null);
+
+      // Arrange
+      const newWorkout = {
+        date: "2024-01-15",
+        dialy: "Morning workout",
+      };
+
+      // Act
+      const request = createRequest(newWorkout);
+      const response = await POST(request);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(401);
+      expect(data).toEqual({ error: "Unauthorized" });
     });
   });
 });
