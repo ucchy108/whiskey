@@ -9,7 +9,7 @@ type StoryArgs = {
 };
 
 const meta = {
-  title: "Workout/new/WeightTextField",
+  title: "Workout/edit/WeightTextField",
   component: WeightTextField,
   tags: ["autodocs"],
   argTypes: {

@@ -9,7 +9,7 @@ type StoryArgs = {
 };
 
 const meta = {
-  title: "Workout/new/DurationTextField",
+  title: "Workout/edit/DurationTextField",
   component: DurationTextField,
   parameters: {
     layout: "centered",

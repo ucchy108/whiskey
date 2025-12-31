@@ -40,7 +40,7 @@ const mockExercises = [
 ];
 
 const meta = {
-  title: "Workout/new/ExerciseTextField",
+  title: "Workout/edit/ExerciseTextField",
   component: ExerciseTextField,
   tags: ["autodocs"],
   argTypes: {

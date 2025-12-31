@@ -10,7 +10,7 @@ type StoryArgs = {
 };
 
 const meta = {
-  title: "Workout/new/WorkoutDateField",
+  title: "Workout/edit/WorkoutDateField",
   component: WorkoutDateField,
   tags: ["autodocs"],
   argTypes: {

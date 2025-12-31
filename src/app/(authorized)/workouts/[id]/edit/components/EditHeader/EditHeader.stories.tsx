@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { EditHeader } from "./EditHeader";
 
 const meta = {
-  title: "Workout/EditHeader",
+  title: "Workout/edit/EditHeader",
   component: EditHeader,
   tags: ["autodocs"],
 } satisfies Meta<typeof EditHeader>;

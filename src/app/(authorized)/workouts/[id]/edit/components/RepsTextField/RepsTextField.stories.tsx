@@ -9,7 +9,7 @@ type StoryArgs = {
 };
 
 const meta = {
-  title: "Workout/new/RepsTextField",
+  title: "Workout/edit/RepsTextField",
   component: RepsTextField,
   tags: ["autodocs"],
   argTypes: {
