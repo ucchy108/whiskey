@@ -395,8 +395,8 @@ describe("statsRepository", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].detail).toHaveLength(2);
-      expect(result[0].detail[0].exercise.name).toBe("Squat");
-      expect(result[0].detail[1].exercise.name).toBe("Deadlift");
+      expect(result[0].detail[0].exercise.name).toBe("Deadlift");
+      expect(result[0].detail[1].exercise.name).toBe("Squat");
     });
 
     it("必要最小限のフィールドのみを取得する", async () => {
