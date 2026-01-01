@@ -9,9 +9,9 @@ export async function cleanupTestData() {
   try {
     await prisma.workoutDetail.deleteMany({});
     await prisma.workout.deleteMany({});
+    await prisma.exercise.deleteMany({});
     await prisma.auth.deleteMany({});
     await prisma.user.deleteMany({});
-    await prisma.exercise.deleteMany({});
   } catch (error) {
     console.error("Failed to cleanup test data:", error);
     throw error;
@@ -66,6 +66,7 @@ export async function createTestUser(data: {
  * テスト用のExerciseデータを作成
  */
 export async function createTestExercise(data: {
+  userId: string;
   name: string;
   description?: string;
 }) {
@@ -80,7 +81,7 @@ export async function createTestExercise(data: {
 export async function createTestWorkout(data: {
   userId: string;
   date: Date;
-  dialy?: string | null;
+  note?: string | null;
 }) {
   return await prisma.workout.create({
     data,
@@ -93,7 +94,7 @@ export async function createTestWorkout(data: {
 export async function createTestWorkoutWithDetails(data: {
   userId: string;
   date: Date;
-  dialy?: string | null;
+  note?: string | null;
   details: Array<{
     exerciseId: string;
     sets: number;
@@ -107,15 +108,15 @@ export async function createTestWorkoutWithDetails(data: {
     data: {
       userId: data.userId,
       date: data.date,
-      dialy: data.dialy,
-      Detail: {
+      note: data.note,
+      detail: {
         create: data.details,
       },
     },
     include: {
-      Detail: {
+      detail: {
         include: {
-          Exercise: true,
+          exercise: true,
         },
       },
     },

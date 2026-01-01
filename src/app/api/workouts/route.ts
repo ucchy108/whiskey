@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { date, dialy, details } = await request.json();
+    const { date, note, details} = await request.json();
 
     // バリデーション
     if (!date) {
@@ -44,12 +44,12 @@ export async function POST(request: NextRequest) {
       details && details.length > 0
         ? await workoutService.createWorkoutWithDetails(session.user.id, {
             date: new Date(date),
-            dialy,
+            note,
             details,
           })
         : await workoutService.createWorkout(session.user.id, {
             date: new Date(date),
-            dialy,
+            note,
           });
 
     return NextResponse.json(

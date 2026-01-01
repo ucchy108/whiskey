@@ -28,7 +28,6 @@ import { SetsTextField } from "../SetsTextField";
 import { RepsTextField } from "../RepsTextField";
 import { WeightTextField } from "../WeightTextField";
 import { DurationTextField } from "../DurationTextField";
-import { NotesTextField } from "../NotesTextField";
 
 // 運動詳細カードの背景色を順番に適用
 const detailColors = [
@@ -60,7 +59,7 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
     mode: "onChange",
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
-      dialy: "",
+      note: "",
       details: [],
     },
   });
@@ -77,7 +76,6 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
       reps: 0,
       weight: 0,
       duration: 0,
-      notes: "",
     });
   }, [append, exercises]);
 
@@ -104,10 +102,7 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
             error={errors.date as FieldError}
           />
 
-          <DialyTextField
-            control={control}
-            error={errors.dialy as FieldError}
-          />
+          <DialyTextField control={control} error={errors.note as FieldError} />
 
           <Divider />
 
@@ -205,11 +200,11 @@ export function WorkoutForm({ exercises, loading }: WorkoutFormProps) {
                       />
                     </Box>
 
-                    <NotesTextField
+                    {/* <NotesTextField
                       control={control}
                       error={errors.details?.[index]?.notes}
                       name={`details.${index}.notes`}
-                    />
+                    /> */}
                   </Stack>
                 </Paper>
               ))}

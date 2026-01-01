@@ -22,7 +22,7 @@ export function WorkoutItem({ detail }: WorkoutItemProps) {
         <ListItemText
           primary={
             <Typography variant="subtitle2" component="div">
-              {detail.Exercise.name}
+              {detail.exercise.name}
             </Typography>
           }
         />
@@ -64,11 +64,6 @@ export function WorkoutItem({ detail }: WorkoutItemProps) {
             />
           )}
         </Box>
-        {detail.notes && (
-          <Typography variant="caption" color="textSecondary">
-            {detail.notes}
-          </Typography>
-        )}
       </Stack>
     </ListItem>
   );

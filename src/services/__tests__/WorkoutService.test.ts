@@ -5,7 +5,9 @@ import { vi, type MockedObject } from "vitest";
 // workoutRepositoryをモック化
 vi.mock("@/repositories/workoutRepository");
 
-const mockedWorkoutRepository = workoutRepository as MockedObject<typeof workoutRepository>;
+const mockedWorkoutRepository = workoutRepository as MockedObject<
+  typeof workoutRepository
+>;
 
 describe("WorkoutService", () => {
   let workoutService: WorkoutService;
@@ -22,14 +24,14 @@ describe("WorkoutService", () => {
     id: mockWorkoutId,
     userId: mockUserId,
     date: new Date("2024-01-15"),
-    dialy: "Good workout!",
+    note: "Good workout!",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
   const mockWorkoutWithDetails = {
     ...mockWorkout,
-    Detail: [
+    detail: [
       {
         id: "detail-1",
         workoutId: mockWorkoutId,
@@ -38,11 +40,11 @@ describe("WorkoutService", () => {
         reps: 10,
         weight: 50,
         duration: null,
-        notes: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        Exercise: {
+        exercise: {
           id: "exercise-1",
+          userId: mockUserId,
           name: "Bench Press",
           description: "Chest exercise",
           createdAt: new Date(),
@@ -126,7 +128,7 @@ describe("WorkoutService", () => {
   describe("createWorkout", () => {
     const createData = {
       date: new Date("2024-01-20"),
-      dialy: "New workout",
+      note: "New workout",
     };
 
     it("ワークアウトを作成できる", async () => {
@@ -138,7 +140,7 @@ describe("WorkoutService", () => {
       expect(mockedWorkoutRepository.create).toHaveBeenCalledWith({
         userId: mockUserId,
         date: createData.date,
-        dialy: createData.dialy,
+        note: createData.note,
       });
     });
 
@@ -151,7 +153,7 @@ describe("WorkoutService", () => {
       expect(mockedWorkoutRepository.create).toHaveBeenCalledWith({
         userId: mockUserId,
         date: dataWithoutMemo.date,
-        dialy: undefined,
+        note: undefined,
       });
     });
   });

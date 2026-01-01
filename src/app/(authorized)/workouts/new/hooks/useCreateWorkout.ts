@@ -12,7 +12,7 @@ export function useCreateWorkout() {
       },
       body: JSON.stringify({
         date: values.date,
-        dialy: values.dialy,
+        note: values.note,
         details: values.details,
       }),
     });

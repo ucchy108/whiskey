@@ -13,7 +13,7 @@ export function useUpdateWorkout() {
         },
         body: JSON.stringify({
           date: values.date,
-          dialy: values.dialy,
+          note: values.note,
           details: values.details,
           deleteIds: deleteIds,
         }),

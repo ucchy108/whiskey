@@ -2,12 +2,12 @@ import { Control, Controller, FieldError, FieldPath } from "react-hook-form";
 import { DialySchema } from "../../../../schema";
 import { TextField } from "@mui/material";
 
-interface DialyTextFieldProps<Schema extends Record<"dialy", DialySchema>> {
+interface DialyTextFieldProps<Schema extends Record<"note", DialySchema>> {
   control: Control<Schema>;
   error: FieldError;
 }
 
-export function DialyTextField<Schema extends Record<"dialy", DialySchema>>({
+export function DialyTextField<Schema extends Record<"note", DialySchema>>({
   control,
   error,
 }: DialyTextFieldProps<Schema>) {

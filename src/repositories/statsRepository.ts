@@ -8,13 +8,13 @@ export type WeightDetail = {
 export type WorkoutWithDetailsForStats = {
   id: string;
   date: Date;
-  Detail: {
+  detail: {
     id: string;
     sets: number;
     reps: number;
     weight: number | null;
     duration: number | null;
-    Exercise: {
+    exercise: {
       id: string;
       name: string;
     };
@@ -93,7 +93,7 @@ export const statsRepository = {
   async countTotalExercises(userId: string): Promise<number> {
     return await prisma.workoutDetail.count({
       where: {
-        Workout: { userId },
+        workout: { userId },
       },
     });
   },
@@ -104,7 +104,7 @@ export const statsRepository = {
   async findWeightDetails(userId: string): Promise<WeightDetail[]> {
     return await prisma.workoutDetail.findMany({
       where: {
-        Workout: { userId },
+        workout: { userId },
         weight: { not: null },
       },
       select: {
@@ -131,14 +131,14 @@ export const statsRepository = {
       select: {
         id: true,
         date: true,
-        Detail: {
+        detail: {
           select: {
             id: true,
             sets: true,
             reps: true,
             weight: true,
             duration: true,
-            Exercise: {
+            exercise: {
               select: {
                 id: true,
                 name: true,

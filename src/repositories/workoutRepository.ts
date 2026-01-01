@@ -3,11 +3,11 @@ import type { WorkoutModel } from "@/generated/prisma/models/Workout";
 import { ExerciseModel, WorkoutDetailModel } from "@/generated/prisma/models";
 
 export type WorkoutWithDetails = WorkoutModel & {
-  Detail: WorkoutDetail[];
+  detail: WorkoutDetail[];
 };
 
 export type WorkoutDetail = WorkoutDetailModel & {
-  Exercise: Exercise;
+  exercise: Exercise;
 };
 
 export type Exercise = ExerciseModel;
@@ -25,9 +25,9 @@ export const workoutRepository = {
         userId,
       },
       include: {
-        Detail: {
+        detail: {
           include: {
-            Exercise: true,
+            exercise: true,
           },
         },
       },
@@ -50,9 +50,9 @@ export const workoutRepository = {
         userId,
       },
       include: {
-        Detail: {
+        detail: {
           include: {
-            Exercise: true,
+            exercise: true,
           },
         },
       },
@@ -65,7 +65,7 @@ export const workoutRepository = {
   async create(data: {
     userId: string;
     date: Date;
-    dialy?: string;
+    note?: string;
   }): Promise<WorkoutModel> {
     return await prisma.workout.create({
       data,
@@ -78,29 +78,28 @@ export const workoutRepository = {
   async createWithDetails(data: {
     userId: string;
     date: Date;
-    dialy?: string;
+    note?: string;
     details: {
       exerciseId: string;
       sets: number;
       reps: number;
       weight?: number;
       duration?: number;
-      notes?: string;
     }[];
   }): Promise<WorkoutWithDetails> {
     return await prisma.workout.create({
       data: {
         userId: data.userId,
         date: data.date,
-        dialy: data.dialy,
-        Detail: {
+        note: data.note,
+        detail: {
           create: data.details,
         },
       },
       include: {
-        Detail: {
+        detail: {
           include: {
-            Exercise: true,
+            exercise: true,
           },
         },
       },
@@ -114,7 +113,7 @@ export const workoutRepository = {
     id: string,
     data: {
       date?: Date;
-      dialy?: string;
+      note?: string;
       details?: {
         id: string;
         exerciseId: string;
@@ -131,8 +130,8 @@ export const workoutRepository = {
       where: { id },
       data: {
         date: data.date,
-        dialy: data.dialy,
-        Detail: {
+        note: data.note,
+        detail: {
           deleteMany: { id: { in: data.deleteIds || [] } },
           create: data.details?.filter((detail) => !detail.id) || [],
           update:
@@ -146,7 +145,6 @@ export const workoutRepository = {
                   reps: detail.reps,
                   weight: detail.weight,
                   duration: detail.duration,
-                  notes: detail.notes,
                 },
               })) || [],
         },

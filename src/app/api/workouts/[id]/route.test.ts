@@ -56,7 +56,7 @@ describe("GET /api/workouts/[id]", () => {
       const workout = await createTestWorkoutWithDetails({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Strength training",
+        note: "Strength training",
         details: [],
       });
 
@@ -78,12 +78,13 @@ describe("GET /api/workouts/[id]", () => {
       expect(response.status).toBe(200);
       expect(data.message).toBe("Success");
       expect(data.workout.id).toBe(workout.id);
-      expect(data.workout.dialy).toBe("Strength training");
+      expect(data.workout.note).toBe("Strength training");
     });
 
     it("詳細情報を含むワークアウトを取得できる", async () => {
       // 実際のExerciseを作成
       const exercise = await createTestExercise({
+        userId: testAuth.user.id,
         name: "Bench Press",
         description: "Chest exercise",
       });
@@ -92,7 +93,7 @@ describe("GET /api/workouts/[id]", () => {
       const workout = await createTestWorkoutWithDetails({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Strength training",
+        note: "Strength training",
         details: [
           {
             exerciseId: exercise.id,
@@ -121,10 +122,10 @@ describe("GET /api/workouts/[id]", () => {
       expect(response.status).toBe(200);
       expect(data.message).toBe("Success");
       expect(data.workout.id).toBe(workout.id);
-      expect(data.workout.Detail).toHaveLength(1);
-      expect(data.workout.Detail[0].sets).toBe(3);
-      expect(data.workout.Detail[0].reps).toBe(10);
-      expect(data.workout.Detail[0].weight).toBe(60);
+      expect(data.workout.detail).toHaveLength(1);
+      expect(data.workout.detail[0].sets).toBe(3);
+      expect(data.workout.detail[0].reps).toBe(10);
+      expect(data.workout.detail[0].weight).toBe(60);
     });
   });
 
@@ -160,7 +161,7 @@ describe("GET /api/workouts/[id]", () => {
       const workout = await createTestWorkout({
         userId: otherAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Other's workout",
+        note: "Other's workout",
       });
 
       // auth()をモック（testAuthでログイン）
@@ -223,7 +224,7 @@ describe("PATCH /api/workouts/[id]", () => {
       const workout = await createTestWorkout({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Original workout",
+        note: "Original workout",
       });
 
       // auth()をモック
@@ -234,7 +235,7 @@ describe("PATCH /api/workouts/[id]", () => {
 
       // Arrange
       const updateData = {
-        dialy: "Updated workout",
+        note: "Updated workout",
       };
 
       // Act
@@ -254,7 +255,7 @@ describe("PATCH /api/workouts/[id]", () => {
       const workout = await createTestWorkout({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Workout",
+        note: "Workout",
       });
 
       // auth()をモック
@@ -288,7 +289,7 @@ describe("PATCH /api/workouts/[id]", () => {
 
       // Arrange
       const updateData = {
-        dialy: "Updated workout",
+        note: "Updated workout",
       };
 
       // Act
@@ -318,7 +319,7 @@ describe("PATCH /api/workouts/[id]", () => {
       const workout = await createTestWorkout({
         userId: otherAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Other's workout",
+        note: "Other's workout",
       });
 
       // auth()をモック（testAuthでログイン）
@@ -332,7 +333,7 @@ describe("PATCH /api/workouts/[id]", () => {
 
       // Arrange
       const updateData = {
-        dialy: "Trying to update other's workout",
+        note: "Trying to update other's workout",
       };
 
       // Act

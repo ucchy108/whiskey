@@ -22,6 +22,7 @@ describe("statsRepository", () => {
 
     // テストエクササイズを作成
     const exercise = await createTestExercise({
+      userId: testUserId,
       name: "Bench Press",
       description: "Chest exercise",
     });
@@ -341,10 +342,12 @@ describe("statsRepository", () => {
   describe("findWorkoutsWithDetailsForStats", () => {
     it("指定期間のワークアウトと詳細を取得できる", async () => {
       const exercise1 = await createTestExercise({
+        userId: testUserId,
         name: "Squat",
         description: "Leg exercise",
       });
       const exercise2 = await createTestExercise({
+        userId: testUserId,
         name: "Deadlift",
         description: "Back exercise",
       });
@@ -391,9 +394,9 @@ describe("statsRepository", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].Detail).toHaveLength(2);
-      expect(result[0].Detail[0].Exercise.name).toBe("Squat");
-      expect(result[0].Detail[1].Exercise.name).toBe("Deadlift");
+      expect(result[0].detail).toHaveLength(2);
+      expect(result[0].detail[0].exercise.name).toBe("Squat");
+      expect(result[0].detail[1].exercise.name).toBe("Deadlift");
     });
 
     it("必要最小限のフィールドのみを取得する", async () => {
@@ -423,13 +426,13 @@ describe("statsRepository", () => {
       // 必要なフィールドが存在することを確認
       expect(result[0]).toHaveProperty("id");
       expect(result[0]).toHaveProperty("date");
-      expect(result[0].Detail[0]).toHaveProperty("id");
-      expect(result[0].Detail[0]).toHaveProperty("sets");
-      expect(result[0].Detail[0]).toHaveProperty("reps");
-      expect(result[0].Detail[0]).toHaveProperty("weight");
-      expect(result[0].Detail[0]).toHaveProperty("duration");
-      expect(result[0].Detail[0].Exercise).toHaveProperty("id");
-      expect(result[0].Detail[0].Exercise).toHaveProperty("name");
+      expect(result[0].detail[0]).toHaveProperty("id");
+      expect(result[0].detail[0]).toHaveProperty("sets");
+      expect(result[0].detail[0]).toHaveProperty("reps");
+      expect(result[0].detail[0]).toHaveProperty("weight");
+      expect(result[0].detail[0]).toHaveProperty("duration");
+      expect(result[0].detail[0].exercise).toHaveProperty("id");
+      expect(result[0].detail[0].exercise).toHaveProperty("name");
     });
 
     it("日付の降順でソートされる", async () => {

@@ -46,7 +46,7 @@ describe("GET /api/workouts", () => {
       const workout = await createTestWorkout({
         userId: testAuth.user.id,
         date: new Date("2024-01-15"),
-        dialy: "Good workout",
+        note: "Good workout",
       });
 
       // auth()をモックして実際のユーザー情報を返す
@@ -64,7 +64,7 @@ describe("GET /api/workouts", () => {
       expect(data.message).toBe("Success");
       expect(data.workouts).toHaveLength(1);
       expect(data.workouts[0].id).toBe(workout.id);
-      expect(data.workouts[0].dialy).toBe("Good workout");
+      expect(data.workouts[0].note).toBe("Good workout");
     });
 
     it("ワークアウトが0件の場合は空配列を返す", async () => {
@@ -122,7 +122,7 @@ describe("GET /api/workouts", () => {
   });
 });
 
-describe("POST /api/workouts - Integration Test", () => {
+describe("POST /api/workouts", () => {
   let testAuth: AuthWithUser;
 
   beforeEach(async () => {
@@ -168,7 +168,7 @@ describe("POST /api/workouts - Integration Test", () => {
       // Arrange
       const newWorkout = {
         date: "2024-01-15",
-        dialy: "Morning workout",
+        note: "Morning workout",
       };
 
       // Act
@@ -180,12 +180,13 @@ describe("POST /api/workouts - Integration Test", () => {
       expect(response.status).toBe(201);
       expect(data.message).toBe("Workout created");
       expect(data.workout).toHaveProperty("id");
-      expect(data.workout.dialy).toBe("Morning workout");
+      expect(data.workout.note).toBe("Morning workout");
     });
 
     it("詳細ありでワークアウトを作成できる", async () => {
       // 実際のExerciseを作成
       const exercise = await createTestExercise({
+        userId: testAuth.user.id,
         name: "Bench Press",
         description: "Chest exercise",
       });
@@ -203,7 +204,7 @@ describe("POST /api/workouts - Integration Test", () => {
       // Arrange
       const newWorkout = {
         date: "2024-01-15",
-        dialy: "Strength training",
+        note: "Strength training",
         details: [
           {
             exerciseId: exercise.id,
@@ -223,11 +224,11 @@ describe("POST /api/workouts - Integration Test", () => {
       expect(response.status).toBe(201);
       expect(data.message).toBe("Workout created");
       expect(data.workout).toHaveProperty("id");
-      expect(data.workout.dialy).toBe("Strength training");
-      expect(data.workout.Detail).toHaveLength(1);
-      expect(data.workout.Detail[0].sets).toBe(3);
-      expect(data.workout.Detail[0].reps).toBe(10);
-      expect(data.workout.Detail[0].weight).toBe(60);
+      expect(data.workout.note).toBe("Strength training");
+      expect(data.workout.detail).toHaveLength(1);
+      expect(data.workout.detail[0].sets).toBe(3);
+      expect(data.workout.detail[0].reps).toBe(10);
+      expect(data.workout.detail[0].weight).toBe(60);
     });
   });
 

@@ -48,13 +48,13 @@ export class WorkoutService {
     userId: string,
     data: {
       date: Date;
-      dialy?: string;
+      note?: string;
     }
   ): Promise<WorkoutModel> {
     return await workoutRepository.create({
       userId,
       date: data.date,
-      dialy: data.dialy,
+      note: data.note,
     });
   }
 
@@ -68,21 +68,20 @@ export class WorkoutService {
     userId: string,
     data: {
       date: Date;
-      dialy?: string;
+      note?: string;
       details: {
         exerciseId: string;
         sets: number;
         reps: number;
         weight?: number;
         duration?: number;
-        notes?: string;
       }[];
     }
   ): Promise<WorkoutWithDetails> {
     return await workoutRepository.createWithDetails({
       userId,
       date: data.date,
-      dialy: data.dialy,
+      note: data.note,
       details: data.details,
     });
   }
@@ -100,7 +99,7 @@ export class WorkoutService {
     userId: string,
     data: {
       date?: Date;
-      dialy?: string;
+      note?: string;
       details?: {
         id: string;
         exerciseId: string;
@@ -108,7 +107,6 @@ export class WorkoutService {
         reps: number;
         weight?: number;
         duration?: number;
-        notes?: string;
       }[];
       deleteIds?: string[];
     }

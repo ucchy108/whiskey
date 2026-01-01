@@ -96,7 +96,7 @@ export class StatsService {
       const totalWeight = dayWorkouts.reduce(
         (sum, workout) =>
           sum +
-          workout.Detail.reduce(
+          workout.detail.reduce(
             (detailSum, detail) =>
               detailSum + (detail.weight || 0) * detail.sets,
             0
@@ -140,7 +140,7 @@ export class StatsService {
       const totalVolume = weekWorkouts.reduce(
         (sum, workout) =>
           sum +
-          workout.Detail.reduce(
+          workout.detail.reduce(
             (detailSum, detail) =>
               detailSum + detail.sets * detail.reps * (detail.weight || 1),
             0
@@ -167,8 +167,8 @@ export class StatsService {
     const exerciseCount: Record<string, number> = {};
 
     workouts.forEach((workout) => {
-      workout.Detail.forEach((detail) => {
-        const exerciseName = detail.Exercise.name;
+      workout.detail.forEach((detail) => {
+        const exerciseName = detail.exercise.name;
         exerciseCount[exerciseName] = (exerciseCount[exerciseName] || 0) + 1;
       });
     });

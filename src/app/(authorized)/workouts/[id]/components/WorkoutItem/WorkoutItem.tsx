@@ -10,7 +10,7 @@ type WorkoutDetailProps = {
 };
 
 export function WorkoutItem({ workout }: WorkoutDetailProps) {
-  if (!workout || !workout.Detail) {
+  if (!workout || !workout.detail) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
         <Paper sx={{ p: 3, textAlign: "center" }}>
@@ -25,9 +25,9 @@ export function WorkoutItem({ workout }: WorkoutDetailProps) {
   return (
     <Stack spacing={4}>
       <WorkoutHeader date={new Date(workout.date)} />
-      <WorkoutSummary exercises={workout.Detail} />
-      {workout.dialy && <WorkoutDialy memo={workout.dialy} />}
-      <ExerciseList workoutDetails={workout.Detail} />
+      <WorkoutSummary exercises={workout.detail} />
+      {workout.note && <WorkoutDialy memo={workout.note} />}
+      <ExerciseList workoutDetails={workout.detail} />
     </Stack>
   );
 }

@@ -22,6 +22,7 @@ describe("workoutRepository", () => {
 
     // テストエクササイズを作成
     const exercise = await createTestExercise({
+      userId: testUserId,
       name: "Bench Press",
       description: "Chest exercise",
     });
@@ -34,7 +35,7 @@ describe("workoutRepository", () => {
       await createTestWorkoutWithDetails({
         userId: testUserId,
         date: new Date("2024-01-15"),
-        dialy: "Good workout!",
+        note: "Good workout!",
         details: [
           {
             exerciseId: testExerciseId,
@@ -48,7 +49,7 @@ describe("workoutRepository", () => {
       await createTestWorkoutWithDetails({
         userId: testUserId,
         date: new Date("2024-01-16"),
-        dialy: "Great session!",
+        note: "Great session!",
         details: [
           {
             exerciseId: testExerciseId,
@@ -66,8 +67,8 @@ describe("workoutRepository", () => {
       expect(result[0].date.getTime()).toBeGreaterThanOrEqual(
         result[1].date.getTime()
       );
-      expect(result[0].Detail).toHaveLength(1);
-      expect(result[0].Detail[0].Exercise.name).toBe("Bench Press");
+      expect(result[0].detail).toHaveLength(1);
+      expect(result[0].detail[0].exercise.name).toBe("Bench Press");
     });
 
     it("ワークアウトが存在しない場合は空配列を返す", async () => {
@@ -111,7 +112,7 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkoutWithDetails({
         userId: testUserId,
         date: new Date("2024-01-15"),
-        dialy: "Good workout!",
+        note: "Good workout!",
         details: [
           {
             exerciseId: testExerciseId,
@@ -130,8 +131,8 @@ describe("workoutRepository", () => {
       expect(result).not.toBeNull();
       expect(result?.id).toBe(workout.id);
       expect(result?.userId).toBe(testUserId);
-      expect(result?.Detail).toHaveLength(1);
-      expect(result?.Detail[0].Exercise.name).toBe("Bench Press");
+      expect(result?.detail).toHaveLength(1);
+      expect(result?.detail[0].exercise.name).toBe("Bench Press");
     });
 
     it("存在しないワークアウトの場合はnullを返す", async () => {
@@ -156,7 +157,7 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkout({
         userId: testUserId,
         date: new Date("2024-01-15"),
-        dialy: "My workout",
+        note: "My workout",
       });
 
       // otherUserのIDで検索
@@ -174,7 +175,7 @@ describe("workoutRepository", () => {
       const createData = {
         userId: testUserId,
         date: new Date("2024-01-20"),
-        dialy: "New workout",
+        note: "New workout",
       };
 
       const result = await workoutRepository.create(createData);
@@ -202,7 +203,7 @@ describe("workoutRepository", () => {
 
       expect(result).toBeDefined();
       expect(result.userId).toBe(testUserId);
-      expect(result.dialy).toBeNull();
+      expect(result.note).toBeNull();
     });
   });
 
@@ -211,12 +212,12 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkout({
         userId: testUserId,
         date: new Date("2024-01-20"),
-        dialy: "Original memo",
+        note: "Original memo",
       });
 
       const updateData = {
         date: new Date("2024-01-21"),
-        dialy: "Updated workout",
+        note: "Updated workout",
       };
 
       const result = await workoutRepository.update(workout.id, updateData);
@@ -235,7 +236,7 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkout({
         userId: testUserId,
         date: new Date("2024-01-20"),
-        dialy: "Original memo",
+        note: "Original memo",
       });
 
       const dateOnlyUpdate = { date: new Date("2024-01-22") };
@@ -249,18 +250,18 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkout({
         userId: testUserId,
         date: new Date("2024-01-20"),
-        dialy: "Original memo",
+        note: "Original memo",
       });
 
-      const dialyOnlyUpdate = { dialy: "Only dialy updated" };
+      const noteOnlyUpdate = { note: "Only note updated" };
 
       const result = await workoutRepository.update(
         workout.id,
-        dialyOnlyUpdate
+        noteOnlyUpdate
       );
 
       expect(result).toBeDefined();
-      expect(result.dialy).toBe("Only dialy updated");
+      expect(result.note).toBe("Only note updated");
     });
   });
 
@@ -269,7 +270,7 @@ describe("workoutRepository", () => {
       const workout = await createTestWorkout({
         userId: testUserId,
         date: new Date("2024-01-20"),
-        dialy: "To be deleted",
+        note: "To be deleted",
       });
 
       const result = await workoutRepository.delete(workout.id);

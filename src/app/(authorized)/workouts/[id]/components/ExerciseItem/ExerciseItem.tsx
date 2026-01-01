@@ -51,7 +51,7 @@ export function ExerciseItem({ detail, index, isLast }: ExerciseItemProps) {
             sx={{ fontWeight: "bold" }}
           />
           <Typography variant="h6" component="h3" fontWeight="bold" flex={1}>
-            {detail.Exercise.name}
+            {detail.exercise.name}
           </Typography>
           <FitnessCenter color="action" />
         </Stack>

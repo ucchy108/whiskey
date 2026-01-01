@@ -160,14 +160,14 @@ export function WorkoutCard({ workout }: { workout: WorkoutWithDetails }) {
             </Box>
           </Box>
 
-          {workout.dialy && (
+          {workout.note && (
             <Typography variant="body2" color="textSecondary">
-              メモ: {workout.dialy}
+              メモ: {workout.note}
             </Typography>
           )}
 
           <List dense>
-            {workout.Detail.map((detail) => (
+            {workout.detail.map((detail) => (
               <WorkoutItem key={detail.id} detail={detail} />
             ))}
           </List>

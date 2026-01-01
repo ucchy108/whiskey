@@ -25,36 +25,42 @@ async function main() {
   const exercises = await Promise.all([
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "ベンチプレス",
         description: "胸筋を鍛える基本的なウェイトトレーニング",
       },
     }),
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "スクワット",
         description: "下半身全体を鍛える基本的なトレーニング",
       },
     }),
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "デッドリフト",
         description: "全身を鍛える基本的なウェイトトレーニング",
       },
     }),
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "腕立て伏せ",
         description: "自重で胸筋と腕を鍛えるトレーニング",
       },
     }),
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "懸垂",
         description: "背中と腕を鍛える自重トレーニング",
       },
     }),
     prisma.exercise.create({
       data: {
+        userId: user.id,
         name: "ランニング",
         description: "有酸素運動の基本",
       },
@@ -73,7 +79,7 @@ async function main() {
     data: {
       userId: user.id,
       date: today,
-      dialy: "今日は胸と腕のトレーニング。調子良し！",
+      note: "今日は胸と腕のトレーニング。調子良し！",
     },
   });
 
@@ -86,7 +92,6 @@ async function main() {
         sets: 3,
         reps: 10,
         weight: 60,
-        notes: "フォーム重視",
       },
     }),
     prisma.workoutDetail.create({
@@ -95,7 +100,6 @@ async function main() {
         exerciseId: exercises[3].id, // 腕立て伏せ
         sets: 3,
         reps: 15,
-        notes: "最後のセットはギリギリ",
       },
     }),
   ]);
@@ -105,7 +109,7 @@ async function main() {
     data: {
       userId: user.id,
       date: yesterday,
-      dialy: "下半身強化の日",
+      note: "下半身強化の日",
     },
   });
 
@@ -118,7 +122,6 @@ async function main() {
         sets: 4,
         reps: 12,
         weight: 80,
-        notes: "深くしゃがむことを意識",
       },
     }),
     prisma.workoutDetail.create({
@@ -128,7 +131,6 @@ async function main() {
         sets: 3,
         reps: 8,
         weight: 100,
-        notes: "背中をまっすぐ保つ",
       },
     }),
   ]);
@@ -138,7 +140,7 @@ async function main() {
     data: {
       userId: user.id,
       date: twoDaysAgo,
-      dialy: "有酸素と自重トレーニング",
+      note: "有酸素と自重トレーニング",
     },
   });
 
@@ -151,7 +153,6 @@ async function main() {
         sets: 1,
         reps: 1,
         duration: 1800, // 30分（秒）
-        notes: "ペースは6分/km",
       },
     }),
     prisma.workoutDetail.create({
@@ -160,7 +161,6 @@ async function main() {
         exerciseId: exercises[4].id, // 懸垂
         sets: 3,
         reps: 8,
-        notes: "チンアップグリップ",
       },
     }),
   ]);

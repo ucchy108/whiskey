@@ -28,6 +28,7 @@ CREATE TABLE `auths` (
 -- CreateTable
 CREATE TABLE `exercises` (
     `id` VARCHAR(36) NOT NULL,
+    `userId` VARCHAR(36) NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     `description` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -41,7 +42,7 @@ CREATE TABLE `workouts` (
     `id` VARCHAR(36) NOT NULL,
     `userId` VARCHAR(36) NOT NULL,
     `date` DATETIME(3) NOT NULL,
-    `dialy` VARCHAR(191) NULL,
+    `note` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -57,7 +58,6 @@ CREATE TABLE `workout_details` (
     `reps` INTEGER NOT NULL,
     `weight` DOUBLE NULL,
     `duration` INTEGER NULL,
-    `notes` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -66,6 +66,9 @@ CREATE TABLE `workout_details` (
 
 -- AddForeignKey
 ALTER TABLE `auths` ADD CONSTRAINT `auths_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `exercises` ADD CONSTRAINT `exercises_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `workouts` ADD CONSTRAINT `workouts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

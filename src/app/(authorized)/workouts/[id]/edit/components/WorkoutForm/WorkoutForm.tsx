@@ -17,7 +17,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Exercise, WorkoutWithDetails } from "@/repositories/workoutRepository";
-import { NotesTextField } from "../NotesTextField";
 import { DurationTextField } from "../DurationTextField";
 import { WeightTextField } from "../WeightTextField";
 import { RepsTextField } from "../RepsTextField";
@@ -61,15 +60,14 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
     defaultValues: {
       id: workout.id,
       date: workout.date.toString().split("T")[0],
-      dialy: workout.dialy || "",
-      details: workout.Detail.map((detail) => ({
+      note: workout.note || "",
+      details: workout.detail.map((detail) => ({
         id: detail.id,
         exerciseId: detail.exerciseId,
         sets: detail.sets,
         reps: detail.reps || 0,
         weight: detail.weight || 0,
         duration: detail.duration || 0,
-        notes: detail.notes || "",
       })),
     },
   });
@@ -87,13 +85,12 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
       reps: 0,
       weight: 0,
       duration: 0,
-      notes: "",
     });
   }, [append, exercises]);
 
   const onSubmit = useCallback(
     async (value: WorkoutFormSchema) => {
-      const originalDetailIds = workout.Detail.map((detail) => detail.id);
+      const originalDetailIds = workout.detail.map((detail) => detail.id);
       const submittedDetailIds =
         value.details?.map((detail) => detail.id) || [];
       const deleteIds = originalDetailIds.filter(
@@ -109,7 +106,7 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
       }
     },
     [
-      workout.Detail,
+      workout.detail,
       workout.id,
       updateWorkout,
       openSuccessSnackbar,
@@ -123,7 +120,7 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>
         <WorkoutDateField control={control} error={errors.date as FieldError} />
-        <DialyTextField control={control} error={errors.dialy as FieldError} />
+        <DialyTextField control={control} error={errors.note as FieldError} />
 
         {/* 運動詳細 */}
         <Box>
@@ -219,11 +216,11 @@ export function WorkoutForm({ workout, exercises }: WorkoutFormProps) {
                     />
                   </Box>
 
-                  <NotesTextField
+                  {/* <NotesTextField
                     control={control}
                     error={errors.details?.[index]?.notes}
                     name={`details.${index}.notes`}
-                  />
+                  /> */}
                 </Stack>
               </Paper>
             ))}

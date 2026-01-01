@@ -20,12 +20,12 @@ model User {
   weight Float
   height Float
 
-  Auth Auth?
-
-  workouts Workout[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  auth Auth?
+  workouts  Workout[]
+  exercises Exercise[]
 
   @@map("users")
 }
@@ -46,12 +46,15 @@ model Auth {
 
 model Exercise {
   id          String  @id @default(uuid()) @db.VarChar(36)
+  userId      String  @db.VarChar(36)
   name        String  @db.VarChar(255)
   description String?
 
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
-  Detail    WorkoutDetail[]
+
+  user User @relation(fields: [userId], references: [id])
+  detail    WorkoutDetail[]
 
   @@map("exercises")
 }
@@ -60,13 +63,13 @@ model Workout {
   id     String   @id @default(uuid()) @db.VarChar(36)
   userId String   @db.VarChar(36)
   date   DateTime
-  dialy  String?
-
-  User User @relation(fields: [userId], references: [id])
+  note  String?
 
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
-  Detail    WorkoutDetail[]
+
+  user User @relation(fields: [userId], references: [id])
+  detail    WorkoutDetail[]
 
   @@map("workouts")
 }
@@ -79,13 +82,12 @@ model WorkoutDetail {
   reps       Int
   weight     Float?
   duration   Int? // Duration in seconds
-  notes      String?
-
-  Workout  Workout  @relation(fields: [workoutId], references: [id])
-  Exercise Exercise @relation(fields: [exerciseId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  workout  Workout  @relation(fields: [workoutId], references: [id])
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
 
   @@map("workout_details")
 }

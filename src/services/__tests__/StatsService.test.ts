@@ -181,14 +181,14 @@ describe("Stats Service", () => {
         {
           id: "workout1",
           date: new Date(),
-          Detail: [
+          detail: [
             {
               id: "detail1",
               sets: 3,
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: {
+              exercise: {
                 id: "ex1",
                 name: "Bench Press",
               },
@@ -290,14 +290,14 @@ describe("Stats Service", () => {
         {
           id: "workout1",
           date: new Date(),
-          Detail: [
+          detail: [
             {
               id: "d1",
               sets: 3,
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex1", name: "Exercise 1" },
+              exercise: { id: "ex1", name: "Exercise 1" },
             },
             {
               id: "d2",
@@ -305,7 +305,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex1", name: "Exercise 1" },
+              exercise: { id: "ex1", name: "Exercise 1" },
             },
             {
               id: "d3",
@@ -313,7 +313,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex2", name: "Exercise 2" },
+              exercise: { id: "ex2", name: "Exercise 2" },
             },
             {
               id: "d4",
@@ -321,7 +321,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex3", name: "Exercise 3" },
+              exercise: { id: "ex3", name: "Exercise 3" },
             },
             {
               id: "d5",
@@ -329,7 +329,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex4", name: "Exercise 4" },
+              exercise: { id: "ex4", name: "Exercise 4" },
             },
             {
               id: "d6",
@@ -337,7 +337,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex5", name: "Exercise 5" },
+              exercise: { id: "ex5", name: "Exercise 5" },
             },
             {
               id: "d7",
@@ -345,7 +345,7 @@ describe("Stats Service", () => {
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex6", name: "Exercise 6" },
+              exercise: { id: "ex6", name: "Exercise 6" },
             },
           ],
         },
@@ -375,14 +375,14 @@ describe("Stats Service", () => {
         {
           id: "workout1",
           date: today,
-          Detail: [
+          detail: [
             {
               id: "d1",
               sets: 3,
               reps: 10,
               weight: 50,
               duration: null,
-              Exercise: { id: "ex1", name: "Bench Press" },
+              exercise: { id: "ex1", name: "Bench Press" },
             },
           ],
         },
@@ -412,14 +412,14 @@ describe("Stats Service", () => {
         {
           id: "workout1",
           date: new Date(),
-          Detail: [
+          detail: [
             {
               id: "d1",
               sets: 3,
               reps: 10,
               weight: 100,
               duration: null,
-              Exercise: { id: "ex1", name: "Bench Press" },
+              exercise: { id: "ex1", name: "Bench Press" },
             },
           ],
         },
@@ -438,7 +438,9 @@ describe("Stats Service", () => {
 
       // Assert
       expect(result.monthlyProgresses).toHaveLength(4);
-      expect(result.monthlyProgresses.every((p) => p.week.startsWith("第"))).toBe(true);
+      expect(
+        result.monthlyProgresses.every((p) => p.week.startsWith("第"))
+      ).toBe(true);
       expect(result.monthlyProgresses.some((p) => p.workouts > 0)).toBe(true);
     });
 

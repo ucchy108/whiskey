@@ -4,7 +4,6 @@ import {
   dialySchema,
   durationSchema,
   exerciseIdSchema,
-  noteSchema,
   repsSchema,
   setsSchema,
   weightSchema,
@@ -85,14 +84,13 @@ const workoutDetailFormSchema = z.object({
   reps: repsFormSchema,
   weight: weightFormSchema,
   duration: durationFormSchema,
-  notes: noteSchema,
 });
 export type WorkoutDetailFormSchema = z.infer<typeof workoutDetailFormSchema>;
 
 export const workoutFormSchema = z.object({
   id: z.string(),
   date: dateFormSchema,
-  dialy: dialySchema,
+  note: dialySchema,
   details: z.array(workoutDetailFormSchema).optional(),
 });
 export type WorkoutFormSchema = z.infer<typeof workoutFormSchema>;

@@ -24,27 +24,27 @@ export interface WorkoutStats {
  */
 export function useWorkoutCardStats(workout: WorkoutWithDetails): WorkoutStats {
   return useMemo(() => {
-    const totalSets = workout.Detail.reduce(
+    const totalSets = workout.detail.reduce(
       (sum, detail) => sum + detail.sets,
       0
     );
 
-    const totalReps = workout.Detail.reduce(
+    const totalReps = workout.detail.reduce(
       (sum, detail) => sum + detail.reps,
       0
     );
 
-    const totalWeight = workout.Detail.reduce((sum, detail) => {
+    const totalWeight = workout.detail.reduce((sum, detail) => {
       const weight = detail.weight || 0;
       return sum + weight * detail.sets;
     }, 0);
 
-    const totalDuration = workout.Detail.reduce(
+    const totalDuration = workout.detail.reduce(
       (sum, detail) => sum + (detail.duration || 0),
       0
     );
 
-    const exerciseCount = workout.Detail.length;
+    const exerciseCount = workout.detail.length;
 
     // 強度レベルの計算
     const intensityLevel = Math.min(5, Math.ceil(exerciseCount / 2));
@@ -61,10 +61,10 @@ export function useWorkoutCardStats(workout: WorkoutWithDetails): WorkoutStats {
     };
 
     // ワークアウトタイプの判定
-    const hasCardio = workout.Detail.some(
+    const hasCardio = workout.detail.some(
       (detail) => detail.duration && detail.duration > 0
     );
-    const hasWeights = workout.Detail.some(
+    const hasWeights = workout.detail.some(
       (detail) => detail.weight && detail.weight > 0
     );
 
@@ -88,5 +88,5 @@ export function useWorkoutCardStats(workout: WorkoutWithDetails): WorkoutStats {
       intensity,
       workoutType,
     };
-  }, [workout.Detail]);
+  }, [workout.detail]);
 }
