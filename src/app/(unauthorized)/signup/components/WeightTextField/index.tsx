@@ -1,1 +1,0 @@
-export { WeightTextField } from "./WeightTextField";
