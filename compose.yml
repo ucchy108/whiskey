@@ -1,18 +1,57 @@
 name: whiskey
 
 services:
+  # PostgreSQL Database
   db:
-    image: mysql:latest
+    image: postgres:16-alpine
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: whiskey
-      MYSQL_USER: whiskey
-      MYSQL_PASSWORD: password
+      POSTGRES_USER: whiskey
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: whiskey
     ports:
-      - "3306:3306"
+      - "5433:5432"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - db-volume:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whiskey"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Go Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      - DATABASE_URL=postgresql://whiskey:password@db:5432/whiskey?sslmode=disable
+      - PORT=8080
+      - ENV=development
+    depends_on:
+      db:
+        condition: service_healthy
+    command: air -c .air.toml
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
 
 volumes:
-  db-volume:
+  postgres-data:
+  go-mod-cache:

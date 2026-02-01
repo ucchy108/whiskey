@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Copy source code
+COPY . .
+
+# Install dependencies will be done via docker-compose volume mount
+# RUN npm install
+
+EXPOSE 3000
+
+# Vite dev server with npm install on startup
+CMD ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0"]

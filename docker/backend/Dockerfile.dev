@@ -1,0 +1,20 @@
+FROM golang:1.23-alpine
+
+# Install development tools
+RUN go install github.com/air-verse/air@v1.61.1
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+EXPOSE 8080
+
+# Air will be run via docker-compose command
+CMD ["air", "-c", ".air.toml"]
