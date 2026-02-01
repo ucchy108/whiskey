@@ -4,406 +4,409 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-このプロジェクトは**whiskey**と呼ばれるワークアウト管理アプリケーションです。Next.js 15、TypeScript、Material-UI、NextAuth、Prisma、MySQLを使用して構築されています。
+このプロジェクトは**whiskey**と呼ばれるワークアウト管理アプリケーションです。Go、React、TypeScript、Material-UI、PostgreSQLを使用して構築されています。
+
+### 技術スタック
+
+**バックエンド:**
+- **言語**: Go 1.23
+- **フレームワーク**: Gorilla Mux
+- **ORM**: sqlc（予定）
+- **データベース**: PostgreSQL 16
+
+**フロントエンド:**
+- **フレームワーク**: React 18 + TypeScript
+- **ビルドツール**: Vite
+- **UIライブラリ**: Material-UI (MUI) v5
+- **ルーティング**: React Router v6（予定）
+
+**インフラ:**
+- **コンテナ**: Docker + Docker Compose
+- **開発ツール**: Air (Go hot reload)
+
+**アーキテクチャ:**
+- **Clean Architecture + DDD**（ドメイン駆動設計）
+
+### 主な機能（PoC目標）
+
+1. **GitHub風の可視化**: 毎日の運動強度を「草を生やす」形式で表示し、継続を可視化
+2. **重量アップの追跡**: 種目ごとの重量成長（推定1RMなど）をグラフで確認
 
 ## 開発環境のセットアップ
 
 ### 環境構成
-- **MySQL**: Dockerコンテナで動作
-- **Next.jsアプリケーション**: ホストマシン（ローカル）で動作
+
+このプロジェクトでは、**全てのサービス**をDockerコンテナで実行します。
+
+- **PostgreSQL**: Dockerコンテナ（`db`サービス）
+- **Go Backend API**: Dockerコンテナ（`backend`サービス）
+- **React Frontend**: Dockerコンテナ（`frontend`サービス）
 
 ### 起動手順
 
 ```bash
-# 1. MySQLコンテナを起動
-task up
-# または
+# 1. Dockerコンテナを起動（全サービス）
 docker compose up -d
 
-# 2. Next.js開発サーバーを起動
-npm run dev
-# または
-task serve
+# 2. ログを確認
+docker compose logs -f
 
 # 3. ブラウザでアクセス
-# http://localhost:3000
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8080
 ```
 
 ### その他のコマンド
 
 ```bash
-# MySQLコンテナを停止
-task down
-# または
+# コンテナを停止
 docker compose down
 
-# Prisma Studioの起動
-task prisma:studio
-# または
-npx prisma studio
+# コンテナを再ビルド
+docker compose up -d --build
 
-# プロダクションビルド
-npm run build
+# 特定のサービスのログを確認
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f db
 
-# プロダクションサーバーの起動
-npm run start
+# コンテナの状態を確認
+docker compose ps
 
-# ESLintの実行
-npm run lint
+# PostgreSQLに接続
+docker compose exec db psql -U whiskey -d whiskey
+
+# Backendコンテナに入る
+docker compose exec backend sh
+
+# Frontendコンテナに入る
+docker compose exec frontend sh
 ```
 
 ## プロジェクト構造
 
 ```
 /
-├── src/
-│   ├── app/
-│   │   ├── (auth)/         # 認証関連のページ（signin, signup）
-│   │   ├── api/            # API Routes
+├── backend/                 # Go API
+│   ├── cmd/
+│   │   └── api/            # メインアプリケーション
+│   │       └── main.go
+│   ├── domain/             # ドメイン層
+│   │   ├── entity/         # エンティティ
+│   │   └── repository/     # リポジトリインターフェース
+│   ├── usecase/            # ユースケース層
+│   ├── infrastructure/     # インフラストラクチャ層
+│   │   ├── database/       # データベース実装
+│   │   └── router/         # ルーティング
+│   ├── interfaces/         # インターフェース層
+│   │   └── handler/        # HTTPハンドラー
+│   ├── go.mod
+│   ├── go.sum
+│   └── .air.toml          # Air設定（ホットリロード）
+├── frontend/               # React App
+│   ├── src/
 │   │   ├── components/     # 共通コンポーネント
-│   │   ├── dashboard/      # ダッシュボードページ
-│   │   ├── hooks/          # カスタムフック
-│   │   ├── settings/       # 設定ページ
-│   │   ├── statistics/     # 統計ページ
-│   │   └── workouts/       # ワークアウト管理ページ
-│   ├── lib/
-│   │   ├── auth/           # NextAuth設定
-│   │   └── prisma/         # Prisma設定とユーティリティ
-│   ├── repositories/       # データアクセス層
-│   │   ├── authRepository.ts
-│   │   ├── workoutRepository.ts
-│   │   └── __tests__/      # Repositoryテスト（実DB使用）
-│   │       ├── helpers/
-│   │       │   └── testDb.ts  # テストヘルパー関数
-│   │       ├── authRepository.test.ts
-│   │       └── workoutRepository.test.ts
-│   ├── services/           # ビジネスロジック層
-│   │   └── __tests__/      # Serviceテスト（モック使用）
-│   ├── generated/          # Prisma生成ファイル
-│   │   └── prisma/
-│   └── middleware.ts       # Next.js middleware
-├── prisma/
-│   ├── schema.prisma       # データベーススキーマ
-│   └── migrations/         # データベースマイグレーション
-├── vitest.config.ts        # Vitestテスト設定
-├── vitest.setup.ts         # Vitestセットアップ
-└── package.json
+│   │   ├── pages/          # ページコンポーネント
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── public/
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── tsconfig.json
+├── docker/                 # Dockerfiles
+│   ├── backend/
+│   │   └── Dockerfile.dev
+│   └── frontend/
+│       └── Dockerfile.dev
+├── docs/                   # ドキュメント
+│   └── work-logs/          # 作業ログ
+├── compose.yml             # Docker Compose設定
+└── README.md
 ```
 
 ## データベース設計
 
-### 主要なモデル
-- **User**: ユーザー情報（name, age, weight, height）
-- **Auth**: 認証情報（email, password）- Userと1対1のリレーション
-- **Exercise**: 運動種目のマスタデータ（name, description）
-- **Workout**: ワークアウト記録（date, dialy/memo）
-- **WorkoutDetail**: ワークアウト詳細（sets, reps, weight, duration, notes）- WorkoutとExerciseへの外部キー
+### 主要なテーブル（予定）
 
-### Prismaコマンド
+- **users**: ユーザー情報
+- **profiles**: プロフィール（表示名、属性）- usersと1対1
+- **workouts**: トレーニングセッション（日付、運動強度スコア）
+- **exercises**: 種目マスタ（ベンチプレス、スクワットなど）
+- **workout_sets**: セット詳細（重量、回数、推定1RM）
+
+### データベースコマンド（予定）
+
 ```bash
-# データベース接続とマイグレーション
-npx prisma migrate dev
+# マイグレーション実行（golang-migrate使用予定）
+# migrate -path migrations -database "postgres://whiskey:password@localhost:5433/whiskey?sslmode=disable" up
 
-# Prisma Studioの起動
-npx prisma studio
+# sqlcコード生成（予定）
+# sqlc generate
 
-# Prisma Clientの再生成
-npx prisma generate
+# PostgreSQLに直接接続
+docker compose exec db psql -U whiskey -d whiskey
 ```
 
-## 認証システム
+## 認証システム（予定）
 
-- **NextAuth v5**を使用
-- **Credentials Provider**でメール/パスワード認証
+- **JWT**ベースの認証
 - **bcrypt**でパスワードハッシュ化
-- **JWT**ベースのセッション管理
+- Go標準ライブラリ + jwtライブラリを使用
 
 ## UI/UXライブラリ
 
-- **Material-UI v6**を使用
+- **Material-UI v5**を使用
 - **Emotion**でCSS-in-JS
-- **React Hook Form**とZodでフォーム管理
-
-## 重要な技術仕様
-
-### 認証フロー
-1. ユーザーはメール/パスワードでサインイン
-2. middleware.tsで認証チェック
-3. 未認証ユーザーは/signinへリダイレクト
-
-### コンポーネント設計
-- **1コンポーネント1ディレクトリ**: 各コンポーネントは独自のディレクトリに配置し、`index.ts`でexport
-- `components/`と`_lib/`でページ固有のコンポーネントとロジックを分離
-- 共通コンポーネントは`app/components/`に配置
-
-#### コンポーネントディレクトリ構造
-```
-components/
-├── ComponentName/
-│   ├── ComponentName.tsx  # メインコンポーネント
-│   └── index.ts           # export { ComponentName } from "./ComponentName";
-└── AnotherComponent/
-    ├── AnotherComponent.tsx
-    └── index.ts
-```
-
-### API設計
-- Next.js App RouterのAPI Routes使用
-- `/api/workouts/`でワークアウトデータのCRUD操作
-- `/api/auth/[...nextauth]/`でNextAuth設定
+- **React Hook Form**（予定）
 
 ## アーキテクチャ設計
 
-このプロジェクトは**レイヤードアーキテクチャ**を採用しています。
+このプロジェクトは**Clean Architecture + DDD**を採用しています。
 
 ### レイヤー構成
 
 ```
-API Routes (app/api/)
+Interfaces Layer (HTTP Handlers)
     ↓
-Service Layer (src/services/)
+Usecase Layer (Business Logic)
     ↓
-Repository Layer (src/repositories/)
+Domain Layer (Entities & Repository Interfaces)
     ↓
-Database (Prisma + MySQL)
+Infrastructure Layer (Database Implementation)
 ```
+
+### 依存関係のルール
+
+- **外側の層は内側の層に依存できる**
+- **内側の層は外側の層に依存してはいけない**
+- **Domain層は他のどの層にも依存しない**
 
 ### 各レイヤーの責務
 
-#### Repository Layer (`src/repositories/`)
-- **責務**: データアクセスロジックのみ
-- **依存**: Prisma Clientのみ
-- **例**: `authRepository.ts`, `workoutRepository.ts`
+#### Domain Layer (`backend/domain/`)
+- **責務**: ビジネスルールとエンティティの定義
+- **依存**: 他のどの層にも依存しない
+- **例**: `entity/user.go`, `repository/user_repository.go`（インターフェース定義）
+- **禁止事項**: 外部ライブラリ、フレームワークへの依存
+
+#### Usecase Layer (`backend/usecase/`)
+- **責務**: ビジネスロジックの実装
+- **依存**: Domain層のみ
+- **例**: ユーザー登録、ワークアウト記録の処理
+- **禁止事項**: HTTPリクエスト/レスポンスの処理、直接のDB操作
+
+#### Infrastructure Layer (`backend/infrastructure/`)
+- **責務**: 外部システムとの連携実装
+- **依存**: Domain層のインターフェースを実装
+- **例**: PostgreSQL実装、外部API連携
 - **禁止事項**: ビジネスロジックを含めない
 
-#### Service Layer (`src/services/`)
-- **責務**: ビジネスロジックの実装
-- **依存**: Repositoryを使用
-- **例**: ユーザー登録時のバリデーション、複数のRepositoryの組み合わせ
-- **禁止事項**: 直接Prismaを呼ばない
-
-#### API Routes (`app/api/`)
+#### Interfaces Layer (`backend/interfaces/`)
 - **責務**: HTTPリクエスト/レスポンスの処理
-- **依存**: Serviceを使用
-- **例**: リクエストのパース、認証チェック、レスポンスの整形
-- **禁止事項**: ビジネスロジックを含めない、直接Repositoryを呼ばない
+- **依存**: Usecase層を使用
+- **例**: HTTPハンドラー、リクエストのパース、レスポンスの整形
+- **禁止事項**: ビジネスロジックを含めない
 
-## テスト戦略
+## テスト戦略（予定）
 
 ### テストフレームワーク
-- **Vitest**: 高速なユニット/統合テスト
-- **Testing Library**: Reactコンポーネントテスト
-- **実DB**: Repository層の統合テスト
+- **Go**: `testing`パッケージ + `testify`
+- **React**: Vitest + Testing Library
 
 ### レイヤー別テスト方針
 
-#### Repository Layer - Integration Test（実DB使用）
-- **方針**: 実際のデータベースを使用した統合テスト
-- **理由**:
-  - 実際のSQL生成とDB制約を検証
-  - Prismaの動作を実環境で確認
-  - DB制約（UNIQUE、外部キーなど）を検証
+#### Domain Layer - Unit Test
+- **方針**: エンティティのビジネスルールをテスト
 - **モック**: 使用しない
-- **テストヘルパー**: `src/repositories/__tests__/helpers/testDb.ts`
 
-```typescript
-// ✅ 良い例: 実DBを使う
-describe("authRepository", () => {
-  afterEach(async () => {
-    await cleanupTestData(); // 実DBをクリーンアップ
-  });
+#### Usecase Layer - Unit Test
+- **方針**: Repositoryをモックしてビジネスロジックをテスト
+- **モック**: Repositoryインターフェースをモック
 
-  it("メールアドレスで認証情報を検索できる", async () => {
-    const testAuth = await createTestAuthWithUser({ /* ... */ });
-    const result = await authRepository.findByEmail(testEmail);
-    expect(result?.email).toBe(testEmail);
-  });
-});
+#### Infrastructure Layer - Integration Test
+- **方針**: 実際のPostgreSQLを使用した統合テスト
+- **モック**: 使用しない
 
-// ❌ 悪い例: Prismaをモックする
-vi.mock("@/lib/prisma"); // Repository層ではモックを使わない
-```
-
-#### Service Layer - Unit Test（モック使用）
-- **方針**: Repositoryをモックしたユニットテスト
-- **理由**:
-  - ビジネスロジックのみをテスト
-  - テスト速度の向上
-  - Repository層で既にDBは検証済み
-- **モック**: Repositoryをモック
-
-```typescript
-// ✅ 良い例: Repositoryをモックする
-vi.mock("@/repositories/authRepository");
-
-describe("AuthService", () => {
-  it("ユーザー登録時にパスワードをハッシュ化する", async () => {
-    const mockedAuthRepository = authRepository as MockedObject<typeof authRepository>;
-    mockedAuthRepository.create.mockResolvedValue({ /* ... */ });
-
-    await authService.register({ /* ... */ });
-
-    expect(mockedAuthRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        password: expect.stringMatching(/^\$2b\$/), // bcryptハッシュ
-      })
-    );
-  });
-});
-```
-
-#### API Routes - Integration/E2E Test
-- **方針**: ServiceをモックするかE2Eテスト
-- **モック**: Serviceをモック（または実Serviceを使用）
-
-### テストヘルパー関数
-
-`src/repositories/__tests__/helpers/testDb.ts`に以下のヘルパーが用意されています：
-
-```typescript
-// 全テストデータのクリーンアップ
-await cleanupTestData();
-
-// テスト用のAuth + User作成
-const auth = await createTestAuthWithUser({
-  email: "test@example.com",
-  password: "hashed",
-  name: "Test User",
-  age: 25,
-  weight: 70,
-  height: 175,
-});
-
-// テスト用のUser作成（認証なし）
-const user = await createTestUser({ /* ... */ });
-
-// テスト用のExercise作成
-const exercise = await createTestExercise({
-  name: "Bench Press",
-  description: "Chest exercise",
-});
-
-// テスト用のWorkout作成
-const workout = await createTestWorkout({ /* ... */ });
-
-// テスト用のWorkoutWithDetails作成
-const workoutWithDetails = await createTestWorkoutWithDetails({
-  userId: user.id,
-  date: new Date(),
-  details: [{ exerciseId: exercise.id, sets: 3, reps: 10 }],
-});
-```
-
-### テスト実行コマンド
-
-```bash
-# 事前準備: MySQLコンテナを起動
-task up
-
-# 全テストを実行
-npm test
-
-# 特定のファイルを実行
-npm test -- src/repositories/__tests__/authRepository.test.ts
-
-# Watchモードで実行
-npm test -- --watch
-
-# カバレッジを取得
-npm test -- --coverage
-```
-
-### テスト実装のルール
-
-1. **Repository層**
-   - ✅ 実DBを使う
-   - ✅ `beforeEach`でテストデータ作成
-   - ✅ `afterEach`で`cleanupTestData()`
-   - ❌ Prismaをモックしない
-   - ❌ `as any`を使わない
-
-2. **Service層**
-   - ✅ Repositoryをモックする
-   - ✅ ビジネスロジックのみをテスト
-   - ❌ 直接DBアクセスしない
-
-3. **型安全性**
-   - ✅ 適切な型定義を使う
-   - ✅ Repository/Serviceから型をimportする
-   - ❌ `any`型を使わない
+#### Interfaces Layer - Integration Test
+- **方針**: HTTPハンドラーのテスト
+- **モック**: Usecaseをモック
 
 ## 開発時の注意事項
 
 ### コード品質
+
+**Go:**
+- `gofmt`でフォーマット
+- `golangci-lint`でリント
+- エラーハンドリングを徹底
+- インターフェースを活用した疎結合設計
+
+**TypeScript:**
 - TypeScriptの型定義は厳格に管理
-- `any`型の使用を避ける（特にテストコード）
-- Zodスキーマでバリデーション実装
-- Material-UIのテーマ設定はtheme.tsで管理
-- 全コンポーネントにindex.tsでexportを統一
+- `any`型の使用を避ける
+- Material-UIのテーマ設定で色を管理
 
 ### アーキテクチャ
-- レイヤードアーキテクチャを厳守
-- Repository層はデータアクセスのみ
-- Service層でビジネスロジックを実装
-- API Routesは薄く保つ
+
+- **Clean Architectureを厳守**
+- **Domain層は外部依存を持たない**
+- **Usecase層でビジネスロジックを実装**
+- **Infrastructure層は差し替え可能に設計**
 
 ### テスト
-- Repository層は実DBを使った統合テスト
-- Service層以上はモックを使ったユニットテスト
-- テストヘルパー（`testDb.ts`）を活用
-- テスト後は必ず`cleanupTestData()`でクリーンアップ
+
+- **Domain層**: ビジネスルールのユニットテスト
+- **Usecase層**: Repositoryをモックしたユニットテスト
+- **Infrastructure層**: 実DBを使った統合テスト
+- **テストファーストで実装**
+
+## Git ワークフロー
+
+このプロジェクトでは、ブランチ戦略とPull Requestを使用した開発フローを採用しています。
+
+### ブランチ戦略
+
+**作業開始時:**
+- ✅ **必ず新しいブランチを作成**してから作業を開始
+- ✅ mainブランチから分岐
+- ✅ ブランチ命名規則:
+  - 機能追加: `feature/<task-name>`
+  - バグ修正: `fix/<issue-name>`
+  - リファクタリング: `refactor/<description>`
+  - ドキュメント: `docs/<description>`
+
+**例:**
+```bash
+# 機能追加
+feature/add-workout-form
+feature/github-style-heatmap
+
+# バグ修正
+fix/health-check-error
+fix/database-connection
+
+# リファクタリング
+refactor/clean-architecture-migration
+```
+
+**作業中:**
+- ✅ こまめにコミット
+- ✅ コミットメッセージは明確に記述
+- ✅ Co-Authored-By を付与:
+  ```
+  Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+  ```
+
+**作業完了時:**
+- ✅ `/create-pr` Skillを使用してPRを作成
+- ✅ PRテンプレートに沿って記述
+- ✅ レビューを依頼
+
+### 禁止事項
+
+- ❌ **mainブランチへの直接コミット禁止**
+- ❌ **ブランチを切らずに作業を開始しない**
+- ❌ **push --force to main/master 禁止**
+- ❌ **git commitに--no-verifyフラグを使用しない**（フックをスキップしない）
+
+### Claude Codeの動作
+
+**タスク開始時:**
+1. ユーザーから新しいタスクを受け取る
+2. **自動的に新しいブランチを作成**（ブランチ名を提案）
+3. 作業を開始
+
+**タスク完了時:**
+1. 変更をコミット
+2. **ユーザーに「PRを作成しますか？」と確認**
+3. 承認されたら `/create-pr` Skillを実行
+4. PRを作成してURLを報告
+
+### Git操作の例
+
+```bash
+# 1. 新しいブランチを作成
+git checkout -b feature/add-user-profile
+
+# 2. 作業を実施（ファイル編集）
+
+# 3. 変更をステージング
+git add backend/domain/entity/user.go
+
+# 4. コミット
+git commit -m "feat: Add User entity with validation
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+# 5. リモートにプッシュ
+git push -u origin feature/add-user-profile
+
+# 6. PRを作成（/create-pr Skillを使用）
+```
 
 ## Docker環境について
 
 ### Docker環境の構成
 
-このプロジェクトでは、**MySQLのみ**をDockerコンテナで実行します。
+このプロジェクトでは、**全てのサービス**をDockerコンテナで実行します。
 
 ```yaml
 # compose.yml
 services:
   db:
-    image: mysql:latest
+    image: postgres:16-alpine
     ports:
-      - "3306:3306"
-    # MySQLデータベース
-```
+      - "5433:5432"
 
-- **MySQL**: Dockerコンテナ（`db`サービス）
-- **Next.jsアプリケーション**: ホストマシンで実行
-- **Node.js依存パッケージ**: ホストマシンにインストール
+  backend:
+    build: ./docker/backend
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./docker/frontend
+    ports:
+      - "3000:3000"
+```
 
 ### Docker操作コマンド
 
 ```bash
-# MySQLコンテナを起動
-task up
+# 全コンテナを起動
 docker compose up -d
 
-# MySQLコンテナを停止
-task down
+# 全コンテナを停止
 docker compose down
 
-# MySQLコンテナのログを確認
-docker compose logs db
+# 特定のサービスのログを確認
+docker compose logs -f backend
 
-# MySQLコンテナの状態を確認
+# コンテナの状態を確認
 docker compose ps
+
+# コンテナを再ビルド
+docker compose up -d --build
 ```
 
 ### データベース接続
 
-アプリケーションはホストマシンから`localhost:3306`でMySQLに接続します。
+**コンテナ内からの接続:**
+```
+postgresql://whiskey:password@db:5432/whiskey?sslmode=disable
+```
 
-```bash
-# .envファイル
-DATABASE_URL=mysql://whiskey:password@localhost:3306/whiskey
+**ホストマシンからの接続:**
+```
+postgresql://whiskey:password@localhost:5433/whiskey?sslmode=disable
 ```
 
 ### アクセスURL
-- **Next.jsアプリケーション**: http://localhost:3000
-- **MySQL**: localhost:3306
-- **Prisma Studio**: http://localhost:5555（起動時）
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **Backend Health Check**: http://localhost:8080/health
+- **PostgreSQL**: localhost:5433
 
 ## 🔴 CRITICAL: 作業ログの自動記録（絶対遵守）
 
@@ -414,7 +417,7 @@ DATABASE_URL=mysql://whiskey:password@localhost:3306/whiskey
 user: [任意のタスク依頼]
 ↓
 assistant: [Skillツール: work-log] ← 必ず最初に実行
-assistant: [TodoWrite] ← 「作業ログ更新」todoを追加
+assistant: [TaskCreate] ← タスクを作成
 assistant: [その他のツール実行...]
 ```
 
@@ -422,8 +425,8 @@ assistant: [その他のツール実行...]
 ```
 assistant: [最後のEdit/Write]
 ↓
-assistant: [Skillツール: work-log] ← 報告前に必ず実行
-assistant: [TodoWrite] ← 「作業ログ更新」をcompleted
+assistant: [作業ログファイルに完了サマリーを追記]
+assistant: [TaskUpdate: completed] ← タスクを完了
 assistant: 「〜が完了しました」
 ```
 
@@ -435,61 +438,10 @@ assistant: 「〜が完了しました」
    - YES → work-log実行済み？ → NO → **今すぐ実行**
 
 2. **ファイルを編集した？（2つ以上）**
-   - YES → work-log実行済み？ → NO → **今すぐ実行**
+   - YES → work-log記録済み？ → NO → **今すぐ記録**
 
 3. **完了報告する？**
-   - YES → work-log実行済み？ → NO → **今すぐ実行**
-
-### TodoWriteとの統合
-
-**タスク開始時の自動Todo追加:**
-```typescript
-{
-  "todos": [
-    {
-      "content": "[実タスク内容]",
-      "status": "in_progress",
-      "activeForm": "[実タスク内容]中"
-    },
-    {
-      "content": "作業ログを完了時に更新",
-      "status": "pending",
-      "activeForm": "作業ログを更新中"
-    }
-  ]
-}
-```
-
-**タスク完了時のTodo更新:**
-1. 最後のtodo「作業ログを完了時に更新」を`in_progress`に変更
-2. work-logスキルを実行
-3. todoを`completed`に変更
-
-### 実行例
-
-❌ **悪い例（従来）**:
-```
-user: WorkoutFormをリファクタリングして
-assistant: WorkoutFormを読み込みます
-assistant: [Read]
-assistant: リファクタリングしました
-assistant: [Edit]
-assistant: 完了しました
-```
-
-✅ **良い例（改善後）**:
-```
-user: WorkoutFormをリファクタリングして
-assistant: [Skill: work-log "WorkoutFormリファクタリング開始"]
-assistant: [TodoWrite: "WorkoutFormリファクタリング", "作業ログ更新"]
-assistant: WorkoutFormを読み込みます
-assistant: [Read]
-assistant: リファクタリングしました
-assistant: [Edit]
-assistant: [Skill: work-log "WorkoutFormリファクタリング完了"]
-assistant: [TodoWrite: "作業ログ更新" → completed]
-assistant: 完了しました
-```
+   - YES → work-log更新済み？ → NO → **今すぐ更新**
 
 ### 禁止事項
 
@@ -502,54 +454,56 @@ assistant: 完了しました
 
 ### コマンド実行の原則
 
-**全てのnpm/npxコマンドはホストマシン（ローカル）で直接実行してください。**
+**全てのコマンドはDockerコンテナ内で実行します。**
 
 ```bash
-# ✅ 正しい: ホストで直接実行
-npm test
-npm run dev
-npx prisma migrate dev
-npm install
+# ✅ 正しい: Dockerコンテナで実行
+docker compose up -d
+docker compose logs -f backend
+docker compose exec backend go test ./...
+docker compose exec frontend npm test
 
-# ❌ 間違い: webコンテナは存在しない
-docker compose exec web npm test  # エラー: webサービスが存在しない
+# ❌ 間違い: ホストで直接実行（環境が揃っていない）
+go test ./...  # Goがホストにインストールされていない可能性
+npm test       # Node.jsがホストにインストールされていない可能性
 ```
 
 ### 開発作業の流れ
 
-1. **MySQLコンテナを起動**
+1. **Dockerコンテナを起動**
    ```bash
-   task up
+   docker compose up -d
    ```
 
-2. **Next.js開発サーバーを起動**
-   ```bash
-   npm run dev
-   ```
+2. **開発作業**
+   - ファイル編集: ホストマシンで実行（VSCode等）
+   - Go依存関係の追加: `docker compose exec backend go mod tidy`
+   - React依存関係の追加: `docker compose exec frontend npm install <package>`
+   - テスト実行: `docker compose exec backend go test ./...`
 
-3. **開発作業**
-   - ファイル編集: ホストマシンで実行
-   - テスト実行: ホストマシンで`npm test`
-   - DB操作: ホストマシンで`npx prisma ...`
-
-4. **必要に応じてMySQLコンテナを停止**
+3. **コンテナを停止**
    ```bash
-   task down
+   docker compose down
    ```
 
 ### Claude Code使用時の注意
 
-- **テスト実行**: `npm test`（ホストで実行）
-  - Repository層のテストは実DB（Docker MySQL）を使用
-  - テスト実行前に`task up`でMySQLを起動しておくこと
-- **データベース操作**: `npx prisma migrate dev`（ホストで実行）
-- **パッケージ管理**: `npm install`（ホストで実行）
-- **ビルド**: `npm run build`（ホストで実行）
+- **Go開発**: コンテナ内で`go`コマンドを実行
+  - 依存関係: `docker compose exec backend go mod tidy`
+  - テスト: `docker compose exec backend go test ./...`
+  - ビルド: `docker compose exec backend go build ./cmd/api`
 
-### テスト環境について
+- **React開発**: コンテナ内で`npm`コマンドを実行
+  - 依存関係: `docker compose exec frontend npm install`
+  - テスト: `docker compose exec frontend npm test`
+  - ビルド: `docker compose exec frontend npm run build`
 
-- **Repository層のテスト**: Docker MySQLを使用（実DB）
-  - テスト実行前に`task up`でMySQLコンテナを起動
-  - `DATABASE_URL=mysql://whiskey:password@localhost:3306/whiskey`で接続
-- **Service層のテスト**: モックを使用（DB接続不要）
-- テストデータは各テスト後に`cleanupTestData()`で自動削除
+- **データベース操作**: コンテナ内で`psql`コマンドを実行
+  - 接続: `docker compose exec db psql -U whiskey -d whiskey`
+
+### Hot Reload
+
+- **Backend**: Airによる自動リロード（コード変更を検知）
+- **Frontend**: Viteによる自動リロード（コード変更を検知）
+
+コードを編集すると自動的に再ビルド・リロードされます。

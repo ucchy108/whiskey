@@ -1,0 +1,25 @@
+FROM golang:1.23-alpine
+
+# Install development tools
+RUN apk add --no-cache curl && \
+    go install github.com/air-verse/air@v1.61.1 && \
+    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
+    mv migrate /usr/local/bin/migrate && \
+    chmod +x /usr/local/bin/migrate && \
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.25.0
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+EXPOSE 8080
+
+# Air will be run via docker-compose command
+CMD ["air", "-c", ".air.toml"]
