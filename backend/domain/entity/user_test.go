@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ucchy108/whiskey/backend/domain/valueobject"
+
 	"github.com/google/uuid"
 )
 
@@ -26,28 +28,28 @@ func TestNewUser(t *testing.T) {
 			email:       "invalid-email",
 			password:    "password123",
 			wantErr:     true,
-			expectedErr: ErrInvalidEmail,
+			expectedErr: valueobject.ErrInvalidEmail,
 		},
 		{
 			name:        "異常系: 無効なメールアドレス形式（ドメインなし）",
 			email:       "test@",
 			password:    "password123",
 			wantErr:     true,
-			expectedErr: ErrInvalidEmail,
+			expectedErr: valueobject.ErrInvalidEmail,
 		},
 		{
 			name:        "異常系: パスワードが短すぎる（7文字）",
 			email:       "test@example.com",
 			password:    "pass123",
 			wantErr:     true,
-			expectedErr: ErrPasswordTooShort,
+			expectedErr: valueobject.ErrPasswordTooShort,
 		},
 		{
 			name:        "異常系: パスワードが空",
 			email:       "test@example.com",
 			password:    "",
 			wantErr:     true,
-			expectedErr: ErrPasswordTooShort,
+			expectedErr: valueobject.ErrPasswordTooShort,
 		},
 		{
 			name:     "正常系: 最小長のパスワード（8文字）",
@@ -66,7 +68,7 @@ func TestNewUser(t *testing.T) {
 			email:       "test@example.com",
 			password:    "1234567890123456789012345678901234567890123456789012345678901234567890123",
 			wantErr:     true,
-			expectedErr: ErrPasswordTooLong,
+			expectedErr: valueobject.ErrPasswordTooLong,
 		},
 	}
 
@@ -96,15 +98,17 @@ func TestNewUser(t *testing.T) {
 			}
 
 			// NOTE: 生成されたユーザーの基本フィールドを検証
-			if user.Email != tt.email {
-				t.Errorf("user.Email = %v, want %v", user.Email, tt.email)
+			// Email値オブジェクトは正規化（小文字化）されるため、.String()で比較
+			expectedEmail, _ := valueobject.NewEmail(tt.email)
+			if user.Email.String() != expectedEmail.String() {
+				t.Errorf("user.Email = %v, want %v", user.Email.String(), expectedEmail.String())
 			}
 
 			if user.ID == uuid.Nil {
 				t.Error("user.ID should not be nil UUID")
 			}
 
-			if user.PasswordHash == "" {
+			if user.PasswordHash.String() == "" {
 				t.Error("user.PasswordHash should not be empty")
 			}
 
@@ -187,7 +191,7 @@ func TestUser_UpdateEmail(t *testing.T) {
 			name:        "異常系: 無効なメールアドレス",
 			newEmail:    "invalid-email",
 			wantErr:     true,
-			expectedErr: ErrInvalidEmail,
+			expectedErr: valueobject.ErrInvalidEmail,
 		},
 	}
 
@@ -211,8 +215,10 @@ func TestUser_UpdateEmail(t *testing.T) {
 				return
 			}
 
-			if user.Email != tt.newEmail {
-				t.Errorf("user.Email = %v, want %v", user.Email, tt.newEmail)
+			// Email値オブジェクトは正規化（小文字化）されるため、.String()で比較
+			expectedEmail, _ := valueobject.NewEmail(tt.newEmail)
+			if user.Email.String() != expectedEmail.String() {
+				t.Errorf("user.Email = %v, want %v", user.Email.String(), expectedEmail.String())
 			}
 
 			if !user.UpdatedAt.After(originalUpdatedAt) {
@@ -252,13 +258,13 @@ func TestUser_UpdatePassword(t *testing.T) {
 			name:        "異常系: パスワードが短すぎる",
 			newPassword: "short",
 			wantErr:     true,
-			expectedErr: ErrPasswordTooShort,
+			expectedErr: valueobject.ErrPasswordTooShort,
 		},
 		{
 			name:        "異常系: パスワードが長すぎる（73文字）",
 			newPassword: "1234567890123456789012345678901234567890123456789012345678901234567890123",
 			wantErr:     true,
-			expectedErr: ErrPasswordTooLong,
+			expectedErr: valueobject.ErrPasswordTooLong,
 		},
 	}
 
@@ -282,7 +288,8 @@ func TestUser_UpdatePassword(t *testing.T) {
 				return
 			}
 
-			if user.PasswordHash == originalPasswordHash {
+			// HashedPassword値オブジェクトが変更されたことを確認
+			if user.PasswordHash.Equals(originalPasswordHash) {
 				t.Error("PasswordHash should be different after UpdatePassword")
 			}
 
@@ -295,145 +302,6 @@ func TestUser_UpdatePassword(t *testing.T) {
 				t.Errorf("VerifyPassword() failed with new password: %v", err)
 			}
 		})
-	}
-}
-
-func TestValidateEmail(t *testing.T) {
-	tests := []struct {
-		name    string
-		email   string
-		wantErr bool
-	}{
-		{
-			name:    "正常系: 標準的なメールアドレス",
-			email:   "user@example.com",
-			wantErr: false,
-		},
-		{
-			name:    "正常系: サブドメイン付き",
-			email:   "user@mail.example.com",
-			wantErr: false,
-		},
-		{
-			name:    "正常系: 数字とドット含む",
-			email:   "user.name123@example.com",
-			wantErr: false,
-		},
-		{
-			name:    "異常系: @なし",
-			email:   "userexample.com",
-			wantErr: true,
-		},
-		{
-			name:    "異常系: ドメインなし",
-			email:   "user@",
-			wantErr: true,
-		},
-		{
-			name:    "異常系: ローカルパートなし",
-			email:   "@example.com",
-			wantErr: true,
-		},
-		{
-			name:    "異常系: TLDなし",
-			email:   "user@example",
-			wantErr: true,
-		},
-		{
-			name:    "異常系: 空文字",
-			email:   "",
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateEmail(tt.email)
-
-			if tt.wantErr && err == nil {
-				t.Error("ValidateEmail() error = nil, wantErr true")
-			}
-
-			if !tt.wantErr && err != nil {
-				t.Errorf("ValidateEmail() error = %v, wantErr false", err)
-			}
-		})
-	}
-}
-
-func TestValidatePassword(t *testing.T) {
-	tests := []struct {
-		name     string
-		password string
-		wantErr  bool
-	}{
-		{
-			name:     "正常系: 8文字のパスワード（最小長）",
-			password: "12345678",
-			wantErr:  false,
-		},
-		{
-			name:     "正常系: 72文字のパスワード（最大長）",
-			password: "123456789012345678901234567890123456789012345678901234567890123456789012",
-			wantErr:  false,
-		},
-		{
-			name:     "正常系: 12文字のパスワード",
-			password: "password1234",
-			wantErr:  false,
-		},
-		{
-			name:     "異常系: 7文字のパスワード（短すぎる）",
-			password: "1234567",
-			wantErr:  true,
-		},
-		{
-			name:     "異常系: 73文字のパスワード（長すぎる）",
-			password: "1234567890123456789012345678901234567890123456789012345678901234567890123",
-			wantErr:  true,
-		},
-		{
-			name:     "異常系: 空のパスワード",
-			password: "",
-			wantErr:  true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ValidatePassword(tt.password)
-
-			if tt.wantErr && err == nil {
-				t.Error("ValidatePassword() error = nil, wantErr true")
-			}
-
-			if !tt.wantErr && err != nil {
-				t.Errorf("ValidatePassword() error = %v, wantErr false", err)
-			}
-		})
-	}
-}
-
-func TestHashPassword(t *testing.T) {
-	password := "testpassword123"
-
-	hash1, err := HashPassword(password)
-	if err != nil {
-		t.Fatalf("HashPassword() error = %v", err)
-	}
-
-	if hash1 == "" {
-		t.Error("HashPassword() returned empty string")
-	}
-
-	// NOTE: 同じパスワードでも異なるハッシュが生成されることを確認（saltが異なるため）
-	hash2, err := HashPassword(password)
-	if err != nil {
-		t.Fatalf("HashPassword() error = %v", err)
-	}
-
-	if hash1 == hash2 {
-		t.Error("HashPassword() should generate different hashes for the same password")
 	}
 }
 
@@ -454,12 +322,12 @@ func TestReconstructUser(t *testing.T) {
 		t.Errorf("user.ID = %v, want %v", user.ID, id)
 	}
 
-	if user.Email != email {
-		t.Errorf("user.Email = %v, want %v", user.Email, email)
+	if user.Email.String() != email {
+		t.Errorf("user.Email = %v, want %v", user.Email.String(), email)
 	}
 
-	if user.PasswordHash != passwordHash {
-		t.Errorf("user.PasswordHash = %v, want %v", user.PasswordHash, passwordHash)
+	if user.PasswordHash.String() != passwordHash {
+		t.Errorf("user.PasswordHash = %v, want %v", user.PasswordHash.String(), passwordHash)
 	}
 
 	if user.CreatedAt != createdAt {
