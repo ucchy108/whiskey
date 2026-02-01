@@ -55,6 +55,19 @@ func TestNewUser(t *testing.T) {
 			password: "12345678",
 			wantErr:  false,
 		},
+		{
+			name:     "正常系: 最大長のパスワード（72文字）",
+			email:    "test@example.com",
+			password: "123456789012345678901234567890123456789012345678901234567890123456789012",
+			wantErr:  false,
+		},
+		{
+			name:        "異常系: パスワードが長すぎる（73文字）",
+			email:       "test@example.com",
+			password:    "1234567890123456789012345678901234567890123456789012345678901234567890123",
+			wantErr:     true,
+			expectedErr: ErrPasswordTooLong,
+		},
 	}
 
 	for _, tt := range tests {
@@ -231,10 +244,21 @@ func TestUser_UpdatePassword(t *testing.T) {
 			wantErr:     false,
 		},
 		{
+			name:        "正常系: 最大長のパスワードに更新（72文字）",
+			newPassword: "123456789012345678901234567890123456789012345678901234567890123456789012",
+			wantErr:     false,
+		},
+		{
 			name:        "異常系: パスワードが短すぎる",
 			newPassword: "short",
 			wantErr:     true,
 			expectedErr: ErrPasswordTooShort,
+		},
+		{
+			name:        "異常系: パスワードが長すぎる（73文字）",
+			newPassword: "1234567890123456789012345678901234567890123456789012345678901234567890123",
+			wantErr:     true,
+			expectedErr: ErrPasswordTooLong,
 		},
 	}
 
@@ -344,18 +368,28 @@ func TestValidatePassword(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name:     "正常系: 8文字のパスワード",
+			name:     "正常系: 8文字のパスワード（最小長）",
 			password: "12345678",
 			wantErr:  false,
 		},
 		{
-			name:     "正常系: 長いパスワード",
-			password: "verylongpassword12345",
+			name:     "正常系: 72文字のパスワード（最大長）",
+			password: "123456789012345678901234567890123456789012345678901234567890123456789012",
 			wantErr:  false,
 		},
 		{
-			name:     "異常系: 7文字のパスワード",
+			name:     "正常系: 12文字のパスワード",
+			password: "password1234",
+			wantErr:  false,
+		},
+		{
+			name:     "異常系: 7文字のパスワード（短すぎる）",
 			password: "1234567",
+			wantErr:  true,
+		},
+		{
+			name:     "異常系: 73文字のパスワード（長すぎる）",
+			password: "1234567890123456789012345678901234567890123456789012345678901234567890123",
 			wantErr:  true,
 		},
 		{

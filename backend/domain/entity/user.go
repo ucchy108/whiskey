@@ -9,10 +9,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	MinPasswordLength = 8
+	MaxPasswordLength = 72 // bcryptの最大長制限
+)
+
 var (
-	ErrInvalidEmail    = errors.New("invalid email format")
+	ErrInvalidEmail     = errors.New("invalid email format")
 	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
-	ErrInvalidPassword = errors.New("invalid password")
+	ErrPasswordTooLong  = errors.New("password must be at most 72 characters")
+	ErrInvalidPassword  = errors.New("invalid password")
 )
 
 // emailFormatRegex はメールアドレスの検証用の正規表現パターン
@@ -105,8 +111,11 @@ func ValidateEmail(email string) error {
 
 // ValidatePassword はパスワードの強度を検証する
 func ValidatePassword(password string) error {
-	if len(password) < 8 {
+	if len(password) < MinPasswordLength {
 		return ErrPasswordTooShort
+	}
+	if len(password) > MaxPasswordLength {
+		return ErrPasswordTooLong
 	}
 	return nil
 }
