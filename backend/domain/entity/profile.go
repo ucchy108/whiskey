@@ -14,7 +14,7 @@ var (
 	ErrInvalidHeight      = errors.New("height must be greater than 0")
 )
 
-// Profile represents a user's profile information
+// Profile はユーザーのプロフィール情報を表す
 type Profile struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
@@ -26,7 +26,7 @@ type Profile struct {
 	UpdatedAt   time.Time
 }
 
-// NewProfile creates a new Profile entity with validation
+// NewProfile はバリデーション付きで新しいProfileエンティティを作成する
 func NewProfile(userID uuid.UUID, displayName string) (*Profile, error) {
 	if err := ValidateDisplayName(displayName); err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func NewProfile(userID uuid.UUID, displayName string) (*Profile, error) {
 	}, nil
 }
 
-// ReconstructProfile reconstructs a Profile entity from stored data
+// ReconstructProfile は保存されたデータからProfileエンティティを再構築する
 func ReconstructProfile(id, userID uuid.UUID, displayName string, age *int32, weight, height *float64, createdAt, updatedAt time.Time) *Profile {
 	return &Profile{
 		ID:          id,
@@ -56,7 +56,7 @@ func ReconstructProfile(id, userID uuid.UUID, displayName string, age *int32, we
 	}
 }
 
-// UpdateDisplayName updates the profile's display name
+// UpdateDisplayName はプロフィールの表示名を更新する
 func (p *Profile) UpdateDisplayName(displayName string) error {
 	if err := ValidateDisplayName(displayName); err != nil {
 		return err
@@ -66,7 +66,7 @@ func (p *Profile) UpdateDisplayName(displayName string) error {
 	return nil
 }
 
-// UpdateAge updates the profile's age
+// UpdateAge はプロフィールの年齢を更新する
 func (p *Profile) UpdateAge(age *int32) error {
 	if age != nil {
 		if err := ValidateAge(*age); err != nil {
@@ -78,7 +78,7 @@ func (p *Profile) UpdateAge(age *int32) error {
 	return nil
 }
 
-// UpdateWeight updates the profile's weight
+// UpdateWeight はプロフィールの体重を更新する
 func (p *Profile) UpdateWeight(weight *float64) error {
 	if weight != nil {
 		if err := ValidateWeight(*weight); err != nil {
@@ -90,7 +90,7 @@ func (p *Profile) UpdateWeight(weight *float64) error {
 	return nil
 }
 
-// UpdateHeight updates the profile's height
+// UpdateHeight はプロフィールの身長を更新する
 func (p *Profile) UpdateHeight(height *float64) error {
 	if height != nil {
 		if err := ValidateHeight(*height); err != nil {
@@ -102,18 +102,18 @@ func (p *Profile) UpdateHeight(height *float64) error {
 	return nil
 }
 
-// CalculateBMI calculates the Body Mass Index
-// Returns nil if weight or height is not set
+// CalculateBMI はBMI（Body Mass Index）を計算する
+// 体重または身長が設定されていない場合はnilを返す
 func (p *Profile) CalculateBMI() *float64 {
 	if p.Weight == nil || p.Height == nil {
 		return nil
 	}
-	// BMI = weight(kg) / (height(m))^2
+	// BMI = 体重(kg) / (身長(m))^2
 	bmi := *p.Weight / (*p.Height * *p.Height)
 	return &bmi
 }
 
-// ValidateDisplayName validates display name
+// ValidateDisplayName は表示名を検証する
 func ValidateDisplayName(displayName string) error {
 	if len(displayName) < 1 || len(displayName) > 100 {
 		return ErrInvalidDisplayName
@@ -121,7 +121,7 @@ func ValidateDisplayName(displayName string) error {
 	return nil
 }
 
-// ValidateAge validates age
+// ValidateAge は年齢を検証する
 func ValidateAge(age int32) error {
 	if age < 0 || age > 150 {
 		return ErrInvalidAge
@@ -129,7 +129,7 @@ func ValidateAge(age int32) error {
 	return nil
 }
 
-// ValidateWeight validates weight
+// ValidateWeight は体重を検証する
 func ValidateWeight(weight float64) error {
 	if weight <= 0 {
 		return ErrInvalidWeight
@@ -137,7 +137,7 @@ func ValidateWeight(weight float64) error {
 	return nil
 }
 
-// ValidateHeight validates height
+// ValidateHeight は身長を検証する
 func ValidateHeight(height float64) error {
 	if height <= 0 {
 		return ErrInvalidHeight

@@ -15,10 +15,10 @@ var (
 	ErrInvalidPassword = errors.New("invalid password")
 )
 
-// emailFormatRegex is a regex pattern for validating email addresses
+// emailFormatRegex はメールアドレスの検証用の正規表現パターン
 var emailFormatRegex = regexp.MustCompile(`^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$`)
 
-// User represents a user in the system
+// User はシステム内のユーザーを表す
 type User struct {
 	ID           uuid.UUID
 	Email        string
@@ -27,7 +27,7 @@ type User struct {
 	UpdatedAt    time.Time
 }
 
-// NewUser creates a new User entity with validation
+// NewUser はバリデーション付きで新しいUserエンティティを作成する
 func NewUser(email, password string) (*User, error) {
 	if err := ValidateEmail(email); err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func NewUser(email, password string) (*User, error) {
 	}, nil
 }
 
-// ReconstructUser reconstructs a User entity from stored data
-// This is used when loading from database
+// ReconstructUser は保存されたデータからUserエンティティを再構築する
+// データベースからロードする際に使用される
 func ReconstructUser(id uuid.UUID, email, passwordHash string, createdAt, updatedAt time.Time) *User {
 	return &User{
 		ID:           id,
@@ -64,7 +64,7 @@ func ReconstructUser(id uuid.UUID, email, passwordHash string, createdAt, update
 	}
 }
 
-// UpdateEmail updates the user's email address
+// UpdateEmail はユーザーのメールアドレスを更新する
 func (u *User) UpdateEmail(email string) error {
 	if err := ValidateEmail(email); err != nil {
 		return err
@@ -74,7 +74,7 @@ func (u *User) UpdateEmail(email string) error {
 	return nil
 }
 
-// UpdatePassword updates the user's password
+// UpdatePassword はユーザーのパスワードを更新する
 func (u *User) UpdatePassword(password string) error {
 	if err := ValidatePassword(password); err != nil {
 		return err
@@ -90,12 +90,12 @@ func (u *User) UpdatePassword(password string) error {
 	return nil
 }
 
-// VerifyPassword verifies if the provided password matches the user's password
+// VerifyPassword は提供されたパスワードがユーザーのパスワードと一致するか検証する
 func (u *User) VerifyPassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
 }
 
-// ValidateEmail validates email format
+// ValidateEmail はメールアドレスの形式を検証する
 func ValidateEmail(email string) error {
 	if !emailFormatRegex.MatchString(email) {
 		return ErrInvalidEmail
@@ -103,7 +103,7 @@ func ValidateEmail(email string) error {
 	return nil
 }
 
-// ValidatePassword validates password strength
+// ValidatePassword はパスワードの強度を検証する
 func ValidatePassword(password string) error {
 	if len(password) < 8 {
 		return ErrPasswordTooShort
@@ -111,7 +111,8 @@ func ValidatePassword(password string) error {
 	return nil
 }
 
-// HashPassword hashes a password using bcrypt
+// HashPassword はパスワードをハッシュ化する
+// NOTE: bcrypt.DefaultCostはセキュリティと性能のバランスが取れたコスト値（通常10）
 func HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

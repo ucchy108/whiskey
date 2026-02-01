@@ -12,7 +12,7 @@ var (
 	ErrInvalidBodyPart     = errors.New("invalid body part")
 )
 
-// BodyPart represents the body part targeted by an exercise
+// BodyPart はエクササイズが対象とする身体部位を表す
 type BodyPart string
 
 const (
@@ -26,7 +26,7 @@ const (
 	BodyPartOther     BodyPart = "other"
 )
 
-// ValidBodyParts is a set of valid body parts
+// ValidBodyParts は有効な身体部位の集合
 var ValidBodyParts = map[BodyPart]bool{
 	BodyPartChest:     true,
 	BodyPartBack:      true,
@@ -38,7 +38,7 @@ var ValidBodyParts = map[BodyPart]bool{
 	BodyPartOther:     true,
 }
 
-// Exercise represents an exercise in the system
+// Exercise はシステム内のエクササイズを表す
 type Exercise struct {
 	ID          uuid.UUID
 	Name        string
@@ -48,7 +48,7 @@ type Exercise struct {
 	UpdatedAt   time.Time
 }
 
-// NewExercise creates a new Exercise entity with validation
+// NewExercise はバリデーション付きで新しいExerciseエンティティを作成する
 func NewExercise(name string, description *string, bodyPart *BodyPart) (*Exercise, error) {
 	if err := ValidateExerciseName(name); err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func NewExercise(name string, description *string, bodyPart *BodyPart) (*Exercis
 	}, nil
 }
 
-// ReconstructExercise reconstructs an Exercise entity from stored data
+// ReconstructExercise は保存されたデータからExerciseエンティティを再構築する
 func ReconstructExercise(id uuid.UUID, name string, description *string, bodyPart *BodyPart, createdAt, updatedAt time.Time) *Exercise {
 	return &Exercise{
 		ID:          id,
@@ -83,7 +83,7 @@ func ReconstructExercise(id uuid.UUID, name string, description *string, bodyPar
 	}
 }
 
-// UpdateName updates the exercise's name
+// UpdateName はエクササイズの名前を更新する
 func (e *Exercise) UpdateName(name string) error {
 	if err := ValidateExerciseName(name); err != nil {
 		return err
@@ -93,13 +93,13 @@ func (e *Exercise) UpdateName(name string) error {
 	return nil
 }
 
-// UpdateDescription updates the exercise's description
+// UpdateDescription はエクササイズの説明を更新する
 func (e *Exercise) UpdateDescription(description *string) {
 	e.Description = description
 	e.UpdatedAt = time.Now()
 }
 
-// UpdateBodyPart updates the exercise's body part
+// UpdateBodyPart はエクササイズの身体部位を更新する
 func (e *Exercise) UpdateBodyPart(bodyPart *BodyPart) error {
 	if bodyPart != nil {
 		if err := ValidateBodyPart(*bodyPart); err != nil {
@@ -111,7 +111,7 @@ func (e *Exercise) UpdateBodyPart(bodyPart *BodyPart) error {
 	return nil
 }
 
-// ValidateExerciseName validates exercise name
+// ValidateExerciseName はエクササイズ名を検証する
 func ValidateExerciseName(name string) error {
 	if len(name) < 1 || len(name) > 100 {
 		return ErrInvalidExerciseName
@@ -119,7 +119,7 @@ func ValidateExerciseName(name string) error {
 	return nil
 }
 
-// ValidateBodyPart validates body part
+// ValidateBodyPart は身体部位を検証する
 func ValidateBodyPart(bodyPart BodyPart) error {
 	if !ValidBodyParts[bodyPart] {
 		return ErrInvalidBodyPart

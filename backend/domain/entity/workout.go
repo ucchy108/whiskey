@@ -11,7 +11,7 @@ var (
 	ErrInvalidDailyScore = errors.New("daily score must be between 0 and 100")
 )
 
-// Workout represents a workout session for a specific date
+// Workout は特定の日のトレーニングセッションを表す
 type Workout struct {
 	ID         uuid.UUID
 	UserID     uuid.UUID
@@ -22,20 +22,20 @@ type Workout struct {
 	UpdatedAt  time.Time
 }
 
-// NewWorkout creates a new Workout entity with validation
+// NewWorkout はバリデーション付きで新しいWorkoutエンティティを作成する
 func NewWorkout(userID uuid.UUID, date time.Time) *Workout {
 	now := time.Now()
 	return &Workout{
 		ID:         uuid.New(),
 		UserID:     userID,
 		Date:       date,
-		DailyScore: 0, // Initial score is 0
+		DailyScore: 0, // 初期スコアは0
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
 }
 
-// ReconstructWorkout reconstructs a Workout entity from stored data
+// ReconstructWorkout は保存されたデータからWorkoutエンティティを再構築する
 func ReconstructWorkout(id, userID uuid.UUID, date time.Time, dailyScore int32, memo *string, createdAt, updatedAt time.Time) *Workout {
 	return &Workout{
 		ID:         id,
@@ -48,7 +48,7 @@ func ReconstructWorkout(id, userID uuid.UUID, date time.Time, dailyScore int32, 
 	}
 }
 
-// UpdateDailyScore updates the workout's daily score
+// UpdateDailyScore はワークアウトの日次スコアを更新する
 func (w *Workout) UpdateDailyScore(score int32) error {
 	if err := ValidateDailyScore(score); err != nil {
 		return err
@@ -58,16 +58,16 @@ func (w *Workout) UpdateDailyScore(score int32) error {
 	return nil
 }
 
-// CalculateDailyScore calculates daily score based on workout sets
-// Score calculation:
-// - Base: number of sets * 5 points
-// - Bonus: if total volume (sets * reps * weight) > threshold
-// - Maximum: 100 points
+// CalculateDailyScore はワークアウトセットに基づいて日次スコアを計算する
+// スコア計算:
+// - ベース: セット数 * 5ポイント
+// - ボーナス: 総ボリューム（セット数 * レップ数 * 重量）が閾値を超えた場合
+// - 最大: 100ポイント
 func (w *Workout) CalculateDailyScore(totalSets int, totalVolume float64) int32 {
-	// Base score: 5 points per set
+	// ベーススコア: セットごとに5ポイント
 	score := int32(totalSets * 5)
 
-	// Bonus for high volume
+	// 高ボリュームに対するボーナス
 	if totalVolume > 1000 {
 		score += 10
 	}
@@ -78,7 +78,7 @@ func (w *Workout) CalculateDailyScore(totalSets int, totalVolume float64) int32 
 		score += 10
 	}
 
-	// Cap at 100
+	// 100で上限
 	if score > 100 {
 		score = 100
 	}
@@ -86,13 +86,13 @@ func (w *Workout) CalculateDailyScore(totalSets int, totalVolume float64) int32 
 	return score
 }
 
-// UpdateMemo updates the workout's memo
+// UpdateMemo はワークアウトのメモを更新する
 func (w *Workout) UpdateMemo(memo *string) {
 	w.Memo = memo
 	w.UpdatedAt = time.Now()
 }
 
-// ValidateDailyScore validates daily score
+// ValidateDailyScore は日次スコアを検証する
 func ValidateDailyScore(score int32) error {
 	if score < 0 || score > 100 {
 		return ErrInvalidDailyScore

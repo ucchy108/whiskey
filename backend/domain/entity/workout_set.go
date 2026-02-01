@@ -14,7 +14,7 @@ var (
 	ErrInvalidDuration       = errors.New("duration must be greater than or equal to 0")
 )
 
-// WorkoutSet represents a single set in a workout
+// WorkoutSet はワークアウト内の1セットを表す
 type WorkoutSet struct {
 	ID              uuid.UUID
 	WorkoutID       uuid.UUID
@@ -28,7 +28,7 @@ type WorkoutSet struct {
 	CreatedAt       time.Time
 }
 
-// NewWorkoutSet creates a new WorkoutSet entity with validation
+// NewWorkoutSet はバリデーション付きで新しいWorkoutSetエンティティを作成する
 func NewWorkoutSet(workoutID, exerciseID uuid.UUID, setNumber, reps int32, weight float64) (*WorkoutSet, error) {
 	if err := ValidateSetNumber(setNumber); err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func NewWorkoutSet(workoutID, exerciseID uuid.UUID, setNumber, reps int32, weigh
 	}, nil
 }
 
-// ReconstructWorkoutSet reconstructs a WorkoutSet entity from stored data
+// ReconstructWorkoutSet は保存されたデータからWorkoutSetエンティティを再構築する
 func ReconstructWorkoutSet(id, workoutID, exerciseID uuid.UUID, setNumber, reps int32, weight, estimated1RM float64, durationSeconds *int32, notes *string, createdAt time.Time) *WorkoutSet {
 	return &WorkoutSet{
 		ID:              id,
@@ -70,7 +70,7 @@ func ReconstructWorkoutSet(id, workoutID, exerciseID uuid.UUID, setNumber, reps 
 	}
 }
 
-// UpdateRepsAndWeight updates reps and weight, and recalculates estimated 1RM
+// UpdateRepsAndWeight はレップ数と重量を更新し、推定1RMを再計算する
 func (ws *WorkoutSet) UpdateRepsAndWeight(reps int32, weight float64) error {
 	if err := ValidateReps(reps); err != nil {
 		return err
@@ -85,7 +85,7 @@ func (ws *WorkoutSet) UpdateRepsAndWeight(reps int32, weight float64) error {
 	return nil
 }
 
-// UpdateDuration updates the set's duration
+// UpdateDuration はセットの継続時間を更新する
 func (ws *WorkoutSet) UpdateDuration(durationSeconds *int32) error {
 	if durationSeconds != nil {
 		if err := ValidateDuration(*durationSeconds); err != nil {
@@ -96,14 +96,14 @@ func (ws *WorkoutSet) UpdateDuration(durationSeconds *int32) error {
 	return nil
 }
 
-// UpdateNotes updates the set's notes
+// UpdateNotes はセットのメモを更新する
 func (ws *WorkoutSet) UpdateNotes(notes *string) {
 	ws.Notes = notes
 }
 
-// CalculateEstimated1RM calculates the estimated 1 rep max using the Epley formula
-// Formula: 1RM = weight * (1 + reps/30)
-// For reps = 1, 1RM = weight
+// CalculateEstimated1RM はEpley式を使用して推定1RMを計算する
+// 公式: 1RM = 重量 * (1 + レップ数/30)
+// レップ数 = 1の場合、1RM = 重量
 func CalculateEstimated1RM(weight float64, reps int32) float64 {
 	if reps <= 0 {
 		return 0
@@ -114,12 +114,12 @@ func CalculateEstimated1RM(weight float64, reps int32) float64 {
 	return weight * (1 + float64(reps)/30.0)
 }
 
-// CalculateVolume calculates the volume (reps * weight) for this set
+// CalculateVolume はこのセットのボリューム（レップ数 * 重量）を計算する
 func (ws *WorkoutSet) CalculateVolume() float64 {
 	return float64(ws.Reps) * ws.Weight
 }
 
-// ValidateSetNumber validates set number
+// ValidateSetNumber はセット番号を検証する
 func ValidateSetNumber(setNumber int32) error {
 	if setNumber <= 0 {
 		return ErrInvalidSetNumber
@@ -127,7 +127,7 @@ func ValidateSetNumber(setNumber int32) error {
 	return nil
 }
 
-// ValidateReps validates reps
+// ValidateReps はレップ数を検証する
 func ValidateReps(reps int32) error {
 	if reps <= 0 {
 		return ErrInvalidReps
@@ -135,15 +135,15 @@ func ValidateReps(reps int32) error {
 	return nil
 }
 
-// ValidateExerciseWeight validates weight
+// ValidateExerciseWeight は重量を検証する
 func ValidateExerciseWeight(weight float64) error {
 	if weight < 0 {
-		return ErrInvalidWeight
+		return ErrInvalidExerciseWeight
 	}
 	return nil
 }
 
-// ValidateDuration validates duration
+// ValidateDuration は継続時間を検証する
 func ValidateDuration(durationSeconds int32) error {
 	if durationSeconds < 0 {
 		return ErrInvalidDuration
