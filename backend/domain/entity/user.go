@@ -3,7 +3,7 @@ package entity
 import (
 	"time"
 
-	"github.com/ucchy108/whiskey/backend/domain/valueobject"
+	"github.com/ucchy108/whiskey/backend/domain/value"
 
 	"github.com/google/uuid"
 )
@@ -11,20 +11,20 @@ import (
 // User はシステム内のユーザーを表す
 type User struct {
 	ID           uuid.UUID
-	Email        valueobject.Email
-	PasswordHash valueobject.HashedPassword
+	Email        value.Email
+	PasswordHash value.HashedPassword
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
 
 // NewUser はバリデーション付きで新しいUserエンティティを作成する
 func NewUser(email, password string) (*User, error) {
-	emailVO, err := valueobject.NewEmail(email)
+	emailVO, err := value.NewEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	passwordVO, err := valueobject.NewPassword(password)
+	passwordVO, err := value.NewPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +49,8 @@ func NewUser(email, password string) (*User, error) {
 func ReconstructUser(id uuid.UUID, email, passwordHash string, createdAt, updatedAt time.Time) *User {
 	return &User{
 		ID:           id,
-		Email:        valueobject.ReconstructEmail(email),
-		PasswordHash: valueobject.ReconstructHashedPassword(passwordHash),
+		Email:        value.ReconstructEmail(email),
+		PasswordHash: value.ReconstructHashedPassword(passwordHash),
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
 	}
@@ -58,7 +58,7 @@ func ReconstructUser(id uuid.UUID, email, passwordHash string, createdAt, update
 
 // UpdateEmail はユーザーのメールアドレスを更新する
 func (u *User) UpdateEmail(email string) error {
-	emailVO, err := valueobject.NewEmail(email)
+	emailVO, err := value.NewEmail(email)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (u *User) UpdateEmail(email string) error {
 
 // UpdatePassword はユーザーのパスワードを更新する
 func (u *User) UpdatePassword(password string) error {
-	passwordVO, err := valueobject.NewPassword(password)
+	passwordVO, err := value.NewPassword(password)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (u *User) UpdatePassword(password string) error {
 
 // VerifyPassword は提供されたパスワードがユーザーのパスワードと一致するか検証する
 func (u *User) VerifyPassword(password string) error {
-	passwordVO, err := valueobject.NewPassword(password)
+	passwordVO, err := value.NewPassword(password)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package valueobject
+package value
 
 import (
 	"errors"
@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrInvalidEmail = errors.New("invalid email format")
+	ErrInvalidEmail        = errors.New("invalid email format")
+	ErrEmailAlreadyExists  = errors.New("email already exists")
 )
 
 // emailFormatRegex はメールアドレスの検証用の正規表現パターン
