@@ -249,12 +249,3 @@ backend/migrations/
 ├── 000005_create_workout_sets_table.up.sql
 └── 000005_create_workout_sets_table.down.sql
 ```
-
-## 次のステップ
-
-1. ✅ データベーススキーマ設計（このドキュメント）
-2. ⬜ golang-migrate 導入
-3. ⬜ マイグレーションファイル作成
-4. ⬜ sqlc 設定
-5. ⬜ Entity実装（Domain層）
-6. ⬜ Repository実装（Infrastructure層）
