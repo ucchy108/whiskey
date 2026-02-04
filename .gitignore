@@ -1,0 +1,20 @@
+# Go workspace file (local development only)
+go.work
+go.work.sum
+
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Coverage reports
+coverage.out
+coverage.html
