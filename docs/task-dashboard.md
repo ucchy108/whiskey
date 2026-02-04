@@ -11,27 +11,31 @@
 - [x] Infrastructure層: UserRepository実装
 - [x] Infrastructure層: 統合テスト実装
 - [x] データベース: usersテーブル作成
+- [x] Usecase層: UserUsecase実装（Register, Login, GetUser, ChangePassword）
+- [x] Usecase層: ユニットテスト実装（カバレッジ84.6%）
+- [x] Interfaces層: UserHandler実装（4つのRESTful APIエンドポイント）
+- [x] Interfaces層: ユニットテスト実装（カバレッジ95.5%、15テストケース）
 
 ### 🚧 次にやるべきこと
 
 ## Phase 1: ユーザー登録・ログイン機能（最優先）
 
-### 1.1 Usecase層の実装
-- [ ] `backend/usecase/user_usecase.go`
+### 1.1 Usecase層の実装 ✅
+- [x] `backend/usecase/user_usecase.go`
   - ユーザー登録（Register）
   - ログイン（Login）
   - ユーザー情報取得（GetUser）
   - パスワード変更（ChangePassword）
-- [ ] `backend/usecase/user_usecase_test.go`
+- [x] `backend/usecase/user_usecase_test.go`
   - Repositoryをモックしたユニットテスト
 
-### 1.2 Interfaces層の実装
-- [ ] `backend/interfaces/handler/user_handler.go`
+### 1.2 Interfaces層の実装 ✅
+- [x] `backend/interfaces/handler/user_handler.go`
   - POST /api/users - ユーザー登録
   - POST /api/auth/login - ログイン
   - GET /api/users/:id - ユーザー情報取得
   - PUT /api/users/:id/password - パスワード変更
-- [ ] `backend/interfaces/handler/user_handler_test.go`
+- [x] `backend/interfaces/handler/user_handler_test.go`
   - HTTPハンドラーのテスト
 
 ### 1.3 認証機能の実装
@@ -123,8 +127,8 @@
 ## 優先順位
 
 ### 🔴 High Priority（今すぐやるべき）
-1. Usecase層の実装（Phase 1.1）
-2. Interfaces層の実装（Phase 1.2）
+1. ~~Usecase層の実装（Phase 1.1）~~ ✅ 完了
+2. ~~Interfaces層の実装（Phase 1.2）~~ ✅ 完了
 3. 認証機能の実装（Phase 1.3）
 4. ルーティング設定（Phase 1.4）
 
@@ -145,25 +149,30 @@
   ✅ repository/user_repository.go (interface)
   ✅ service/user_service.go
 
-❌ Usecase Layer
-  ❌ user_usecase.go (未実装)
+✅ Usecase Layer
+  ✅ user_usecase.go (実装済み)
+  ✅ user_usecase_test.go (実装済み)
 
-❌ Infrastructure Layer
+✅ Interfaces Layer
+  ✅ handler/user_handler.go (実装済み)
+  ✅ handler/user_handler_test.go (実装済み)
+
+🚧 Infrastructure Layer
   ✅ database/user_repository.go (実装済み)
   ❌ auth/jwt.go (未実装)
   ❌ router/router.go (未実装)
-
-❌ Interfaces Layer
-  ❌ handler/user_handler.go (未実装)
 ```
 
 ## 次のステップ
 
-**最優先タスク**: Phase 1.1 - Usecase層の実装
+**最優先タスク**: Phase 1.3 - 認証機能の実装
 
-1. `backend/usecase/user_usecase.go`を実装
-2. ユーザー登録とログインのビジネスロジックを実装
+1. `backend/infrastructure/auth/jwt.go`を実装
+   - JWT生成機能
+   - JWT検証機能
+   - 認証ミドルウェア
+2. `backend/infrastructure/auth/jwt_test.go`を実装
 3. ユニットテストを作成
 4. PRを作成してマージ
 
-これが完了したら、Phase 1.2（Interfaces層）に進みます。
+これが完了したら、Phase 1.4（ルーティング設定）に進みます。
