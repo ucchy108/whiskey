@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **バックエンド:**
 - **言語**: Go 1.23
 - **フレームワーク**: Gorilla Mux
-- **ORM**: sqlc（予定）
+- **ORM**: sqlc
 - **データベース**: PostgreSQL 16
 
 **フロントエンド:**
@@ -27,7 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **アーキテクチャ:**
 - **Clean Architecture + DDD**（ドメイン駆動設計）
 
-### 主な機能（PoC目標）
+### 主な機能（MVP目標）
 
 1. **GitHub風の可視化**: 毎日の運動強度を「草を生やす」形式で表示し、継続を可視化
 2. **重量アップの追跡**: 種目ごとの重量成長（推定1RMなど）をグラフで確認
@@ -37,12 +37,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 環境構成
 
 このプロジェクトでは、**全てのサービス**をDockerコンテナで実行します。
-
-- **PostgreSQL**: Dockerコンテナ（`db`サービス）
-- **Go Backend API**: Dockerコンテナ（`backend`サービス）
-- **React Frontend**: Dockerコンテナ（`frontend`サービス）
-
-### 起動手順
 
 ```bash
 # 1. Dockerコンテナを起動（全サービス）
@@ -56,214 +50,114 @@ docker compose logs -f
 # Backend API: http://localhost:8080
 ```
 
-### その他のコマンド
-
-```bash
-# コンテナを停止
-docker compose down
-
-# コンテナを再ビルド
-docker compose up -d --build
-
-# 特定のサービスのログを確認
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f db
-
-# コンテナの状態を確認
-docker compose ps
-
-# PostgreSQLに接続
-docker compose exec db psql -U whiskey -d whiskey
-
-# Backendコンテナに入る
-docker compose exec backend sh
-
-# Frontendコンテナに入る
-docker compose exec frontend sh
-```
+詳細は [Dockerガイド](docs/development/docker-guide.md) を参照してください。
 
 ## プロジェクト構造
 
 ```
-/
-├── backend/                 # Go API
-│   ├── cmd/
-│   │   └── api/            # メインアプリケーション
-│   │       └── main.go
-│   ├── domain/             # ドメイン層
-│   │   ├── entity/         # エンティティ
-│   │   └── repository/     # リポジトリインターフェース
-│   ├── usecase/            # ユースケース層
-│   ├── infrastructure/     # インフラストラクチャ層
-│   │   ├── database/       # データベース実装
-│   │   └── router/         # ルーティング
-│   ├── interfaces/         # インターフェース層
-│   │   └── handler/        # HTTPハンドラー
-│   ├── go.mod
-│   ├── go.sum
-│   └── .air.toml          # Air設定（ホットリロード）
-├── frontend/               # React App
-│   ├── src/
-│   │   ├── components/     # 共通コンポーネント
-│   │   ├── pages/          # ページコンポーネント
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── public/
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── tsconfig.json
-├── docker/                 # Dockerfiles
-│   ├── backend/
-│   │   └── Dockerfile.dev
-│   └── frontend/
-│       └── Dockerfile.dev
-├── docs/                   # ドキュメント
-│   └── work-logs/          # 作業ログ
-├── compose.yml             # Docker Compose設定
-└── README.md
+backend/
+├── cmd/api/              # メインアプリケーション
+├── domain/               # ドメイン層（✅ 実装済み）
+│   ├── entity/          # エンティティ
+│   ├── value/           # 値オブジェクト
+│   ├── service/         # ドメインサービス
+│   └── repository/      # リポジトリinterface
+├── usecase/             # ユースケース層（未実装）
+├── infrastructure/      # インフラストラクチャ層（✅ 一部実装済み）
+│   ├── database/        # データベース実装
+│   └── migrations/      # マイグレーション
+├── interfaces/          # インターフェース層（未実装）
+│   └── handler/         # HTTPハンドラー
+└── sqlc/                # sqlc設定・クエリ定義
+
+frontend/
+├── src/
+│   ├── components/      # 共通コンポーネント
+│   ├── pages/           # ページコンポーネント
+│   ├── App.tsx
+│   └── main.tsx
+
+docs/
+├── architecture/        # アーキテクチャドキュメント
+│   ├── clean-architecture.md
+│   └── ddd-patterns.md
+├── development/         # 開発ガイド
+│   ├── testing-strategy.md
+│   ├── docker-guide.md
+│   └── database-guide.md
+├── work-logs/           # 作業ログ
+└── task-dashboard.md    # タスクダッシュボード
 ```
-
-## データベース設計
-
-### 主要なテーブル（予定）
-
-- **users**: ユーザー情報
-- **profiles**: プロフィール（表示名、属性）- usersと1対1
-- **workouts**: トレーニングセッション（日付、運動強度スコア）
-- **exercises**: 種目マスタ（ベンチプレス、スクワットなど）
-- **workout_sets**: セット詳細（重量、回数、推定1RM）
-
-### データベースコマンド（予定）
-
-```bash
-# マイグレーション実行（golang-migrate使用予定）
-# migrate -path migrations -database "postgres://whiskey:password@localhost:5433/whiskey?sslmode=disable" up
-
-# sqlcコード生成（予定）
-# sqlc generate
-
-# PostgreSQLに直接接続
-docker compose exec db psql -U whiskey -d whiskey
-```
-
-## 認証システム（予定）
-
-- **JWT**ベースの認証
-- **bcrypt**でパスワードハッシュ化
-- Go標準ライブラリ + jwtライブラリを使用
-
-## UI/UXライブラリ
-
-- **Material-UI v5**を使用
-- **Emotion**でCSS-in-JS
-- **React Hook Form**（予定）
 
 ## アーキテクチャ設計
 
 このプロジェクトは**Clean Architecture + DDD**を採用しています。
 
-### レイヤー構成
+### 現在の実装状況
 
 ```
-Interfaces Layer (HTTP Handlers)
-    ↓
-Usecase Layer (Business Logic)
-    ↓
-Domain Layer (Entities & Repository Interfaces)
-    ↓
-Infrastructure Layer (Database Implementation)
+✅ Domain Layer
+   ✅ entity/user.go - User entity
+   ✅ value/email.go, password.go, hashed_password.go - 値オブジェクト
+   ✅ repository/user_repository.go - UserRepository interface
+   ✅ service/user_service.go - UserService（ドメインサービス）
+
+❌ Usecase Layer
+   ❌ user_usecase.go - ユーザー登録・ログインロジック（未実装）
+
+✅ Infrastructure Layer
+   ✅ database/user_repository.go - UserRepository実装
+   ✅ migrations/000001_create_users_table.up.sql - usersテーブル
+   ❌ auth/jwt.go - JWT認証（未実装）
+   ❌ router/router.go - ルーティング設定（未実装）
+
+❌ Interfaces Layer
+   ❌ handler/user_handler.go - HTTPハンドラー（未実装）
 ```
 
-### 依存関係のルール
+**詳細**: [Clean Architecture](docs/architecture/clean-architecture.md) | [DDD実装パターン](docs/architecture/ddd-patterns.md)
 
-- **外側の層は内側の層に依存できる**
-- **内側の層は外側の層に依存してはいけない**
-- **Domain層は他のどの層にも依存しない**
+## 開発ガイドライン
 
-### 各レイヤーの責務
+### コマンド実行の原則
 
-#### Domain Layer (`backend/domain/`)
-- **責務**: ビジネスルールとエンティティの定義
-- **依存**: 他のどの層にも依存しない
-- **例**: `entity/user.go`, `repository/user_repository.go`（インターフェース定義）
-- **禁止事項**: 外部ライブラリ、フレームワークへの依存
+**全てのコマンドはDockerコンテナ内で実行します。**
 
-#### Usecase Layer (`backend/usecase/`)
-- **責務**: ビジネスロジックの実装
-- **依存**: Domain層のみ
-- **例**: ユーザー登録、ワークアウト記録の処理
-- **禁止事項**: HTTPリクエスト/レスポンスの処理、直接のDB操作
+```bash
+# ✅ 正しい: Dockerコンテナで実行
+docker compose exec backend go test ./...
+docker compose exec frontend npm test
 
-#### Infrastructure Layer (`backend/infrastructure/`)
-- **責務**: 外部システムとの連携実装
-- **依存**: Domain層のインターフェースを実装
-- **例**: PostgreSQL実装、外部API連携
-- **禁止事項**: ビジネスロジックを含めない
+# ❌ 間違い: ホストで直接実行（環境が揃っていない）
+go test ./...
+npm test
+```
 
-#### Interfaces Layer (`backend/interfaces/`)
-- **責務**: HTTPリクエスト/レスポンスの処理
-- **依存**: Usecase層を使用
-- **例**: HTTPハンドラー、リクエストのパース、レスポンスの整形
-- **禁止事項**: ビジネスロジックを含めない
+### テスト実行
 
-## テスト戦略（予定）
+```bash
+# 全テストを実行
+docker compose exec backend go test -v ./...
 
-### テストフレームワーク
-- **Go**: `testing`パッケージ + `testify`
-- **React**: Vitest + Testing Library
+# カバレッジ付きで実行
+docker compose exec backend go test -v -coverprofile=coverage.out ./...
+```
 
-### レイヤー別テスト方針
+**詳細**: [テスト戦略](docs/development/testing-strategy.md)
 
-#### Domain Layer - Unit Test
-- **方針**: エンティティのビジネスルールをテスト
-- **モック**: 使用しない
+### データベース操作
 
-#### Usecase Layer - Unit Test
-- **方針**: Repositoryをモックしてビジネスロジックをテスト
-- **モック**: Repositoryインターフェースをモック
+```bash
+# PostgreSQLに接続
+docker compose exec db psql -U whiskey -d whiskey
 
-#### Infrastructure Layer - Integration Test
-- **方針**: 実際のPostgreSQLを使用した統合テスト
-- **モック**: 使用しない
+# sqlcコード生成
+docker compose exec backend sqlc generate
+```
 
-#### Interfaces Layer - Integration Test
-- **方針**: HTTPハンドラーのテスト
-- **モック**: Usecaseをモック
-
-## 開発時の注意事項
-
-### コード品質
-
-**Go:**
-- `gofmt`でフォーマット
-- `golangci-lint`でリント
-- エラーハンドリングを徹底
-- インターフェースを活用した疎結合設計
-
-**TypeScript:**
-- TypeScriptの型定義は厳格に管理
-- `any`型の使用を避ける
-- Material-UIのテーマ設定で色を管理
-
-### アーキテクチャ
-
-- **Clean Architectureを厳守**
-- **Domain層は外部依存を持たない**
-- **Usecase層でビジネスロジックを実装**
-- **Infrastructure層は差し替え可能に設計**
-
-### テスト
-
-- **Domain層**: ビジネスルールのユニットテスト
-- **Usecase層**: Repositoryをモックしたユニットテスト
-- **Infrastructure層**: 実DBを使った統合テスト
-- **テストファーストで実装**
+**詳細**: [データベースガイド](docs/development/database-guide.md)
 
 ## Git ワークフロー
-
-このプロジェクトでは、ブランチ戦略とPull Requestを使用した開発フローを採用しています。
 
 ### ブランチ戦略
 
@@ -276,139 +170,65 @@ Infrastructure Layer (Database Implementation)
   - リファクタリング: `refactor/<description>`
   - ドキュメント: `docs/<description>`
 
-**例:**
+**作業完了時:**
+- ✅ コミット時に`Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`を付与
+- ✅ PRを作成してマージ
+
+### コミットの粒度
+
+**重要: コミットは細かい単位で行う**
+
 ```bash
-# 機能追加
-feature/add-workout-form
-feature/github-style-heatmap
+# ❌ 悪い例: 全ての変更を一度にコミット
+git add .
+git commit -m "feat: 複数機能を追加"
 
-# バグ修正
-fix/health-check-error
-fix/database-connection
+# ✅ 良い例: 論理的な単位でコミット
+git add backend/domain/entity/user.go
+git commit -m "feat: User entityを追加"
 
-# リファクタリング
-refactor/clean-architecture-migration
+git add backend/domain/value/email.go
+git commit -m "feat: Email値オブジェクトを追加"
+
+git add backend/domain/value/password.go
+git commit -m "feat: Password値オブジェクトを追加"
 ```
 
-**作業中:**
-- ✅ こまめにコミット
-- ✅ コミットメッセージは明確に記述
-- ✅ Co-Authored-By を付与:
-  ```
-  Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-  ```
+**コミット単位の基準**:
+- ✅ 1つのファイルまたは関連する数ファイルを追加/変更
+- ✅ 1つの機能や修正を表す論理的な単位
+- ✅ レビュアーが理解しやすい粒度
+- ✅ コミットメッセージで変更内容を明確に説明できる
 
-**作業完了時:**
-- ✅ `/create-pr` Skillを使用してPRを作成
-- ✅ PRテンプレートに沿って記述
-- ✅ レビューを依頼
+**例**:
+```bash
+# ドキュメント追加の場合
+git add docs/architecture/ddd-patterns.md
+git commit -m "docs: DDD実装パターンのドキュメントを追加"
+
+git add docs/architecture/clean-architecture.md
+git commit -m "docs: Clean Architectureのドキュメントを追加"
+
+git add docs/development/testing-strategy.md
+git commit -m "docs: テスト戦略のドキュメントを追加"
+
+git add CLAUDE.md
+git commit -m "docs: CLAUDE.mdを簡潔化してリンク集に変更"
+```
+
+**避けるべきコミット**:
+- ❌ 複数の機能を1つのコミットにまとめる
+- ❌ 無関係な変更を1つのコミットに含める
+- ❌ "WIP", "fix", "update"などの曖昧なメッセージ
 
 ### 禁止事項
 
 - ❌ **mainブランチへの直接コミット禁止**
 - ❌ **ブランチを切らずに作業を開始しない**
 - ❌ **push --force to main/master 禁止**
-- ❌ **git commitに--no-verifyフラグを使用しない**（フックをスキップしない）
+- ❌ **git commitに--no-verifyフラグを使用しない**
 
-### Claude Codeの動作
-
-**タスク開始時:**
-1. ユーザーから新しいタスクを受け取る
-2. **自動的に新しいブランチを作成**（ブランチ名を提案）
-3. 作業を開始
-
-**タスク完了時:**
-1. 変更をコミット
-2. **ユーザーに「PRを作成しますか？」と確認**
-3. 承認されたら `/create-pr` Skillを実行
-4. PRを作成してURLを報告
-
-### Git操作の例
-
-```bash
-# 1. 新しいブランチを作成
-git checkout -b feature/add-user-profile
-
-# 2. 作業を実施（ファイル編集）
-
-# 3. 変更をステージング
-git add backend/domain/entity/user.go
-
-# 4. コミット
-git commit -m "feat: Add User entity with validation
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-
-# 5. リモートにプッシュ
-git push -u origin feature/add-user-profile
-
-# 6. PRを作成（/create-pr Skillを使用）
-```
-
-## Docker環境について
-
-### Docker環境の構成
-
-このプロジェクトでは、**全てのサービス**をDockerコンテナで実行します。
-
-```yaml
-# compose.yml
-services:
-  db:
-    image: postgres:16-alpine
-    ports:
-      - "5433:5432"
-
-  backend:
-    build: ./docker/backend
-    ports:
-      - "8080:8080"
-
-  frontend:
-    build: ./docker/frontend
-    ports:
-      - "3000:3000"
-```
-
-### Docker操作コマンド
-
-```bash
-# 全コンテナを起動
-docker compose up -d
-
-# 全コンテナを停止
-docker compose down
-
-# 特定のサービスのログを確認
-docker compose logs -f backend
-
-# コンテナの状態を確認
-docker compose ps
-
-# コンテナを再ビルド
-docker compose up -d --build
-```
-
-### データベース接続
-
-**コンテナ内からの接続:**
-```
-postgresql://whiskey:password@db:5432/whiskey?sslmode=disable
-```
-
-**ホストマシンからの接続:**
-```
-postgresql://whiskey:password@localhost:5433/whiskey?sslmode=disable
-```
-
-### アクセスURL
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080
-- **Backend Health Check**: http://localhost:8080/health
-- **PostgreSQL**: localhost:5433
-
-## 🔴 CRITICAL: 作業ログの自動記録（絶対遵守）
+## 作業ログの自動記録
 
 ### 実行タイミング（優先度: 最高）
 
@@ -430,80 +250,37 @@ assistant: [TaskUpdate: completed] ← タスクを完了
 assistant: 「〜が完了しました」
 ```
 
-### セルフチェック（毎回実行）
-
-各応答を送信する前に以下を確認：
-
-1. **新しいタスクを受け取った？**
-   - YES → work-log実行済み？ → NO → **今すぐ実行**
-
-2. **ファイルを編集した？（2つ以上）**
-   - YES → work-log記録済み？ → NO → **今すぐ記録**
-
-3. **完了報告する？**
-   - YES → work-log更新済み？ → NO → **今すぐ更新**
-
 ### 禁止事項
 
 - ❌ work-logの実行をスキップしない
 - ❌ 「作業ログを記録しますか？」と確認しない
 - ❌ ユーザーの指示を待たない
-- ❌ 作業ログの記録を忘れない
 
-## Claude Code開発ガイドライン
+## ドキュメント
 
-### コマンド実行の原則
+### アーキテクチャ
 
-**全てのコマンドはDockerコンテナ内で実行します。**
+- [Clean Architecture](docs/architecture/clean-architecture.md) - レイヤー構成と依存関係のルール
+- [DDD実装パターン](docs/architecture/ddd-patterns.md) - 値オブジェクト、エンティティ、ドメインサービス、リポジトリパターン
 
-```bash
-# ✅ 正しい: Dockerコンテナで実行
-docker compose up -d
-docker compose logs -f backend
-docker compose exec backend go test ./...
-docker compose exec frontend npm test
+### 開発ガイド
 
-# ❌ 間違い: ホストで直接実行（環境が揃っていない）
-go test ./...  # Goがホストにインストールされていない可能性
-npm test       # Node.jsがホストにインストールされていない可能性
-```
+- [テスト戦略](docs/development/testing-strategy.md) - レイヤー別のテスト方針
+- [Dockerガイド](docs/development/docker-guide.md) - Docker環境の使い方
+- [データベースガイド](docs/development/database-guide.md) - データベース設計とsqlcの使用方法
 
-### 開発作業の流れ
+### プロジェクト管理
 
-1. **Dockerコンテナを起動**
-   ```bash
-   docker compose up -d
-   ```
+- [タスクダッシュボード](docs/task-dashboard.md) - 実装予定の機能一覧
+- [作業ログ](docs/work-logs/) - 日々の作業記録
 
-2. **開発作業**
-   - ファイル編集: ホストマシンで実行（VSCode等）
-   - Go依存関係の追加: `docker compose exec backend go mod tidy`
-   - React依存関係の追加: `docker compose exec frontend npm install <package>`
-   - テスト実行: `docker compose exec backend go test ./...`
+## 次のステップ
 
-3. **コンテナを停止**
-   ```bash
-   docker compose down
-   ```
+現在の最優先タスク: **Usecase層の実装**
 
-### Claude Code使用時の注意
+1. `backend/usecase/user_usecase.go`を実装
+2. ユーザー登録とログインのビジネスロジックを実装
+3. ユニットテストを作成
+4. PRを作成してマージ
 
-- **Go開発**: コンテナ内で`go`コマンドを実行
-  - 依存関係: `docker compose exec backend go mod tidy`
-  - テスト: `docker compose exec backend go test ./...`
-  - ビルド: `docker compose exec backend go build ./cmd/api`
-
-- **React開発**: コンテナ内で`npm`コマンドを実行
-  - 依存関係: `docker compose exec frontend npm install`
-  - テスト: `docker compose exec frontend npm test`
-  - ビルド: `docker compose exec frontend npm run build`
-
-- **データベース操作**: コンテナ内で`psql`コマンドを実行
-  - 接続: `docker compose exec db psql -U whiskey -d whiskey`
-
-### Hot Reload
-
-- **Backend**: Airによる自動リロード（コード変更を検知）
-- **Frontend**: Viteによる自動リロード（コード変更を検知）
-
-コードを編集すると自動的に再ビルド・リロードされます。
+詳細は [タスクダッシュボード](docs/task-dashboard.md) を参照してください。
