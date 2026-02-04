@@ -18,6 +18,15 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
+// UserUsecaseInterface はUserUsecaseのインターフェース。
+// テスト時のモック作成に使用する。
+type UserUsecaseInterface interface {
+	Register(ctx context.Context, email, password string) (*entity.User, error)
+	Login(ctx context.Context, email, password string) (*entity.User, error)
+	GetUser(ctx context.Context, userID uuid.UUID) (*entity.User, error)
+	ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
+}
+
 // UserUsecase はユーザーに関するビジネスロジックを提供する。
 // ユーザー登録、ログイン、情報取得、パスワード変更などのユースケースを実装する。
 type UserUsecase struct {
