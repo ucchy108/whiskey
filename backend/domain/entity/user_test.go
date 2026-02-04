@@ -4,9 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ucchy108/whiskey/backend/domain/valueobject"
-
 	"github.com/google/uuid"
+	"github.com/ucchy108/whiskey/backend/domain/value"
 )
 
 func TestNewUser(t *testing.T) {
@@ -28,28 +27,28 @@ func TestNewUser(t *testing.T) {
 			email:       "invalid-email",
 			password:    "password123",
 			wantErr:     true,
-			expectedErr: valueobject.ErrInvalidEmail,
+			expectedErr: value.ErrInvalidEmail,
 		},
 		{
 			name:        "異常系: 無効なメールアドレス形式（ドメインなし）",
 			email:       "test@",
 			password:    "password123",
 			wantErr:     true,
-			expectedErr: valueobject.ErrInvalidEmail,
+			expectedErr: value.ErrInvalidEmail,
 		},
 		{
 			name:        "異常系: パスワードが短すぎる（7文字）",
 			email:       "test@example.com",
 			password:    "pass123",
 			wantErr:     true,
-			expectedErr: valueobject.ErrPasswordTooShort,
+			expectedErr: value.ErrPasswordTooShort,
 		},
 		{
 			name:        "異常系: パスワードが空",
 			email:       "test@example.com",
 			password:    "",
 			wantErr:     true,
-			expectedErr: valueobject.ErrPasswordTooShort,
+			expectedErr: value.ErrPasswordTooShort,
 		},
 		{
 			name:     "正常系: 最小長のパスワード（8文字）",
@@ -68,7 +67,7 @@ func TestNewUser(t *testing.T) {
 			email:       "test@example.com",
 			password:    "1234567890123456789012345678901234567890123456789012345678901234567890123",
 			wantErr:     true,
-			expectedErr: valueobject.ErrPasswordTooLong,
+			expectedErr: value.ErrPasswordTooLong,
 		},
 	}
 
@@ -99,7 +98,7 @@ func TestNewUser(t *testing.T) {
 
 			// NOTE: 生成されたユーザーの基本フィールドを検証
 			// Email値オブジェクトは正規化（小文字化）されるため、.String()で比較
-			expectedEmail, _ := valueobject.NewEmail(tt.email)
+			expectedEmail, _ := value.NewEmail(tt.email)
 			if user.Email.String() != expectedEmail.String() {
 				t.Errorf("user.Email = %v, want %v", user.Email.String(), expectedEmail.String())
 			}
@@ -191,7 +190,7 @@ func TestUser_UpdateEmail(t *testing.T) {
 			name:        "異常系: 無効なメールアドレス",
 			newEmail:    "invalid-email",
 			wantErr:     true,
-			expectedErr: valueobject.ErrInvalidEmail,
+			expectedErr: value.ErrInvalidEmail,
 		},
 	}
 
@@ -216,7 +215,7 @@ func TestUser_UpdateEmail(t *testing.T) {
 			}
 
 			// Email値オブジェクトは正規化（小文字化）されるため、.String()で比較
-			expectedEmail, _ := valueobject.NewEmail(tt.newEmail)
+			expectedEmail, _ := value.NewEmail(tt.newEmail)
 			if user.Email.String() != expectedEmail.String() {
 				t.Errorf("user.Email = %v, want %v", user.Email.String(), expectedEmail.String())
 			}
@@ -258,13 +257,13 @@ func TestUser_UpdatePassword(t *testing.T) {
 			name:        "異常系: パスワードが短すぎる",
 			newPassword: "short",
 			wantErr:     true,
-			expectedErr: valueobject.ErrPasswordTooShort,
+			expectedErr: value.ErrPasswordTooShort,
 		},
 		{
 			name:        "異常系: パスワードが長すぎる（73文字）",
 			newPassword: "1234567890123456789012345678901234567890123456789012345678901234567890123",
 			wantErr:     true,
-			expectedErr: valueobject.ErrPasswordTooLong,
+			expectedErr: value.ErrPasswordTooLong,
 		},
 	}
 
