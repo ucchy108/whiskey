@@ -116,7 +116,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 //	}
 //
 // レスポンス:
-//   - 200 OK: ログイン成功
+//   - 200 OK: ログイン成功（セッションCookieを設定）
 //   - 400 Bad Request: リクエストボディが不正
 //   - 401 Unauthorized: 認証失敗
 //   - 500 Internal Server Error: サーバーエラー
@@ -127,11 +127,23 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userUsecase.Login(r.Context(), req.Email, req.Password)
+	// Usecaseで認証とセッション作成を実行
+	user, sessionID, err := h.userUsecase.Login(r.Context(), req.Email, req.Password)
 	if err != nil {
 		handleUsecaseError(w, err)
 		return
 	}
+
+	// セッションCookieを設定（HTTP層の責務）
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400, // 24 hours
+	})
 
 	resp := LoginResponse{
 		ID:    user.ID.String(),
@@ -139,6 +151,41 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, resp)
+}
+
+// Logout はログアウト処理を行う。
+// POST /api/auth/logout
+//
+// レスポンス:
+//   - 204 No Content: ログアウト成功
+//   - 401 Unauthorized: セッションが見つからない
+//   - 500 Internal Server Error: サーバーエラー
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	// セッションCookieを取得
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		respondError(w, http.StatusUnauthorized, "No session found")
+		return
+	}
+
+	// Usecaseでセッション削除を実行
+	if err := h.userUsecase.Logout(r.Context(), cookie.Value); err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to logout")
+		return
+	}
+
+	// セッションCookieを削除（HTTP層の責務）
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetUser はユーザー情報を取得する。

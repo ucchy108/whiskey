@@ -18,7 +18,8 @@ import (
 // mockUserUsecase はUserUsecaseのモック実装
 type mockUserUsecase struct {
 	registerFunc       func(ctx context.Context, email, password string) (*entity.User, error)
-	loginFunc          func(ctx context.Context, email, password string) (*entity.User, error)
+	loginFunc          func(ctx context.Context, email, password string) (*entity.User, string, error)
+	logoutFunc         func(ctx context.Context, sessionID string) error
 	getUserFunc        func(ctx context.Context, userID uuid.UUID) (*entity.User, error)
 	changePasswordFunc func(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
 }
@@ -30,11 +31,18 @@ func (m *mockUserUsecase) Register(ctx context.Context, email, password string) 
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockUserUsecase) Login(ctx context.Context, email, password string) (*entity.User, error) {
+func (m *mockUserUsecase) Login(ctx context.Context, email, password string) (*entity.User, string, error) {
 	if m.loginFunc != nil {
 		return m.loginFunc(ctx, email, password)
 	}
-	return nil, errors.New("not implemented")
+	return nil, "", errors.New("not implemented")
+}
+
+func (m *mockUserUsecase) Logout(ctx context.Context, sessionID string) error {
+	if m.logoutFunc != nil {
+		return m.logoutFunc(ctx, sessionID)
+	}
+	return errors.New("not implemented")
 }
 
 func (m *mockUserUsecase) GetUser(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
@@ -157,11 +165,12 @@ func TestUserHandler_Register(t *testing.T) {
 
 func TestUserHandler_Login(t *testing.T) {
 	tests := []struct {
-		name           string
-		requestBody    interface{}
-		mockFunc       func(ctx context.Context, email, password string) (*entity.User, error)
-		expectedStatus int
-		expectedBody   map[string]interface{}
+		name                string
+		requestBody         interface{}
+		mockLoginFunc       func(ctx context.Context, email, password string) (*entity.User, string, error)
+		expectedStatus      int
+		expectedBody        map[string]interface{}
+		expectSessionCookie bool
 	}{
 		{
 			name: "成功: ログイン",
@@ -169,23 +178,25 @@ func TestUserHandler_Login(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "password123",
 			},
-			mockFunc: func(ctx context.Context, email, password string) (*entity.User, error) {
+			mockLoginFunc: func(ctx context.Context, email, password string) (*entity.User, string, error) {
 				user, _ := entity.NewUser(email, password)
-				return user, nil
+				return user, "session-id-123", nil
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
 				"email": "test@example.com",
 			},
+			expectSessionCookie: true,
 		},
 		{
-			name:           "失敗: 不正なリクエストボディ",
-			requestBody:    "invalid json",
-			mockFunc:       nil,
-			expectedStatus: http.StatusBadRequest,
+			name:            "失敗: 不正なリクエストボディ",
+			requestBody:     "invalid json",
+			mockLoginFunc:   nil,
+			expectedStatus:  http.StatusBadRequest,
 			expectedBody: map[string]interface{}{
 				"error": "Invalid request body",
 			},
+			expectSessionCookie: false,
 		},
 		{
 			name: "失敗: 認証失敗",
@@ -193,13 +204,29 @@ func TestUserHandler_Login(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "wrongpassword",
 			},
-			mockFunc: func(ctx context.Context, email, password string) (*entity.User, error) {
-				return nil, usecase.ErrInvalidCredentials
+			mockLoginFunc: func(ctx context.Context, email, password string) (*entity.User, string, error) {
+				return nil, "", usecase.ErrInvalidCredentials
 			},
 			expectedStatus: http.StatusUnauthorized,
 			expectedBody: map[string]interface{}{
 				"error": "Invalid email or password",
 			},
+			expectSessionCookie: false,
+		},
+		{
+			name: "失敗: セッション作成エラー",
+			requestBody: LoginRequest{
+				Email:    "test@example.com",
+				Password: "password123",
+			},
+			mockLoginFunc: func(ctx context.Context, email, password string) (*entity.User, string, error) {
+				return nil, "", errors.New("failed to create session: redis connection failed")
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody: map[string]interface{}{
+				"error": "Internal server error",
+			},
+			expectSessionCookie: false,
 		},
 	}
 
@@ -207,7 +234,7 @@ func TestUserHandler_Login(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// モックUsecaseの準備
 			mockUsecase := &mockUserUsecase{
-				loginFunc: tt.mockFunc,
+				loginFunc: tt.mockLoginFunc,
 			}
 			handler := NewUserHandler(mockUsecase)
 
@@ -228,6 +255,32 @@ func TestUserHandler_Login(t *testing.T) {
 				t.Errorf("expected status %d, got %d", tt.expectedStatus, rec.Code)
 			}
 
+			// セッションCookieの検証
+			if tt.expectSessionCookie {
+				cookies := rec.Result().Cookies()
+				found := false
+				for _, cookie := range cookies {
+					if cookie.Name == "session_id" {
+						found = true
+						if cookie.Value == "" {
+							t.Error("session cookie value is empty")
+						}
+						if !cookie.HttpOnly {
+							t.Error("session cookie should be HttpOnly")
+						}
+						if !cookie.Secure {
+							t.Error("session cookie should be Secure")
+						}
+						if cookie.SameSite != http.SameSiteLaxMode {
+							t.Error("session cookie should have SameSite=Lax")
+						}
+					}
+				}
+				if !found {
+					t.Error("session cookie not found in response")
+				}
+			}
+
 			// レスポンスボディの検証
 			var respBody map[string]interface{}
 			if err := json.NewDecoder(rec.Body).Decode(&respBody); err != nil {
@@ -238,6 +291,117 @@ func TestUserHandler_Login(t *testing.T) {
 				if actualValue, ok := respBody[key]; !ok {
 					t.Errorf("expected key %s not found in response", key)
 				} else if key != "id" && actualValue != expectedValue {
+					t.Errorf("expected %s = %v, got %v", key, expectedValue, actualValue)
+				}
+			}
+		})
+	}
+}
+
+func TestUserHandler_Logout(t *testing.T) {
+	tests := []struct {
+		name                string
+		sessionCookie       *http.Cookie
+		mockLogoutFunc      func(ctx context.Context, sessionID string) error
+		expectedStatus      int
+		expectedBody        map[string]interface{}
+		expectCookieCleared bool
+	}{
+		{
+			name: "成功: ログアウト",
+			sessionCookie: &http.Cookie{
+				Name:  "session_id",
+				Value: "session-id-123",
+			},
+			mockLogoutFunc: func(ctx context.Context, sessionID string) error {
+				return nil
+			},
+			expectedStatus:      http.StatusNoContent,
+			expectedBody:        nil,
+			expectCookieCleared: true,
+		},
+		{
+			name:          "失敗: セッションCookieなし",
+			sessionCookie: nil,
+			mockLogoutFunc: nil,
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody: map[string]interface{}{
+				"error": "No session found",
+			},
+			expectCookieCleared: false,
+		},
+		{
+			name: "失敗: セッション削除エラー",
+			sessionCookie: &http.Cookie{
+				Name:  "session_id",
+				Value: "session-id-123",
+			},
+			mockLogoutFunc: func(ctx context.Context, sessionID string) error {
+				return errors.New("redis connection failed")
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody: map[string]interface{}{
+				"error": "Failed to logout",
+			},
+			expectCookieCleared: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// モックの準備
+			mockUsecase := &mockUserUsecase{
+				logoutFunc: tt.mockLogoutFunc,
+			}
+			handler := NewUserHandler(mockUsecase)
+
+			// リクエストの準備
+			req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
+			if tt.sessionCookie != nil {
+				req.AddCookie(tt.sessionCookie)
+			}
+			rec := httptest.NewRecorder()
+
+			// ハンドラーの実行
+			handler.Logout(rec, req)
+
+			// ステータスコードの検証
+			if rec.Code != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, rec.Code)
+			}
+
+			// Cookie削除の検証
+			if tt.expectCookieCleared {
+				cookies := rec.Result().Cookies()
+				found := false
+				for _, cookie := range cookies {
+					if cookie.Name == "session_id" {
+						found = true
+						if cookie.MaxAge != -1 {
+							t.Error("session cookie should have MaxAge=-1 to be cleared")
+						}
+					}
+				}
+				if !found {
+					t.Error("session cookie clear instruction not found in response")
+				}
+			}
+
+			// 204の場合はボディの検証をスキップ
+			if tt.expectedStatus == http.StatusNoContent {
+				return
+			}
+
+			// レスポンスボディの検証
+			var respBody map[string]interface{}
+			if err := json.NewDecoder(rec.Body).Decode(&respBody); err != nil {
+				t.Fatal(err)
+			}
+
+			for key, expectedValue := range tt.expectedBody {
+				if actualValue, ok := respBody[key]; !ok {
+					t.Errorf("expected key %s not found in response", key)
+				} else if actualValue != expectedValue {
 					t.Errorf("expected %s = %v, got %v", key, expectedValue, actualValue)
 				}
 			}
