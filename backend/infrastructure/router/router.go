@@ -2,7 +2,6 @@
 package router
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/ucchy108/whiskey/backend/domain/repository"
 	"github.com/ucchy108/whiskey/backend/infrastructure/auth"
 	"github.com/ucchy108/whiskey/backend/interfaces/handler"
+	"github.com/ucchy108/whiskey/backend/pkg/logger"
 )
 
 // RouterConfig はルーター設定のための構成オプション。
@@ -69,13 +69,24 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(wrapped, r)
 
-		log.Printf(
-			"%s %s %s %d %s",
-			r.Method,
-			r.RequestURI,
-			r.RemoteAddr,
-			wrapped.statusCode,
-			time.Since(start),
+		duration := time.Since(start)
+		statusCode := wrapped.statusCode
+
+		// ステータスコードに応じてログレベルを変更
+		logFunc := logger.Info
+		if statusCode >= 500 {
+			logFunc = logger.Error
+		} else if statusCode >= 400 {
+			logFunc = logger.Warn
+		}
+
+		logFunc("HTTP request",
+			"method", r.Method,
+			"uri", r.RequestURI,
+			"remote_addr", r.RemoteAddr,
+			"status", statusCode,
+			"duration_ms", duration.Milliseconds(),
+			"user_agent", r.UserAgent(),
 		)
 	})
 }
