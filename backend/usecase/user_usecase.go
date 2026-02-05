@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
@@ -22,7 +24,8 @@ var (
 // テスト時のモック作成に使用する。
 type UserUsecaseInterface interface {
 	Register(ctx context.Context, email, password string) (*entity.User, error)
-	Login(ctx context.Context, email, password string) (*entity.User, error)
+	Login(ctx context.Context, email, password string) (*entity.User, string, error)
+	Logout(ctx context.Context, sessionID string) error
 	GetUser(ctx context.Context, userID uuid.UUID) (*entity.User, error)
 	ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
 }
@@ -32,6 +35,8 @@ type UserUsecaseInterface interface {
 type UserUsecase struct {
 	userRepo    repository.UserRepository
 	userService *service.UserService
+	sessionRepo repository.SessionRepository
+	sessionTTL  time.Duration
 }
 
 // NewUserUsecase はUserUsecaseの新しいインスタンスを生成する。
@@ -39,13 +44,22 @@ type UserUsecase struct {
 // パラメータ:
 //   - userRepo: ユーザーデータの永続化を担当するリポジトリ
 //   - userService: メールアドレスのユニーク性チェックなどのドメインサービス
+//   - sessionRepo: セッション管理を担当するリポジトリ
+//   - sessionTTL: セッションの有効期限
 //
 // 戻り値:
 //   - *UserUsecase: 生成されたUserUsecaseインスタンス
-func NewUserUsecase(userRepo repository.UserRepository, userService *service.UserService) *UserUsecase {
+func NewUserUsecase(
+	userRepo repository.UserRepository,
+	userService *service.UserService,
+	sessionRepo repository.SessionRepository,
+	sessionTTL time.Duration,
+) *UserUsecase {
 	return &UserUsecase{
 		userRepo:    userRepo,
 		userService: userService,
+		sessionRepo: sessionRepo,
+		sessionTTL:  sessionTTL,
 	}
 }
 
@@ -92,7 +106,7 @@ func (u *UserUsecase) Register(ctx context.Context, email, password string) (*en
 }
 
 // Login はログイン処理を行う。
-// メールアドレスとパスワードを検証し、認証に成功したユーザーを返す。
+// メールアドレスとパスワードを検証し、認証に成功したユーザーとセッションIDを返す。
 // セキュリティ上、ユーザーの存在確認とパスワードの不一致を区別せず、同じエラーを返す。
 //
 // パラメータ:
@@ -102,14 +116,15 @@ func (u *UserUsecase) Register(ctx context.Context, email, password string) (*en
 //
 // 戻り値:
 //   - *entity.User: 認証に成功したユーザーエンティティ
+//   - string: 生成されたセッションID
 //   - error: 以下のエラーが返される可能性がある
 //     - ErrInvalidCredentials: メールアドレスまたはパスワードが不正
 //     - その他のリポジトリエラー
-func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entity.User, error) {
+func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entity.User, string, error) {
 	// Email値オブジェクトの生成（バリデーション含む）
 	emailVO, err := value.NewEmail(email)
 	if err != nil {
-		return nil, ErrInvalidCredentials
+		return nil, "", ErrInvalidCredentials
 	}
 
 	// ユーザーをメールアドレスで検索
@@ -117,15 +132,21 @@ func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entit
 	if err != nil {
 		// ユーザーが存在しない場合も認証失敗として扱う
 		// （セキュリティ上、存在確認を悪用されないようにするため）
-		return nil, ErrInvalidCredentials
+		return nil, "", ErrInvalidCredentials
 	}
 
 	// パスワード検証
 	if err := user.VerifyPassword(password); err != nil {
-		return nil, ErrInvalidCredentials
+		return nil, "", ErrInvalidCredentials
 	}
 
-	return user, nil
+	// セッション作成
+	sessionID, err := u.sessionRepo.Create(ctx, user.ID, u.sessionTTL)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create session: %w", err)
+	}
+
+	return user, sessionID, nil
 }
 
 // GetUser はユーザー情報を取得する。
@@ -189,4 +210,17 @@ func (u *UserUsecase) ChangePassword(ctx context.Context, userID uuid.UUID, curr
 	}
 
 	return nil
+}
+
+// Logout はログアウト処理を行う。
+// 指定されたセッションIDのセッションを削除する。
+//
+// パラメータ:
+//   - ctx: リクエストのコンテキスト
+//   - sessionID: 削除するセッションID
+//
+// 戻り値:
+//   - error: セッション削除に失敗した場合のエラー
+func (u *UserUsecase) Logout(ctx context.Context, sessionID string) error {
+	return u.sessionRepo.Delete(ctx, sessionID)
 }

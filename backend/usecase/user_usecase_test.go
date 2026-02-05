@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
@@ -95,6 +96,56 @@ func (m *mockUserRepository) ExistsByEmail(ctx context.Context, email string) (b
 	return exists, nil
 }
 
+// mockSessionRepository はSessionRepositoryのモック実装
+type mockSessionRepository struct {
+	sessions map[string]uuid.UUID // sessionID -> userID
+	err      error
+}
+
+func newMockSessionRepository() *mockSessionRepository {
+	return &mockSessionRepository{
+		sessions: make(map[string]uuid.UUID),
+	}
+}
+
+func (m *mockSessionRepository) Create(ctx context.Context, userID uuid.UUID, ttl time.Duration) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	sessionID := uuid.New().String()
+	m.sessions[sessionID] = userID
+	return sessionID, nil
+}
+
+func (m *mockSessionRepository) Get(ctx context.Context, sessionID string) (uuid.UUID, error) {
+	if m.err != nil {
+		return uuid.Nil, m.err
+	}
+	userID, ok := m.sessions[sessionID]
+	if !ok {
+		return uuid.Nil, errors.New("session not found")
+	}
+	return userID, nil
+}
+
+func (m *mockSessionRepository) Delete(ctx context.Context, sessionID string) error {
+	if m.err != nil {
+		return m.err
+	}
+	delete(m.sessions, sessionID)
+	return nil
+}
+
+func (m *mockSessionRepository) Extend(ctx context.Context, sessionID string, ttl time.Duration) error {
+	if m.err != nil {
+		return m.err
+	}
+	if _, ok := m.sessions[sessionID]; !ok {
+		return errors.New("session not found")
+	}
+	return nil
+}
+
 // テストヘルパー: リポジトリにユーザーを追加
 func (m *mockUserRepository) addUser(email, password string) *entity.User {
 	user, _ := entity.NewUser(email, password)
@@ -160,8 +211,9 @@ func TestUserUsecase_Register(t *testing.T) {
 			mockRepo := newMockUserRepository()
 			tt.setup(mockRepo)
 
+			mockSessionRepo := newMockSessionRepository()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
 
 			user, err := usecase.Register(context.Background(), tt.email, tt.password)
 
@@ -260,10 +312,11 @@ func TestUserUsecase_Login(t *testing.T) {
 			mockRepo := newMockUserRepository()
 			tt.setup(mockRepo)
 
+			mockSessionRepo := newMockSessionRepository()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
 
-			user, err := usecase.Login(context.Background(), tt.email, tt.password)
+			user, sessionID, err := usecase.Login(context.Background(), tt.email, tt.password)
 
 			if tt.wantErr {
 				if err == nil {
@@ -284,6 +337,22 @@ func TestUserUsecase_Login(t *testing.T) {
 			if user == nil {
 				t.Error("Login() user = nil, want user")
 				return
+			}
+
+			if sessionID == "" {
+				t.Error("Login() sessionID = empty, want non-empty")
+				return
+			}
+
+			// セッションがリポジトリに保存されているか確認
+			storedUserID, err := mockSessionRepo.Get(context.Background(), sessionID)
+			if err != nil {
+				t.Errorf("Get() error = %v", err)
+				return
+			}
+
+			if storedUserID != user.ID {
+				t.Errorf("stored userID = %v, want %v", storedUserID, user.ID)
 			}
 
 			if user.Email.String() != tt.email {
@@ -326,8 +395,9 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			mockRepo := newMockUserRepository()
 			userID := tt.setup(mockRepo)
 
+			mockSessionRepo := newMockSessionRepository()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
 
 			user, err := usecase.GetUser(context.Background(), userID)
 
@@ -427,8 +497,9 @@ func TestUserUsecase_ChangePassword(t *testing.T) {
 			mockRepo := newMockUserRepository()
 			userID := tt.setup(mockRepo)
 
+			mockSessionRepo := newMockSessionRepository()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
 
 			err := usecase.ChangePassword(context.Background(), userID, tt.currentPassword, tt.newPassword)
 
@@ -463,6 +534,67 @@ func TestUserUsecase_ChangePassword(t *testing.T) {
 			// 古いパスワードでログインできないか確認
 			if err := user.VerifyPassword(tt.currentPassword); err == nil {
 				t.Error("VerifyPassword() succeeded with old password, should fail")
+			}
+		})
+	}
+}
+
+func TestUserUsecase_Logout(t *testing.T) {
+	tests := []struct {
+		name      string
+		setup     func(*mockSessionRepository) string
+		wantErr   bool
+		checkErr  func(error) bool
+	}{
+		{
+			name: "正常系: ログアウト成功",
+			setup: func(m *mockSessionRepository) string {
+				sessionID := uuid.New().String()
+				m.sessions[sessionID] = uuid.New()
+				return sessionID
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常系: 存在しないセッション",
+			setup: func(m *mockSessionRepository) string {
+				return uuid.New().String() // 存在しないセッションID
+			},
+			wantErr: false, // 削除は冪等
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := newMockUserRepository()
+			mockSessionRepo := newMockSessionRepository()
+			sessionID := tt.setup(mockSessionRepo)
+
+			userService := service.NewUserService(mockRepo)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+
+			err := usecase.Logout(context.Background(), sessionID)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Error("Logout() error = nil, want error")
+					return
+				}
+				if tt.checkErr != nil && !tt.checkErr(err) {
+					t.Errorf("Logout() error = %v, want specific error", err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Logout() unexpected error = %v", err)
+				return
+			}
+
+			// セッションが削除されたか確認
+			_, err = mockSessionRepo.Get(context.Background(), sessionID)
+			if err == nil {
+				t.Error("Get() after Logout() succeeded, want error (session should be deleted)")
 			}
 		})
 	}
