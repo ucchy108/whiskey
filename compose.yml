@@ -18,6 +18,19 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis (Session Store)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   # Go Backend API
   backend:
     build:
@@ -30,10 +43,13 @@ services:
       - go-mod-cache:/go/pkg/mod
     environment:
       - DATABASE_URL=postgresql://whiskey:password@db:5432/whiskey?sslmode=disable
+      - REDIS_URL=redis:6379
       - PORT=8080
       - ENV=development
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: air -c .air.toml
 
@@ -55,3 +71,4 @@ services:
 volumes:
   postgres-data:
   go-mod-cache:
+  redis-data:

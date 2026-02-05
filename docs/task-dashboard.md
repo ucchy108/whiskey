@@ -6,15 +6,17 @@
 
 - [x] Domain層: User entity実装
 - [x] Domain層: 値オブジェクト（Email, Password, HashedPassword）実装
-- [x] Domain層: Repository interface定義
+- [x] Domain層: Repository interface定義（User, Session）
 - [x] Domain層: UserService（ドメインサービス）実装
 - [x] Infrastructure層: UserRepository実装
+- [x] Infrastructure層: SessionStore実装（Redis）
+- [x] Infrastructure層: AuthMiddleware実装
 - [x] Infrastructure層: 統合テスト実装
 - [x] データベース: usersテーブル作成
-- [x] Usecase層: UserUsecase実装（Register, Login, GetUser, ChangePassword）
-- [x] Usecase層: ユニットテスト実装（カバレッジ84.6%）
-- [x] Interfaces層: UserHandler実装（4つのRESTful APIエンドポイント）
-- [x] Interfaces層: ユニットテスト実装（カバレッジ95.5%、15テストケース）
+- [x] Usecase層: UserUsecase実装（Register, Login, Logout, GetUser, ChangePassword）
+- [x] Usecase層: ユニットテスト実装
+- [x] Interfaces層: UserHandler実装（5つのRESTful APIエンドポイント）
+- [x] Interfaces層: ユニットテスト実装
 
 ### 🚧 次にやるべきこと
 
@@ -38,12 +40,25 @@
 - [x] `backend/interfaces/handler/user_handler_test.go`
   - HTTPハンドラーのテスト
 
-### 1.3 認証機能の実装
-- [ ] `backend/infrastructure/auth/jwt.go`
-  - JWT生成
-  - JWT検証
-  - ミドルウェア（認証チェック）
-- [ ] `backend/infrastructure/auth/jwt_test.go`
+### 1.3 認証機能の実装 ✅
+- [x] `backend/domain/repository/session_repository.go`
+  - SessionRepository interface定義
+- [x] `backend/infrastructure/auth/session_store.go`
+  - Redis SessionStore実装
+  - Create, Get, Delete, Extend機能
+- [x] `backend/infrastructure/auth/session_store_test.go`
+  - SessionStore統合テスト
+- [x] `backend/infrastructure/auth/middleware.go`
+  - AuthMiddleware実装（セッションベース認証）
+- [x] `backend/infrastructure/auth/middleware_test.go`
+  - Middlewareユニットテスト
+- [x] `backend/usecase/user_usecase.go`
+  - Login: セッション作成機能追加
+  - Logout: セッション削除機能追加
+- [x] `backend/interfaces/handler/user_handler.go`
+  - Login: Cookie設定
+  - Logout: Cookie削除
+- [x] Clean Architecture準拠に修正（Usecaseのみに依存）
 
 ### 1.4 ルーティング設定
 - [ ] `backend/infrastructure/router/router.go`
@@ -129,8 +144,8 @@
 ### 🔴 High Priority（今すぐやるべき）
 1. ~~Usecase層の実装（Phase 1.1）~~ ✅ 完了
 2. ~~Interfaces層の実装（Phase 1.2）~~ ✅ 完了
-3. 認証機能の実装（Phase 1.3）
-4. ルーティング設定（Phase 1.4）
+3. ~~認証機能の実装（Phase 1.3）~~ ✅ 完了
+4. ルーティング設定（Phase 1.4） ← **次のタスク**
 
 ### 🟡 Medium Priority（次にやるべき）
 5. ワークアウトDomain層（Phase 2.1）
@@ -147,32 +162,55 @@
   ✅ entity/user.go
   ✅ value/email.go, password.go, hashed_password.go
   ✅ repository/user_repository.go (interface)
+  ✅ repository/session_repository.go (interface)
   ✅ service/user_service.go
 
 ✅ Usecase Layer
-  ✅ user_usecase.go (実装済み)
+  ✅ user_usecase.go (実装済み - Session管理含む)
   ✅ user_usecase_test.go (実装済み)
 
 ✅ Interfaces Layer
-  ✅ handler/user_handler.go (実装済み)
+  ✅ handler/user_handler.go (実装済み - Clean Architecture準拠)
   ✅ handler/user_handler_test.go (実装済み)
 
 🚧 Infrastructure Layer
   ✅ database/user_repository.go (実装済み)
-  ❌ auth/jwt.go (未実装)
+  ✅ auth/session_store.go (実装済み - Redis)
+  ✅ auth/middleware.go (実装済み)
   ❌ router/router.go (未実装)
 ```
 
 ## 次のステップ
 
-**最優先タスク**: Phase 1.3 - 認証機能の実装
+**最優先タスク**: Phase 1.4 - ルーティング設定
 
-1. `backend/infrastructure/auth/jwt.go`を実装
-   - JWT生成機能
-   - JWT検証機能
-   - 認証ミドルウェア
-2. `backend/infrastructure/auth/jwt_test.go`を実装
-3. ユニットテストを作成
+1. `backend/infrastructure/router/router.go`を実装
+   - Gorilla Muxを使用したルーティング設定
+   - ミドルウェア設定（CORS, Logger, Auth）
+   - 認証が必要なエンドポイントの保護
+2. `backend/cmd/api/main.go`を実装
+   - Redis接続の初期化
+   - PostgreSQL接続の初期化
+   - 依存関係の注入（DI）
+   - サーバー起動処理
+3. 統合テストの実行
 4. PRを作成してマージ
 
-これが完了したら、Phase 1.4（ルーティング設定）に進みます。
+これが完了したら、Phase 2（ワークアウト機能）に進みます。
+
+## Phase 1.3 完了時の成果物
+
+### 実装内容
+- ✅ Redis + Session-based認証
+- ✅ Clean Architecture準拠の設計
+- ✅ Domain/Infrastructure/Usecase/Interfaces層の実装
+- ✅ 包括的なテストカバレッジ
+
+### アーキテクチャ改善
+- ✅ Handler層がInfrastructure層に直接依存する問題を解決
+- ✅ Usecase層でセッション管理のビジネスロジックを実装
+- ✅ 責務の明確化（Handler: HTTP層、Usecase: ビジネスロジック、Repository: 永続化）
+
+### 技術選定
+- ✅ Redis（セッションストア）: パフォーマンス、TTL機能、スケーラビリティ
+- ✅ Session-based認証（JWTではなく）: セキュリティ、シンプルさ
