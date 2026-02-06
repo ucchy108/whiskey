@@ -47,8 +47,8 @@ func SetupTestDB(t *testing.T) *sql.DB {
 func CleanupTestDB(t *testing.T, db *sql.DB) {
 	t.Helper()
 
-	// usersテーブルのデータを削除
-	_, err := db.Exec("TRUNCATE TABLE users CASCADE")
+	// テーブルのデータを削除
+	_, err := db.Exec("TRUNCATE TABLE workout_sets, workouts, exercises, users CASCADE")
 	if err != nil {
 		t.Errorf("Failed to truncate users table: %v", err)
 	}
