@@ -25,18 +25,24 @@ type Querier interface {
 	GetExerciseByName(ctx context.Context, name string) (Exercise, error)
 	// 各日の最大推定1RMを取得（重量成長グラフ用）
 	GetMaxEstimated1RMByExercise(ctx context.Context, arg GetMaxEstimated1RMByExerciseParams) ([]GetMaxEstimated1RMByExerciseRow, error)
+	// 全期間の最大推定1RMを取得
+	GetOverallMaxEstimated1RMByExerciseAndUser(ctx context.Context, arg GetOverallMaxEstimated1RMByExerciseAndUserParams) (string, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetWorkout(ctx context.Context, id uuid.UUID) (Workout, error)
 	GetWorkoutByUserAndDate(ctx context.Context, arg GetWorkoutByUserAndDateParams) (Workout, error)
 	GetWorkoutSet(ctx context.Context, id uuid.UUID) (WorkoutSet, error)
+	ListAllWorkoutsByUser(ctx context.Context, userID uuid.UUID) ([]Workout, error)
 	ListExercises(ctx context.Context) ([]Exercise, error)
 	ListExercisesByBodyPart(ctx context.Context, bodyPart sql.NullString) ([]Exercise, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	// 重量成長グラフ用：特定種目の推定1RMの推移を取得
 	ListWorkoutSetsByExercise(ctx context.Context, arg ListWorkoutSetsByExerciseParams) ([]ListWorkoutSetsByExerciseRow, error)
+	ListWorkoutSetsByExerciseID(ctx context.Context, exerciseID uuid.UUID) ([]WorkoutSet, error)
 	ListWorkoutSetsByWorkout(ctx context.Context, workoutID uuid.UUID) ([]WorkoutSet, error)
+	ListWorkoutSetsByWorkoutAndExercise(ctx context.Context, arg ListWorkoutSetsByWorkoutAndExerciseParams) ([]WorkoutSet, error)
 	ListWorkoutsByUser(ctx context.Context, arg ListWorkoutsByUserParams) ([]Workout, error)
+	ListWorkoutsByUserAndDateRange(ctx context.Context, arg ListWorkoutsByUserAndDateRangeParams) ([]Workout, error)
 	// GitHub風ヒートマップ用：過去365日の運動強度スコアを取得
 	ListWorkoutsForHeatmap(ctx context.Context, userID uuid.UUID) ([]ListWorkoutsForHeatmapRow, error)
 	UpdateExercise(ctx context.Context, arg UpdateExerciseParams) (Exercise, error)
