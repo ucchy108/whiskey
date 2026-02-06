@@ -9,31 +9,18 @@ import (
 	"github.com/ucchy108/whiskey/backend/domain/entity"
 )
 
-func createTestUser(t *testing.T, ctx context.Context, repo *userRepository) *entity.User {
-	t.Helper()
-	user, err := entity.NewUser("workout-test@example.com", "password123")
-	if err != nil {
-		t.Fatalf("Failed to create user entity: %v", err)
-	}
-	if err := repo.Create(ctx, user); err != nil {
-		t.Fatalf("Failed to create user: %v", err)
-	}
-	return user
-}
-
 func TestWorkoutRepository_Create(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 
 	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
 
-	err := workoutRepo.Create(ctx, workout)
+	err := repos.Workout.Create(ctx, workout)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -55,20 +42,19 @@ func TestWorkoutRepository_Create_DuplicateDate(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 	date := time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)
 
 	workout1 := entity.NewWorkout(user.ID, date)
-	if err := workoutRepo.Create(ctx, workout1); err != nil {
+	if err := repos.Workout.Create(ctx, workout1); err != nil {
 		t.Fatalf("Create() first workout error = %v", err)
 	}
 
 	workout2 := entity.NewWorkout(user.ID, date)
-	err := workoutRepo.Create(ctx, workout2)
+	err := repos.Workout.Create(ctx, workout2)
 	if err == nil {
 		t.Error("Create() expected unique constraint error for duplicate user+date, got nil")
 	}
@@ -78,13 +64,11 @@ func TestWorkoutRepository_FindByID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
 	tests := []struct {
 		name    string
@@ -105,7 +89,7 @@ func TestWorkoutRepository_FindByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := workoutRepo.FindByID(ctx, tt.id)
+			found, err := repos.Workout.FindByID(ctx, tt.id)
 			if err != nil {
 				t.Fatalf("FindByID() error = %v", err)
 			}
@@ -131,21 +115,16 @@ func TestWorkoutRepository_FindByUserID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 
-	w1 := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	w2 := entity.NewWorkout(user.ID, time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC))
-	w3 := entity.NewWorkout(user.ID, time.Date(2026, 1, 17, 0, 0, 0, 0, time.UTC))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC)))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 17, 0, 0, 0, 0, time.UTC)))
 
-	workoutRepo.Create(ctx, w1)
-	workoutRepo.Create(ctx, w2)
-	workoutRepo.Create(ctx, w3)
-
-	workouts, err := workoutRepo.FindByUserID(ctx, user.ID)
+	workouts, err := repos.Workout.FindByUserID(ctx, user.ID)
 	if err != nil {
 		t.Fatalf("FindByUserID() error = %v", err)
 	}
@@ -166,26 +145,20 @@ func TestWorkoutRepository_FindByUserIDAndDateRange(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 
-	w1 := entity.NewWorkout(user.ID, time.Date(2026, 1, 10, 0, 0, 0, 0, time.UTC))
-	w2 := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	w3 := entity.NewWorkout(user.ID, time.Date(2026, 1, 20, 0, 0, 0, 0, time.UTC))
-	w4 := entity.NewWorkout(user.ID, time.Date(2026, 1, 25, 0, 0, 0, 0, time.UTC))
-
-	workoutRepo.Create(ctx, w1)
-	workoutRepo.Create(ctx, w2)
-	workoutRepo.Create(ctx, w3)
-	workoutRepo.Create(ctx, w4)
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 10, 0, 0, 0, 0, time.UTC)))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 20, 0, 0, 0, 0, time.UTC)))
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 25, 0, 0, 0, 0, time.UTC)))
 
 	startDate := time.Date(2026, 1, 12, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2026, 1, 22, 0, 0, 0, 0, time.UTC)
 
-	workouts, err := workoutRepo.FindByUserIDAndDateRange(ctx, user.ID, startDate, endDate)
+	workouts, err := repos.Workout.FindByUserIDAndDateRange(ctx, user.ID, startDate, endDate)
 	if err != nil {
 		t.Fatalf("FindByUserIDAndDateRange() error = %v", err)
 	}
@@ -199,15 +172,13 @@ func TestWorkoutRepository_FindByUserIDAndDate(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 	date := time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)
 
-	workout := entity.NewWorkout(user.ID, date)
-	workoutRepo.Create(ctx, workout)
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(date))
 
 	tests := []struct {
 		name    string
@@ -228,7 +199,7 @@ func TestWorkoutRepository_FindByUserIDAndDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := workoutRepo.FindByUserIDAndDate(ctx, user.ID, tt.date)
+			found, err := repos.Workout.FindByUserIDAndDate(ctx, user.ID, tt.date)
 			if err != nil {
 				t.Fatalf("FindByUserIDAndDate() error = %v", err)
 			}
@@ -244,13 +215,11 @@ func TestWorkoutRepository_Update(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
 	originalUpdatedAt := workout.UpdatedAt
 
@@ -259,7 +228,7 @@ func TestWorkoutRepository_Update(t *testing.T) {
 	memo := "Great workout!"
 	workout.UpdateMemo(&memo)
 
-	err := workoutRepo.Update(ctx, workout)
+	err := repos.Workout.Update(ctx, workout)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -269,7 +238,7 @@ func TestWorkoutRepository_Update(t *testing.T) {
 	}
 
 	// DBから取得して確認
-	found, _ := workoutRepo.FindByID(ctx, workout.ID)
+	found, _ := repos.Workout.FindByID(ctx, workout.ID)
 	if found.DailyScore != 80 {
 		t.Errorf("Update() DailyScore = %v, want 80", found.DailyScore)
 	}
@@ -282,20 +251,18 @@ func TestWorkoutRepository_Delete(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
-	err := workoutRepo.Delete(ctx, workout.ID)
+	err := repos.Workout.Delete(ctx, workout.ID)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 
-	found, _ := workoutRepo.FindByID(ctx, workout.ID)
+	found, _ := repos.Workout.FindByID(ctx, workout.ID)
 	if found != nil {
 		t.Error("Delete() did not delete workout")
 	}
@@ -305,15 +272,13 @@ func TestWorkoutRepository_ExistsByUserIDAndDate(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	workoutRepo := NewWorkoutRepository(conn)
-	userRepo := NewUserRepository(conn).(*userRepository)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
+	user := CreateUser(t, ctx, repos.User)
 	date := time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)
 
-	workout := entity.NewWorkout(user.ID, date)
-	workoutRepo.Create(ctx, workout)
+	CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(date))
 
 	tests := []struct {
 		name string
@@ -334,7 +299,7 @@ func TestWorkoutRepository_ExistsByUserIDAndDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, err := workoutRepo.ExistsByUserIDAndDate(ctx, user.ID, tt.date)
+			exists, err := repos.Workout.ExistsByUserIDAndDate(ctx, user.ID, tt.date)
 			if err != nil {
 				t.Fatalf("ExistsByUserIDAndDate() error = %v", err)
 			}

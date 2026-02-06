@@ -12,19 +12,10 @@ func TestExerciseRepository_Create(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	bodyPart := entity.BodyPartChest
-	exercise, err := entity.NewExercise("Bench Press", nil, &bodyPart)
-	if err != nil {
-		t.Fatalf("Failed to create exercise entity: %v", err)
-	}
-
-	err = repo.Create(ctx, exercise)
-	if err != nil {
-		t.Fatalf("Create() error = %v", err)
-	}
+	exercise := CreateExercise(t, ctx, repos.Exercise, WithBodyPart(entity.BodyPartChest))
 
 	if exercise.ID == uuid.Nil {
 		t.Error("Create() did not generate ID")
@@ -43,16 +34,13 @@ func TestExerciseRepository_Create_DuplicateName(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	exercise1, _ := entity.NewExercise("Bench Press", nil, nil)
-	if err := repo.Create(ctx, exercise1); err != nil {
-		t.Fatalf("Create() first exercise error = %v", err)
-	}
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
 
 	exercise2, _ := entity.NewExercise("Bench Press", nil, nil)
-	err := repo.Create(ctx, exercise2)
+	err := repos.Exercise.Create(ctx, exercise2)
 	if err == nil {
 		t.Error("Create() expected unique constraint error for duplicate name, got nil")
 	}
@@ -62,12 +50,13 @@ func TestExerciseRepository_FindByID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	bodyPart := entity.BodyPartChest
-	exercise, _ := entity.NewExercise("Bench Press", nil, &bodyPart)
-	repo.Create(ctx, exercise)
+	exercise := CreateExercise(t, ctx, repos.Exercise,
+		WithExerciseName("Bench Press"),
+		WithBodyPart(entity.BodyPartChest),
+	)
 
 	tests := []struct {
 		name    string
@@ -88,7 +77,7 @@ func TestExerciseRepository_FindByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := repo.FindByID(ctx, tt.id)
+			found, err := repos.Exercise.FindByID(ctx, tt.id)
 			if err != nil {
 				t.Fatalf("FindByID() error = %v", err)
 			}
@@ -114,11 +103,10 @@ func TestExerciseRepository_FindByName(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	exercise, _ := entity.NewExercise("Squat", nil, nil)
-	repo.Create(ctx, exercise)
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Squat"))
 
 	tests := []struct {
 		name    string
@@ -139,7 +127,7 @@ func TestExerciseRepository_FindByName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := repo.FindByName(ctx, tt.exName)
+			found, err := repos.Exercise.FindByName(ctx, tt.exName)
 			if err != nil {
 				t.Fatalf("FindByName() error = %v", err)
 			}
@@ -155,18 +143,14 @@ func TestExerciseRepository_FindAll(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	e1, _ := entity.NewExercise("Bench Press", nil, nil)
-	e2, _ := entity.NewExercise("Squat", nil, nil)
-	e3, _ := entity.NewExercise("Deadlift", nil, nil)
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Squat"))
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Deadlift"))
 
-	repo.Create(ctx, e1)
-	repo.Create(ctx, e2)
-	repo.Create(ctx, e3)
-
-	exercises, err := repo.FindAll(ctx)
+	exercises, err := repos.Exercise.FindAll(ctx)
 	if err != nil {
 		t.Fatalf("FindAll() error = %v", err)
 	}
@@ -187,21 +171,14 @@ func TestExerciseRepository_FindByBodyPart(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	chest := entity.BodyPartChest
-	back := entity.BodyPartBack
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"), WithBodyPart(entity.BodyPartChest))
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Incline Press"), WithBodyPart(entity.BodyPartChest))
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Pull Up"), WithBodyPart(entity.BodyPartBack))
 
-	e1, _ := entity.NewExercise("Bench Press", nil, &chest)
-	e2, _ := entity.NewExercise("Incline Press", nil, &chest)
-	e3, _ := entity.NewExercise("Pull Up", nil, &back)
-
-	repo.Create(ctx, e1)
-	repo.Create(ctx, e2)
-	repo.Create(ctx, e3)
-
-	chestExercises, err := repo.FindByBodyPart(ctx, entity.BodyPartChest)
+	chestExercises, err := repos.Exercise.FindByBodyPart(ctx, entity.BodyPartChest)
 	if err != nil {
 		t.Fatalf("FindByBodyPart() error = %v", err)
 	}
@@ -210,7 +187,7 @@ func TestExerciseRepository_FindByBodyPart(t *testing.T) {
 		t.Errorf("FindByBodyPart(chest) returned %d exercises, want 2", len(chestExercises))
 	}
 
-	backExercises, err := repo.FindByBodyPart(ctx, entity.BodyPartBack)
+	backExercises, err := repos.Exercise.FindByBodyPart(ctx, entity.BodyPartBack)
 	if err != nil {
 		t.Fatalf("FindByBodyPart() error = %v", err)
 	}
@@ -224,11 +201,10 @@ func TestExerciseRepository_Update(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	repo.Create(ctx, exercise)
+	exercise := CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
 
 	originalUpdatedAt := exercise.UpdatedAt
 
@@ -238,7 +214,7 @@ func TestExerciseRepository_Update(t *testing.T) {
 	bodyPart := entity.BodyPartChest
 	exercise.UpdateBodyPart(&bodyPart)
 
-	err := repo.Update(ctx, exercise)
+	err := repos.Exercise.Update(ctx, exercise)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -247,7 +223,7 @@ func TestExerciseRepository_Update(t *testing.T) {
 		t.Error("Update() did not update UpdatedAt")
 	}
 
-	found, _ := repo.FindByID(ctx, exercise.ID)
+	found, _ := repos.Exercise.FindByID(ctx, exercise.ID)
 	if found.Name != "Flat Bench Press" {
 		t.Errorf("Update() Name = %v, want 'Flat Bench Press'", found.Name)
 	}
@@ -263,18 +239,17 @@ func TestExerciseRepository_Delete(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	repo.Create(ctx, exercise)
+	exercise := CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
 
-	err := repo.Delete(ctx, exercise.ID)
+	err := repos.Exercise.Delete(ctx, exercise.ID)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 
-	found, _ := repo.FindByID(ctx, exercise.ID)
+	found, _ := repos.Exercise.FindByID(ctx, exercise.ID)
 	if found != nil {
 		t.Error("Delete() did not delete exercise")
 	}
@@ -284,11 +259,10 @@ func TestExerciseRepository_ExistsByName(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	repo := NewExerciseRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	repo.Create(ctx, exercise)
+	CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
 
 	tests := []struct {
 		name   string
@@ -309,7 +283,7 @@ func TestExerciseRepository_ExistsByName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, err := repo.ExistsByName(ctx, tt.exName)
+			exists, err := repos.Exercise.ExistsByName(ctx, tt.exName)
 			if err != nil {
 				t.Fatalf("ExistsByName() error = %v", err)
 			}

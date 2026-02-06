@@ -13,21 +13,12 @@ func TestWorkoutSetRepository_Create(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	// テストデータの作成
-	user := createTestUser(t, ctx, userRepo)
-
-	bodyPart := entity.BodyPartChest
-	exercise, _ := entity.NewExercise("Bench Press", nil, &bodyPart)
-	exerciseRepo.Create(ctx, exercise)
-
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise, WithBodyPart(entity.BodyPartChest))
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
 	// WorkoutSetを作成
 	workoutSet, err := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
@@ -35,7 +26,7 @@ func TestWorkoutSetRepository_Create(t *testing.T) {
 		t.Fatalf("Failed to create workout set entity: %v", err)
 	}
 
-	err = setRepo.Create(ctx, workoutSet)
+	err = repos.WorkoutSet.Create(ctx, workoutSet)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -53,20 +44,15 @@ func TestWorkoutSetRepository_FindByID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
-
-	workoutSet, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
-	setRepo.Create(ctx, workoutSet)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
+	workoutSet := CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID,
+		WithReps(10), WithWeight(60.0),
+	)
 
 	tests := []struct {
 		name    string
@@ -87,7 +73,7 @@ func TestWorkoutSetRepository_FindByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := setRepo.FindByID(ctx, tt.id)
+			found, err := repos.WorkoutSet.FindByID(ctx, tt.id)
 			if err != nil {
 				t.Fatalf("FindByID() error = %v", err)
 			}
@@ -116,27 +102,18 @@ func TestWorkoutSetRepository_FindByWorkoutID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
-	set1, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
-	set2, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 2, 8, 65.0)
-	set3, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 3, 6, 70.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(1), WithReps(10), WithWeight(60.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(2), WithReps(8), WithWeight(65.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(3), WithReps(6), WithWeight(70.0))
 
-	setRepo.Create(ctx, set1)
-	setRepo.Create(ctx, set2)
-	setRepo.Create(ctx, set3)
-
-	sets, err := setRepo.FindByWorkoutID(ctx, workout.ID)
+	sets, err := repos.WorkoutSet.FindByWorkoutID(ctx, workout.ID)
 	if err != nil {
 		t.Fatalf("FindByWorkoutID() error = %v", err)
 	}
@@ -150,34 +127,22 @@ func TestWorkoutSetRepository_FindByWorkoutIDAndExerciseID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-
-	exercise1, _ := entity.NewExercise("Bench Press", nil, nil)
-	exercise2, _ := entity.NewExercise("Squat", nil, nil)
-	exerciseRepo.Create(ctx, exercise1)
-	exerciseRepo.Create(ctx, exercise2)
-
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise1 := CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Bench Press"))
+	exercise2 := CreateExercise(t, ctx, repos.Exercise, WithExerciseName("Squat"))
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
 	// Bench Press: 2セット
-	s1, _ := entity.NewWorkoutSet(workout.ID, exercise1.ID, 1, 10, 60.0)
-	s2, _ := entity.NewWorkoutSet(workout.ID, exercise1.ID, 2, 8, 65.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise1.ID, WithSetNumber(1), WithReps(10), WithWeight(60.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise1.ID, WithSetNumber(2), WithReps(8), WithWeight(65.0))
 	// Squat: 1セット
-	s3, _ := entity.NewWorkoutSet(workout.ID, exercise2.ID, 1, 5, 100.0)
-
-	setRepo.Create(ctx, s1)
-	setRepo.Create(ctx, s2)
-	setRepo.Create(ctx, s3)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise2.ID, WithSetNumber(1), WithReps(5), WithWeight(100.0))
 
 	// Bench Pressのみ取得
-	benchSets, err := setRepo.FindByWorkoutIDAndExerciseID(ctx, workout.ID, exercise1.ID)
+	benchSets, err := repos.WorkoutSet.FindByWorkoutIDAndExerciseID(ctx, workout.ID, exercise1.ID)
 	if err != nil {
 		t.Fatalf("FindByWorkoutIDAndExerciseID() error = %v", err)
 	}
@@ -187,7 +152,7 @@ func TestWorkoutSetRepository_FindByWorkoutIDAndExerciseID(t *testing.T) {
 	}
 
 	// Squatのみ取得
-	squatSets, err := setRepo.FindByWorkoutIDAndExerciseID(ctx, workout.ID, exercise2.ID)
+	squatSets, err := repos.WorkoutSet.FindByWorkoutIDAndExerciseID(ctx, workout.ID, exercise2.ID)
 	if err != nil {
 		t.Fatalf("FindByWorkoutIDAndExerciseID() error = %v", err)
 	}
@@ -201,28 +166,19 @@ func TestWorkoutSetRepository_FindByExerciseID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
 
-	workout1 := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workout2 := entity.NewWorkout(user.ID, time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout1)
-	workoutRepo.Create(ctx, workout2)
+	workout1 := CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)))
+	workout2 := CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC)))
 
-	s1, _ := entity.NewWorkoutSet(workout1.ID, exercise.ID, 1, 10, 60.0)
-	s2, _ := entity.NewWorkoutSet(workout2.ID, exercise.ID, 1, 8, 65.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout1.ID, exercise.ID, WithSetNumber(1), WithReps(10), WithWeight(60.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout2.ID, exercise.ID, WithSetNumber(1), WithReps(8), WithWeight(65.0))
 
-	setRepo.Create(ctx, s1)
-	setRepo.Create(ctx, s2)
-
-	sets, err := setRepo.FindByExerciseID(ctx, exercise.ID)
+	sets, err := repos.WorkoutSet.FindByExerciseID(ctx, exercise.ID)
 	if err != nil {
 		t.Fatalf("FindByExerciseID() error = %v", err)
 	}
@@ -236,33 +192,28 @@ func TestWorkoutSetRepository_Update(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
-
-	workoutSet, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
-	setRepo.Create(ctx, workoutSet)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
+	workoutSet := CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID,
+		WithSetNumber(1), WithReps(10), WithWeight(60.0),
+	)
 
 	// レップ数と重量を更新
 	workoutSet.UpdateRepsAndWeight(12, 70.0)
 	notes := "Felt strong"
 	workoutSet.UpdateNotes(&notes)
 
-	err := setRepo.Update(ctx, workoutSet)
+	err := repos.WorkoutSet.Update(ctx, workoutSet)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
 
 	// DBから取得して確認
-	found, _ := setRepo.FindByID(ctx, workoutSet.ID)
+	found, _ := repos.WorkoutSet.FindByID(ctx, workoutSet.ID)
 	if found.Reps != 12 {
 		t.Errorf("Update() Reps = %v, want 12", found.Reps)
 	}
@@ -283,27 +234,20 @@ func TestWorkoutSetRepository_Delete(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
+	workoutSet := CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID)
 
-	workoutSet, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
-	setRepo.Create(ctx, workoutSet)
-
-	err := setRepo.Delete(ctx, workoutSet.ID)
+	err := repos.WorkoutSet.Delete(ctx, workoutSet.ID)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 
-	found, _ := setRepo.FindByID(ctx, workoutSet.ID)
+	found, _ := repos.WorkoutSet.FindByID(ctx, workoutSet.ID)
 	if found != nil {
 		t.Error("Delete() did not delete workout set")
 	}
@@ -313,32 +257,23 @@ func TestWorkoutSetRepository_DeleteByWorkoutID(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
-	s1, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 10, 60.0)
-	s2, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 2, 8, 65.0)
-	s3, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 3, 6, 70.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(1), WithReps(10), WithWeight(60.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(2), WithReps(8), WithWeight(65.0))
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID, WithSetNumber(3), WithReps(6), WithWeight(70.0))
 
-	setRepo.Create(ctx, s1)
-	setRepo.Create(ctx, s2)
-	setRepo.Create(ctx, s3)
-
-	err := setRepo.DeleteByWorkoutID(ctx, workout.ID)
+	err := repos.WorkoutSet.DeleteByWorkoutID(ctx, workout.ID)
 	if err != nil {
 		t.Fatalf("DeleteByWorkoutID() error = %v", err)
 	}
 
-	sets, _ := setRepo.FindByWorkoutID(ctx, workout.ID)
+	sets, _ := repos.WorkoutSet.FindByWorkoutID(ctx, workout.ID)
 	if len(sets) != 0 {
 		t.Errorf("DeleteByWorkoutID() did not delete all sets, got %d", len(sets))
 	}
@@ -348,30 +283,21 @@ func TestWorkoutSetRepository_GetMaxEstimated1RMByExerciseAndUser(t *testing.T) 
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
 
-	workout1 := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workout2 := entity.NewWorkout(user.ID, time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout1)
-	workoutRepo.Create(ctx, workout2)
+	workout1 := CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC)))
+	workout2 := CreateWorkout(t, ctx, repos.Workout, user.ID, WithDate(time.Date(2026, 1, 16, 0, 0, 0, 0, time.UTC)))
 
 	// Day 1: 60kg x 10reps -> 1RM = 60 * (1 + 10/30) = 80.0
-	s1, _ := entity.NewWorkoutSet(workout1.ID, exercise.ID, 1, 10, 60.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout1.ID, exercise.ID, WithSetNumber(1), WithReps(10), WithWeight(60.0))
 	// Day 2: 80kg x 5reps -> 1RM = 80 * (1 + 5/30) ≈ 93.33
-	s2, _ := entity.NewWorkoutSet(workout2.ID, exercise.ID, 1, 5, 80.0)
+	CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout2.ID, exercise.ID, WithSetNumber(1), WithReps(5), WithWeight(80.0))
 
-	setRepo.Create(ctx, s1)
-	setRepo.Create(ctx, s2)
-
-	max1RM, err := setRepo.GetMaxEstimated1RMByExerciseAndUser(ctx, user.ID, exercise.ID)
+	max1RM, err := repos.WorkoutSet.GetMaxEstimated1RMByExerciseAndUser(ctx, user.ID, exercise.ID)
 	if err != nil {
 		t.Fatalf("GetMaxEstimated1RMByExerciseAndUser() error = %v", err)
 	}
@@ -387,11 +313,11 @@ func TestWorkoutSetRepository_GetMaxEstimated1RMByExerciseAndUser_NoData(t *test
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
 	// データがない場合は0を返す
-	max1RM, err := setRepo.GetMaxEstimated1RMByExerciseAndUser(ctx, uuid.New(), uuid.New())
+	max1RM, err := repos.WorkoutSet.GetMaxEstimated1RMByExerciseAndUser(ctx, uuid.New(), uuid.New())
 	if err != nil {
 		t.Fatalf("GetMaxEstimated1RMByExerciseAndUser() error = %v", err)
 	}
@@ -405,23 +331,19 @@ func TestWorkoutSetRepository_WeightConversion(t *testing.T) {
 	conn := SetupTestDB(t)
 	defer CleanupTestDB(t, conn)
 
-	userRepo := NewUserRepository(conn).(*userRepository)
-	exerciseRepo := NewExerciseRepository(conn)
-	workoutRepo := NewWorkoutRepository(conn)
-	setRepo := NewWorkoutSetRepository(conn)
+	repos := SetupRepos(conn)
 	ctx := context.Background()
 
-	user := createTestUser(t, ctx, userRepo)
-	exercise, _ := entity.NewExercise("Bench Press", nil, nil)
-	exerciseRepo.Create(ctx, exercise)
-	workout := entity.NewWorkout(user.ID, time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC))
-	workoutRepo.Create(ctx, workout)
+	user := CreateUser(t, ctx, repos.User)
+	exercise := CreateExercise(t, ctx, repos.Exercise)
+	workout := CreateWorkout(t, ctx, repos.Workout, user.ID)
 
 	// 小数点付きの重量をテスト
-	workoutSet, _ := entity.NewWorkoutSet(workout.ID, exercise.ID, 1, 8, 62.5)
-	setRepo.Create(ctx, workoutSet)
+	workoutSet := CreateWorkoutSet(t, ctx, repos.WorkoutSet, workout.ID, exercise.ID,
+		WithSetNumber(1), WithReps(8), WithWeight(62.5),
+	)
 
-	found, err := setRepo.FindByID(ctx, workoutSet.ID)
+	found, err := repos.WorkoutSet.FindByID(ctx, workoutSet.ID)
 	if err != nil {
 		t.Fatalf("FindByID() error = %v", err)
 	}

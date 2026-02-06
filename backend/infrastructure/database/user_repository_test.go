@@ -12,7 +12,7 @@ func TestUserRepository_Create(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
 	// テストユーザーを作成
@@ -22,7 +22,7 @@ func TestUserRepository_Create(t *testing.T) {
 	}
 
 	// リポジトリで保存
-	err = repo.Create(ctx, user)
+	err = repos.User.Create(ctx, user)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -47,12 +47,10 @@ func TestUserRepository_FindByID(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// テストユーザーを作成して保存
-	user, _ := entity.NewUser("test@example.com", "password123")
-	repo.Create(ctx, user)
+	user := CreateUser(t, ctx, repos.User, WithEmail("test@example.com"))
 
 	tests := []struct {
 		name    string
@@ -76,7 +74,7 @@ func TestUserRepository_FindByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := repo.FindByID(ctx, tt.id)
+			found, err := repos.User.FindByID(ctx, tt.id)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindByID() error = %v, wantErr %v", err, tt.wantErr)
@@ -105,12 +103,10 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// テストユーザーを作成して保存
-	user, _ := entity.NewUser("test@example.com", "password123")
-	repo.Create(ctx, user)
+	user := CreateUser(t, ctx, repos.User, WithEmail("test@example.com"))
 
 	tests := []struct {
 		name    string
@@ -134,7 +130,7 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			found, err := repo.FindByEmail(ctx, tt.email)
+			found, err := repos.User.FindByEmail(ctx, tt.email)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindByEmail() error = %v, wantErr %v", err, tt.wantErr)
@@ -160,20 +156,15 @@ func TestUserRepository_FindAll(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// 複数のテストユーザーを作成
-	user1, _ := entity.NewUser("user1@example.com", "password123")
-	user2, _ := entity.NewUser("user2@example.com", "password123")
-	user3, _ := entity.NewUser("user3@example.com", "password123")
-
-	repo.Create(ctx, user1)
-	repo.Create(ctx, user2)
-	repo.Create(ctx, user3)
+	CreateUser(t, ctx, repos.User)
+	CreateUser(t, ctx, repos.User)
+	CreateUser(t, ctx, repos.User)
 
 	// 全ユーザー取得
-	users, err := repo.FindAll(ctx)
+	users, err := repos.User.FindAll(ctx)
 	if err != nil {
 		t.Fatalf("FindAll() error = %v", err)
 	}
@@ -194,12 +185,10 @@ func TestUserRepository_Update(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// テストユーザーを作成して保存
-	user, _ := entity.NewUser("test@example.com", "password123")
-	repo.Create(ctx, user)
+	user := CreateUser(t, ctx, repos.User, WithEmail("test@example.com"))
 
 	originalUpdatedAt := user.UpdatedAt
 
@@ -210,7 +199,7 @@ func TestUserRepository_Update(t *testing.T) {
 	}
 
 	// リポジトリで更新
-	err = repo.Update(ctx, user)
+	err = repos.User.Update(ctx, user)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -221,7 +210,7 @@ func TestUserRepository_Update(t *testing.T) {
 	}
 
 	// DBから取得して確認
-	found, _ := repo.FindByID(ctx, user.ID)
+	found, _ := repos.User.FindByID(ctx, user.ID)
 	if found.Email.String() != "updated@example.com" {
 		t.Errorf("Update() Email = %v, want updated@example.com", found.Email.String())
 	}
@@ -231,21 +220,19 @@ func TestUserRepository_Delete(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// テストユーザーを作成して保存
-	user, _ := entity.NewUser("test@example.com", "password123")
-	repo.Create(ctx, user)
+	user := CreateUser(t, ctx, repos.User)
 
 	// 削除
-	err := repo.Delete(ctx, user.ID)
+	err := repos.User.Delete(ctx, user.ID)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 
 	// 削除されたことを確認
-	found, _ := repo.FindByID(ctx, user.ID)
+	found, _ := repos.User.FindByID(ctx, user.ID)
 	if found != nil {
 		t.Error("Delete() did not delete user")
 	}
@@ -255,12 +242,10 @@ func TestUserRepository_ExistsByEmail(t *testing.T) {
 	db := SetupTestDB(t)
 	defer CleanupTestDB(t, db)
 
-	repo := NewUserRepository(db)
+	repos := SetupRepos(db)
 	ctx := context.Background()
 
-	// テストユーザーを作成して保存
-	user, _ := entity.NewUser("test@example.com", "password123")
-	repo.Create(ctx, user)
+	CreateUser(t, ctx, repos.User, WithEmail("test@example.com"))
 
 	tests := []struct {
 		name  string
@@ -281,7 +266,7 @@ func TestUserRepository_ExistsByEmail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, err := repo.ExistsByEmail(ctx, tt.email)
+			exists, err := repos.User.ExistsByEmail(ctx, tt.email)
 			if err != nil {
 				t.Fatalf("ExistsByEmail() error = %v", err)
 			}
