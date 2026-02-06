@@ -37,6 +37,23 @@ WHERE w.user_id = $1 AND ws.exercise_id = $2
 GROUP BY w.date
 ORDER BY w.date;
 
+-- name: ListWorkoutSetsByWorkoutAndExercise :many
+SELECT * FROM workout_sets
+WHERE workout_id = $1 AND exercise_id = $2
+ORDER BY set_number;
+
+-- name: ListWorkoutSetsByExerciseID :many
+SELECT * FROM workout_sets
+WHERE exercise_id = $1
+ORDER BY created_at DESC;
+
+-- name: GetOverallMaxEstimated1RMByExerciseAndUser :one
+-- 全期間の最大推定1RMを取得
+SELECT COALESCE(MAX(ws.estimated_1rm), '0')::text as max_1rm
+FROM workout_sets ws
+JOIN workouts w ON ws.workout_id = w.id
+WHERE w.user_id = $1 AND ws.exercise_id = $2;
+
 -- name: CreateWorkoutSet :one
 INSERT INTO workout_sets (
   workout_id, exercise_id, set_number, reps, weight, estimated_1rm, duration_seconds, notes

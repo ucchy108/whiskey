@@ -34,6 +34,16 @@ SET daily_score = $2, memo = $3, updated_at = NOW()
 WHERE id = $1
 RETURNING *;
 
+-- name: ListAllWorkoutsByUser :many
+SELECT * FROM workouts
+WHERE user_id = $1
+ORDER BY date DESC;
+
+-- name: ListWorkoutsByUserAndDateRange :many
+SELECT * FROM workouts
+WHERE user_id = $1 AND date >= $2 AND date <= $3
+ORDER BY date DESC;
+
 -- name: DeleteWorkout :exec
 DELETE FROM workouts
 WHERE id = $1;

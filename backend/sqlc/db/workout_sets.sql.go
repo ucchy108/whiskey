@@ -125,6 +125,26 @@ func (q *Queries) GetMaxEstimated1RMByExercise(ctx context.Context, arg GetMaxEs
 	return items, nil
 }
 
+const GetOverallMaxEstimated1RMByExerciseAndUser = `-- name: GetOverallMaxEstimated1RMByExerciseAndUser :one
+SELECT COALESCE(MAX(ws.estimated_1rm), '0')::text as max_1rm
+FROM workout_sets ws
+JOIN workouts w ON ws.workout_id = w.id
+WHERE w.user_id = $1 AND ws.exercise_id = $2
+`
+
+type GetOverallMaxEstimated1RMByExerciseAndUserParams struct {
+	UserID     uuid.UUID `json:"user_id"`
+	ExerciseID uuid.UUID `json:"exercise_id"`
+}
+
+// 全期間の最大推定1RMを取得
+func (q *Queries) GetOverallMaxEstimated1RMByExerciseAndUser(ctx context.Context, arg GetOverallMaxEstimated1RMByExerciseAndUserParams) (string, error) {
+	row := q.db.QueryRowContext(ctx, GetOverallMaxEstimated1RMByExerciseAndUser, arg.UserID, arg.ExerciseID)
+	var max_1rm string
+	err := row.Scan(&max_1rm)
+	return max_1rm, err
+}
+
 const GetWorkoutSet = `-- name: GetWorkoutSet :one
 SELECT id, workout_id, exercise_id, set_number, reps, weight, estimated_1rm, duration_seconds, notes, created_at FROM workout_sets
 WHERE id = $1 LIMIT 1
@@ -222,6 +242,46 @@ func (q *Queries) ListWorkoutSetsByExercise(ctx context.Context, arg ListWorkout
 	return items, nil
 }
 
+const ListWorkoutSetsByExerciseID = `-- name: ListWorkoutSetsByExerciseID :many
+SELECT id, workout_id, exercise_id, set_number, reps, weight, estimated_1rm, duration_seconds, notes, created_at FROM workout_sets
+WHERE exercise_id = $1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListWorkoutSetsByExerciseID(ctx context.Context, exerciseID uuid.UUID) ([]WorkoutSet, error) {
+	rows, err := q.db.QueryContext(ctx, ListWorkoutSetsByExerciseID, exerciseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WorkoutSet{}
+	for rows.Next() {
+		var i WorkoutSet
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkoutID,
+			&i.ExerciseID,
+			&i.SetNumber,
+			&i.Reps,
+			&i.Weight,
+			&i.Estimated1rm,
+			&i.DurationSeconds,
+			&i.Notes,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const ListWorkoutSetsByWorkout = `-- name: ListWorkoutSetsByWorkout :many
 SELECT id, workout_id, exercise_id, set_number, reps, weight, estimated_1rm, duration_seconds, notes, created_at FROM workout_sets
 WHERE workout_id = $1
@@ -230,6 +290,51 @@ ORDER BY exercise_id, set_number
 
 func (q *Queries) ListWorkoutSetsByWorkout(ctx context.Context, workoutID uuid.UUID) ([]WorkoutSet, error) {
 	rows, err := q.db.QueryContext(ctx, ListWorkoutSetsByWorkout, workoutID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WorkoutSet{}
+	for rows.Next() {
+		var i WorkoutSet
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkoutID,
+			&i.ExerciseID,
+			&i.SetNumber,
+			&i.Reps,
+			&i.Weight,
+			&i.Estimated1rm,
+			&i.DurationSeconds,
+			&i.Notes,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ListWorkoutSetsByWorkoutAndExercise = `-- name: ListWorkoutSetsByWorkoutAndExercise :many
+SELECT id, workout_id, exercise_id, set_number, reps, weight, estimated_1rm, duration_seconds, notes, created_at FROM workout_sets
+WHERE workout_id = $1 AND exercise_id = $2
+ORDER BY set_number
+`
+
+type ListWorkoutSetsByWorkoutAndExerciseParams struct {
+	WorkoutID  uuid.UUID `json:"workout_id"`
+	ExerciseID uuid.UUID `json:"exercise_id"`
+}
+
+func (q *Queries) ListWorkoutSetsByWorkoutAndExercise(ctx context.Context, arg ListWorkoutSetsByWorkoutAndExerciseParams) ([]WorkoutSet, error) {
+	rows, err := q.db.QueryContext(ctx, ListWorkoutSetsByWorkoutAndExercise, arg.WorkoutID, arg.ExerciseID)
 	if err != nil {
 		return nil, err
 	}

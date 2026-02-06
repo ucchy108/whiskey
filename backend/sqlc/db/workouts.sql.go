@@ -104,6 +104,43 @@ func (q *Queries) GetWorkoutByUserAndDate(ctx context.Context, arg GetWorkoutByU
 	return i, err
 }
 
+const ListAllWorkoutsByUser = `-- name: ListAllWorkoutsByUser :many
+SELECT id, user_id, date, daily_score, memo, created_at, updated_at FROM workouts
+WHERE user_id = $1
+ORDER BY date DESC
+`
+
+func (q *Queries) ListAllWorkoutsByUser(ctx context.Context, userID uuid.UUID) ([]Workout, error) {
+	rows, err := q.db.QueryContext(ctx, ListAllWorkoutsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Workout{}
+	for rows.Next() {
+		var i Workout
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Date,
+			&i.DailyScore,
+			&i.Memo,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const ListWorkoutsByUser = `-- name: ListWorkoutsByUser :many
 SELECT id, user_id, date, daily_score, memo, created_at, updated_at FROM workouts
 WHERE user_id = $1
@@ -119,6 +156,49 @@ type ListWorkoutsByUserParams struct {
 
 func (q *Queries) ListWorkoutsByUser(ctx context.Context, arg ListWorkoutsByUserParams) ([]Workout, error) {
 	rows, err := q.db.QueryContext(ctx, ListWorkoutsByUser, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Workout{}
+	for rows.Next() {
+		var i Workout
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Date,
+			&i.DailyScore,
+			&i.Memo,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ListWorkoutsByUserAndDateRange = `-- name: ListWorkoutsByUserAndDateRange :many
+SELECT id, user_id, date, daily_score, memo, created_at, updated_at FROM workouts
+WHERE user_id = $1 AND date >= $2 AND date <= $3
+ORDER BY date DESC
+`
+
+type ListWorkoutsByUserAndDateRangeParams struct {
+	UserID uuid.UUID `json:"user_id"`
+	Date   time.Time `json:"date"`
+	Date_2 time.Time `json:"date_2"`
+}
+
+func (q *Queries) ListWorkoutsByUserAndDateRange(ctx context.Context, arg ListWorkoutsByUserAndDateRangeParams) ([]Workout, error) {
+	rows, err := q.db.QueryContext(ctx, ListWorkoutsByUserAndDateRange, arg.UserID, arg.Date, arg.Date_2)
 	if err != nil {
 		return nil, err
 	}
