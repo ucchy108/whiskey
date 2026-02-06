@@ -76,26 +76,27 @@
 
 ## Phase 2: ワークアウト機能（MVP）
 
-### 2.1 Domain層の実装
-- [ ] `backend/domain/entity/workout.go`
+### 2.1 Domain層の実装 ✅
+- [x] `backend/domain/entity/workout.go`
   - Workout entity（トレーニングセッション）
-- [ ] `backend/domain/entity/exercise.go`
+- [x] `backend/domain/entity/exercise.go`
   - Exercise entity（種目マスタ）
-- [ ] `backend/domain/entity/workout_set.go`
+- [x] `backend/domain/entity/workout_set.go`
   - WorkoutSet entity（セット詳細）
-- [ ] `backend/domain/repository/workout_repository.go`
+- [x] `backend/domain/repository/workout_repository.go`
   - Workout Repository interface
-- [ ] `backend/domain/repository/exercise_repository.go`
+- [x] `backend/domain/repository/exercise_repository.go`
   - Exercise Repository interface
+- [x] `backend/domain/repository/workout_set_repository.go`
+  - WorkoutSet Repository interface
+- [x] sqlcスキーマ・クエリ・生成コード
 
-### 2.2 Infrastructure層の実装
-- [ ] データベースマイグレーション
-  - workoutsテーブル
-  - exercisesテーブル
-  - workout_setsテーブル
-- [ ] `backend/infrastructure/database/workout_repository.go`
-- [ ] `backend/infrastructure/database/exercise_repository.go`
-- [ ] 統合テスト
+### 2.2 Infrastructure層の実装 ✅
+- [x] sqlcクエリ補完（date range検索、全期間最大1RM等）
+- [x] `backend/infrastructure/database/workout_repository.go`
+- [x] `backend/infrastructure/database/exercise_repository.go`
+- [x] `backend/infrastructure/database/workout_set_repository.go`
+- [x] 統合テスト（36テスト全パス）
 
 ### 2.3 Usecase層の実装
 - [ ] `backend/usecase/workout_usecase.go`
@@ -152,11 +153,11 @@
 2. ~~Interfaces層の実装（Phase 1.2）~~ ✅ 完了
 3. ~~認証機能の実装（Phase 1.3）~~ ✅ 完了
 4. ~~ルーティング設定（Phase 1.4）~~ ✅ 完了
-5. ワークアウトDomain層（Phase 2.1） ← **次のタスク**
+5. ~~ワークアウトDomain層（Phase 2.1）~~ ✅ 完了
+6. ~~ワークアウトInfrastructure層（Phase 2.2）~~ ✅ 完了
 
 ### 🟡 Medium Priority（次にやるべき）
-6. ワークアウトInfrastructure層（Phase 2.2）
-7. ワークアウトUsecase層（Phase 2.3）
+7. ワークアウトUsecase層（Phase 2.3） ← **次のタスク**
 
 ### 🟢 Low Priority（後でやる）
 7. フロントエンド実装（Phase 3）
@@ -193,19 +194,13 @@
 
 ## 次のステップ
 
-**最優先タスク**: Phase 2.1 - ワークアウトDomain層の実装
+**最優先タスク**: Phase 2.3 - ワークアウトUsecase層の実装
 
-1. `backend/domain/entity/workout.go`を実装
-   - Workout entity（トレーニングセッション）
-   - 日付、運動強度スコア、メモ
-2. `backend/domain/entity/exercise.go`を実装
-   - Exercise entity（種目マスタ）
-   - 種目名、部位、説明
-3. `backend/domain/entity/workout_set.go`を実装
-   - WorkoutSet entity（セット詳細）
-   - セット番号、重量、回数、推定1RM計算
-4. Repository interfaceの定義
-5. ユニットテストの実装
+1. `backend/usecase/workout_usecase.go`を実装
+   - ワークアウト記録
+   - ワークアウト一覧取得
+   - ワークアウト詳細取得
+2. ユニットテストの実装
 
 **Phase 1完了 🎉**: ユーザー認証機能が完全に動作可能な状態になりました！
 
