@@ -115,11 +115,28 @@
 - [x] `backend/usecase/workout_usecase_test.go`
   - WorkoutUsecaseユニットテスト（30テスト）
 
-### 2.4 Interfaces層の実装
-- [ ] `backend/interfaces/handler/workout_handler.go`
+### 2.4 Interfaces層の実装 ✅
+- [x] `backend/interfaces/handler/workout_handler.go`
   - POST /api/workouts - ワークアウト記録
   - GET /api/workouts - 一覧取得
   - GET /api/workouts/:id - 詳細取得
+  - PUT /api/workouts/:id/memo - メモ更新
+  - POST /api/workouts/:id/sets - セット追加
+  - DELETE /api/workouts/:id - ワークアウト削除
+  - DELETE /api/workout-sets/:id - セット削除
+  - GET /api/workouts/contributions - コントリビューションデータ
+- [x] `backend/interfaces/handler/workout_handler_test.go`
+  - WorkoutHandlerユニットテスト（全エンドポイント）
+- [x] `backend/interfaces/handler/exercise_handler.go`
+  - POST /api/exercises - エクササイズ作成
+  - GET /api/exercises - 一覧取得
+  - GET /api/exercises/:id - 詳細取得
+  - PUT /api/exercises/:id - 更新
+  - DELETE /api/exercises/:id - 削除
+- [x] `backend/interfaces/handler/exercise_handler_test.go`
+  - ExerciseHandlerユニットテスト（全エンドポイント）
+- [x] `backend/infrastructure/router/router.go` - ルーター更新
+- [x] `backend/cmd/api/main.go` - DI更新
 
 ## Phase 3: フロントエンド実装
 
@@ -168,11 +185,11 @@
 
 ### 🟡 Medium Priority（次にやるべき）
 7. ~~ワークアウトUsecase層（Phase 2.3）~~ ✅ 完了
-8. ワークアウトInterfaces層（Phase 2.4） ← **次のタスク**
+8. ~~ワークアウトInterfaces層（Phase 2.4）~~ ✅ 完了
 
 ### 🟢 Low Priority（後でやる）
-9. フロントエンド実装（Phase 3）
-8. 追加機能（Phase 4）
+9. フロントエンド実装（Phase 3） ← **次のタスク**
+10. 追加機能（Phase 4）
 
 ## 現在のアーキテクチャ状況
 
@@ -195,6 +212,10 @@
 ✅ Interfaces Layer
   ✅ handler/user_handler.go (実装済み - Clean Architecture準拠)
   ✅ handler/user_handler_test.go (実装済み)
+  ✅ handler/workout_handler.go (実装済み - 8エンドポイント)
+  ✅ handler/workout_handler_test.go (実装済み)
+  ✅ handler/exercise_handler.go (実装済み - 5エンドポイント)
+  ✅ handler/exercise_handler_test.go (実装済み)
 
 ✅ Infrastructure Layer
   ✅ database/user_repository.go (実装済み)
@@ -209,13 +230,11 @@
 
 ## 次のステップ
 
-**最優先タスク**: Phase 2.4 - ワークアウトInterfaces層の実装
+**最優先タスク**: Phase 3 - フロントエンド実装
 
-1. `backend/interfaces/handler/workout_handler.go`を実装
-   - POST /api/workouts - ワークアウト記録
-   - GET /api/workouts - 一覧取得
-   - GET /api/workouts/:id - 詳細取得
-2. ハンドラーのユニットテストの実装
+1. 認証画面（Login, Register）
+2. ワークアウト記録画面
+3. データ可視化（ヒートマップ、グラフ）
 
 **Phase 1完了 🎉**: ユーザー認証機能が完全に動作可能な状態になりました！
 

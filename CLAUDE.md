@@ -66,7 +66,7 @@ backend/
 ├── infrastructure/      # インフラストラクチャ層（✅ 一部実装済み）
 │   ├── database/        # データベース実装
 │   └── migrations/      # マイグレーション
-├── interfaces/          # インターフェース層（未実装）
+├── interfaces/          # インターフェース層（✅ 実装済み）
 │   └── handler/         # HTTPハンドラー
 └── sqlc/                # sqlc設定・クエリ定義
 
@@ -97,22 +97,25 @@ docs/
 
 ```
 ✅ Domain Layer
-   ✅ entity/user.go - User entity
-   ✅ value/email.go, password.go, hashed_password.go - 値オブジェクト
-   ✅ repository/user_repository.go - UserRepository interface
-   ✅ service/user_service.go - UserService（ドメインサービス）
+   ✅ entity/user.go, workout.go, exercise.go, workout_set.go, profile.go
+   ✅ value/email.go, password.go, hashed_password.go
+   ✅ repository/ - User, Session, Workout, Exercise, WorkoutSet interfaces
+   ✅ service/user_service.go, workout_service.go, exercise_service.go
 
-❌ Usecase Layer
-   ❌ user_usecase.go - ユーザー登録・ログインロジック（未実装）
+✅ Usecase Layer
+   ✅ user_usecase.go - Register, Login, Logout, GetUser, ChangePassword
+   ✅ workout_usecase.go - RecordWorkout, GetWorkout, GetUserWorkouts等
+   ✅ exercise_usecase.go - CRUD操作
 
 ✅ Infrastructure Layer
-   ✅ database/user_repository.go - UserRepository実装
-   ✅ migrations/000001_create_users_table.up.sql - usersテーブル
-   ❌ auth/jwt.go - JWT認証（未実装）
-   ❌ router/router.go - ルーティング設定（未実装）
+   ✅ database/ - UserRepo, WorkoutRepo, ExerciseRepo, WorkoutSetRepo
+   ✅ auth/session_store.go, middleware.go - Session認証
+   ✅ router/router.go - ルーティング設定
 
-❌ Interfaces Layer
-   ❌ handler/user_handler.go - HTTPハンドラー（未実装）
+✅ Interfaces Layer
+   ✅ handler/user_handler.go - 5エンドポイント
+   ✅ handler/workout_handler.go - 8エンドポイント
+   ✅ handler/exercise_handler.go - 5エンドポイント
 ```
 
 **詳細**: [Clean Architecture](docs/architecture/clean-architecture.md) | [DDD実装パターン](docs/architecture/ddd-patterns.md)
@@ -374,11 +377,10 @@ assistant: 「〜が完了しました」
 
 ## 次のステップ
 
-現在の最優先タスク: **Usecase層の実装**
+現在の最優先タスク: **フロントエンド実装（Phase 3）**
 
-1. `backend/usecase/user_usecase.go`を実装
-2. ユーザー登録とログインのビジネスロジックを実装
-3. ユニットテストを作成
-4. PRを作成してマージ
+1. 認証画面（Login, Register）
+2. ワークアウト記録画面
+3. データ可視化（ヒートマップ、グラフ）
 
 詳細は [タスクダッシュボード](docs/task-dashboard.md) を参照してください。
