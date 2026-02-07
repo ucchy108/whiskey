@@ -36,9 +36,7 @@ CREATE INDEX idx_users_email ON users(email);
 **インデックス**:
 - `idx_users_email`: emailカラムにインデックス（検索高速化）
 
-### 今後実装予定のテーブル
-
-#### profilesテーブル
+### profilesテーブル（✅ 実装済み）
 
 ```sql
 CREATE TABLE profiles (
@@ -51,7 +49,7 @@ CREATE TABLE profiles (
 );
 ```
 
-#### workoutsテーブル
+### workoutsテーブル（✅ 実装済み）
 
 ```sql
 CREATE TABLE workouts (
@@ -68,7 +66,7 @@ CREATE INDEX idx_workouts_user_id ON workouts(user_id);
 CREATE INDEX idx_workouts_date ON workouts(workout_date);
 ```
 
-#### exercisesテーブル
+### exercisesテーブル（✅ 実装済み）
 
 ```sql
 CREATE TABLE exercises (
@@ -79,7 +77,7 @@ CREATE TABLE exercises (
 );
 ```
 
-#### workout_setsテーブル
+### workout_setsテーブル（✅ 実装済み）
 
 ```sql
 CREATE TABLE workout_sets (
@@ -114,14 +112,21 @@ sqlcは、SQLクエリからtype-safeなGoコードを生成するツールで�
 backend/
 ├── sqlc/
 │   ├── queries/
-│   │   └── users.sql       # SQLクエリ定義
-│   └── schema.sql          # データベーススキーマ
-├── sqlc.yaml               # sqlc設定ファイル
+│   │   ├── users.sql          # ユーザークエリ
+│   │   ├── workouts.sql       # ワークアウトクエリ
+│   │   ├── exercises.sql      # エクササイズクエリ
+│   │   └── workout_sets.sql   # ワークアウトセットクエリ
+│   └── db/
+│       ├── db.go              # sqlc生成コード
+│       ├── models.go          # sqlc生成モデル
+│       ├── querier.go         # sqlc生成インターフェース
+│       ├── users.sql.go       # sqlc生成クエリ
+│       ├── workouts.sql.go
+│       ├── exercises.sql.go
+│       └── workout_sets.sql.go
+├── sqlc.yaml                  # sqlc設定ファイル
 └── infrastructure/
-    └── database/
-        ├── db.go           # sqlc生成コード
-        ├── models.go       # sqlc生成モデル
-        └── queries.sql.go  # sqlc生成クエリ
+    └── database/              # リポジトリ実装（sqlc生成コードを使用）
 ```
 
 ### sqlc設定ファイル
@@ -279,7 +284,13 @@ backend/infrastructure/migrations/
 ├── 000001_create_users_table.up.sql
 ├── 000001_create_users_table.down.sql
 ├── 000002_create_profiles_table.up.sql
-└── 000002_create_profiles_table.down.sql
+├── 000002_create_profiles_table.down.sql
+├── 000003_create_workouts_table.up.sql
+├── 000003_create_workouts_table.down.sql
+├── 000004_create_exercises_table.up.sql
+├── 000004_create_exercises_table.down.sql
+├── 000005_create_workout_sets_table.up.sql
+└── 000005_create_workout_sets_table.down.sql
 ```
 
 ### マイグレーション実行（予定）

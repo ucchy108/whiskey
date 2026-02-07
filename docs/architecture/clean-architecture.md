@@ -137,7 +137,7 @@ func (u *UserUsecase) Register(ctx context.Context, email, password string) erro
 
 **構成要素**:
 - `database/` - PostgreSQL実装
-- `auth/` - JWT認証
+- `auth/` - Session認証（Redis）
 - `router/` - ルーティング設定
 
 **例**:
@@ -208,32 +208,36 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 ## 現在の実装状況
 
-### ✅ 実装済み
+### ✅ 全レイヤー実装済み（Phase 1-2 完了）
 
 **Domain Layer**:
-- `entity/user.go` - User entity
-- `value/email.go` - Email値オブジェクト
-- `value/password.go` - Password値オブジェクト
-- `value/hashed_password.go` - HashedPassword値オブジェクト
-- `repository/user_repository.go` - UserRepository interface
-- `service/user_service.go` - UserService（ドメインサービス）
-
-**Infrastructure Layer**:
-- `database/user_repository.go` - UserRepository実装
-- `database/test_helper.go` - テストヘルパー
-- `migrations/000001_create_users_table.up.sql` - usersテーブル
-
-### ❌ 未実装
+- `entity/` - User, Workout, Exercise, WorkoutSet, Profile
+- `value/` - Email, Password, HashedPassword
+- `repository/` - User, Session, Workout, Exercise, WorkoutSet, Profile interfaces
+- `service/` - UserService, WorkoutService, ExerciseService
 
 **Usecase Layer**:
-- `user_usecase.go` - ユーザー登録・ログインロジック
+- `user_usecase.go` - Register, Login, Logout, GetUser, ChangePassword
+- `workout_usecase.go` - RecordWorkout, GetWorkout, GetUserWorkouts, UpdateWorkoutMemo, AddWorkoutSets, DeleteWorkoutSet, DeleteWorkout, GetContributionData
+- `exercise_usecase.go` - Create, List, Get, Update, Delete
 
 **Infrastructure Layer**:
-- `auth/jwt.go` - JWT認証
+- `database/` - UserRepo, WorkoutRepo, ExerciseRepo, WorkoutSetRepo
+- `auth/session_store.go` - Redis SessionStore
+- `auth/middleware.go` - AuthMiddleware
 - `router/router.go` - ルーティング設定
+- `migrations/` - 5つのマイグレーションファイル
 
 **Interfaces Layer**:
-- `handler/user_handler.go` - HTTPハンドラー
+- `handler/user_handler.go` - 5エンドポイント
+- `handler/workout_handler.go` - 8エンドポイント
+- `handler/exercise_handler.go` - 5エンドポイント
+
+**Pkg Layer**:
+- `pkg/logger/` - 構造化ログシステム（log/slog）
+
+**DI**:
+- `cmd/api/di/container.go` - Clean Architecture準拠の依存関係注入
 
 ## テスト戦略
 
