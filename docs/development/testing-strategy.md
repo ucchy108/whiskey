@@ -95,7 +95,7 @@ func TestEmail_Validation(t *testing.T) {
 - ✅ エラーメッセージの検証
 - ✅ 境界値のテスト
 
-### Usecase Layer - Unit Test（未実装）
+### Usecase Layer - Unit Test（✅ 実装済み）
 
 **方針**: Repositoryをモックしてビジネスロジックをテスト
 
@@ -233,7 +233,7 @@ func CleanupTestDB(t *testing.T, db *sql.DB) {
 - ✅ `testDBPort = "5432"` (コンテナ内ポート)
 - ✅ テスト後は必ずデータをクリーンアップ
 
-### Interfaces Layer - Integration Test（未実装）
+### Interfaces Layer - Unit Test（✅ 実装済み）
 
 **方針**: HTTPハンドラーのテスト
 
