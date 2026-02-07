@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **バックエンド:** Go 1.23 / Gorilla Mux / sqlc / PostgreSQL 16 / Redis（セッション管理）
 **フロントエンド:** React 18 + TypeScript / Vite / Material-UI (MUI) v5
 **インフラ:** Docker + Docker Compose / Air (Go hot reload)
-**アーキテクチャ:** Clean Architecture + DDD（ドメイン駆動設計）
+**アーキテクチャ:** バックエンド Clean Architecture + DDD / フロントエンド featureベース
 
 ### 主な機能（MVP目標）
 
@@ -30,74 +30,6 @@ docker compose logs -f        # ログ確認
 
 詳細は [Dockerガイド](docs/development/docker-guide.md) を参照。
 
-## プロジェクト構造
-
-```
-backend/
-├── cmd/api/              # メインアプリケーション
-│   └── di/              # DI コンテナ
-├── domain/               # ドメイン層
-│   ├── entity/          # エンティティ
-│   ├── value/           # 値オブジェクト
-│   ├── service/         # ドメインサービス
-│   └── repository/      # リポジトリinterface
-├── usecase/             # ユースケース層
-├── infrastructure/      # インフラストラクチャ層
-│   ├── database/        # データベース実装
-│   ├── auth/            # セッション認証・ミドルウェア
-│   ├── router/          # ルーティング設定
-│   └── migrations/      # マイグレーション
-├── interfaces/          # インターフェース層
-│   └── handler/         # HTTPハンドラー
-├── sqlc/                # sqlc設定・クエリ定義
-└── pkg/
-    └── logger/          # 構造化ログ（log/slog）
-
-frontend/
-├── src/
-│   ├── components/      # 共通コンポーネント（未実装）
-│   ├── pages/           # ページコンポーネント（未実装）
-│   ├── App.tsx
-│   └── main.tsx
-
-docs/
-├── architecture/        # アーキテクチャドキュメント
-├── development/         # 開発ガイド
-├── work-logs/           # 作業ログ
-└── task-dashboard.md    # タスクダッシュボード
-```
-
-## 現在の実装状況
-
-バックエンドは Phase 1-2 完了。フロントエンドは Phase 3 で未実装。
-
-```
-✅ Domain Layer（完全実装 + テスト）
-   entity/ - User, Workout, Exercise, WorkoutSet, Profile
-   value/ - Email, Password, HashedPassword
-   repository/ - User, Session, Workout, Exercise, WorkoutSet, Profile interfaces
-   service/ - UserService, WorkoutService, ExerciseService
-
-✅ Usecase Layer（完全実装 + テスト）
-   user_usecase.go - Register, Login, Logout, GetUser, ChangePassword
-   workout_usecase.go - RecordWorkout, GetWorkout, GetUserWorkouts, UpdateWorkoutMemo, AddWorkoutSets, DeleteWorkoutSet, DeleteWorkout, GetContributionData
-   exercise_usecase.go - Create, List, Get, Update, Delete
-
-✅ Infrastructure Layer（完全実装 + テスト）
-   database/ - UserRepo, WorkoutRepo, ExerciseRepo, WorkoutSetRepo
-   auth/session_store.go, middleware.go - Redis Session認証
-   router/router.go - ルーティング設定
-
-✅ Interfaces Layer（完全実装 + テスト）
-   handler/user_handler.go - 5エンドポイント
-   handler/workout_handler.go - 8エンドポイント
-   handler/exercise_handler.go - 5エンドポイント
-
-🚧 Frontend（基本構造のみ - Phase 3 未実装）
-```
-
-**詳細**: [Clean Architecture](docs/architecture/clean-architecture.md) | [DDD実装パターン](docs/architecture/ddd-patterns.md)
-
 ## 開発ガイドライン
 
 ### コマンド実行の原則
@@ -114,31 +46,7 @@ go test ./...
 npm test
 ```
 
-### テスト実行
-
-```bash
-docker compose exec backend go test -v ./...                              # 全テスト
-docker compose exec backend go test -v -coverprofile=coverage.out ./...   # カバレッジ付き
-```
-
-**詳細**: [テスト戦略](docs/development/testing-strategy.md)
-
-### データベース操作
-
-```bash
-docker compose exec db psql -U whiskey -d whiskey   # PostgreSQLに接続
-docker compose exec backend sqlc generate            # sqlcコード生成
-```
-
-**詳細**: [データベースガイド](docs/development/database-guide.md)
-
-### ログ出力ルール
-
-**全てのログ出力は`backend/pkg/logger`パッケージを使用する。** 標準ライブラリの`log`パッケージや`fmt.Println()`は使用禁止。
-
-**詳細**: [ログ出力ガイド](docs/development/logging-guide.md)
-
-## Git ワークフロー
+### Git ワークフロー
 
 - **必ず新しいブランチを作成**してから作業を開始（mainへの直接コミット禁止）
 - コミットは**論理的な単位で細かく**行う
@@ -178,8 +86,9 @@ assistant: 「〜が完了しました」
 
 ### アーキテクチャ
 
-- [Clean Architecture](docs/architecture/clean-architecture.md) - レイヤー構成と依存関係のルール
-- [DDD実装パターン](docs/architecture/ddd-patterns.md) - 値オブジェクト、エンティティ、ドメインサービス、リポジトリパターン
+- [Clean Architecture](docs/architecture/clean-architecture.md) - バックエンドのレイヤー構成と依存関係
+- [DDD実装パターン](docs/architecture/ddd-patterns.md) - 値オブジェクト、エンティティ、ドメインサービス
+- [フロントエンドアーキテクチャ](docs/architecture/frontend-architecture.md) - featureベース構成、設計原則
 
 ### 開発ガイド
 
