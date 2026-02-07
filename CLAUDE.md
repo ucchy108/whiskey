@@ -4,28 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-このプロジェクトは**whiskey**と呼ばれるワークアウト管理アプリケーションです。Go、React、TypeScript、Material-UI、PostgreSQLを使用して構築されています。
+**whiskey** - ワークアウト管理アプリケーション。Go、React、TypeScript、Material-UI、PostgreSQLで構築。
 
 ### 技術スタック
 
-**バックエンド:**
-- **言語**: Go 1.23
-- **フレームワーク**: Gorilla Mux
-- **ORM**: sqlc
-- **データベース**: PostgreSQL 16
-
-**フロントエンド:**
-- **フレームワーク**: React 18 + TypeScript
-- **ビルドツール**: Vite
-- **UIライブラリ**: Material-UI (MUI) v5
-- **ルーティング**: React Router v6（予定）
-
-**インフラ:**
-- **コンテナ**: Docker + Docker Compose
-- **開発ツール**: Air (Go hot reload)
-
-**アーキテクチャ:**
-- **Clean Architecture + DDD**（ドメイン駆動設計）
+**バックエンド:** Go 1.23 / Gorilla Mux / sqlc / PostgreSQL 16 / Redis（セッション管理）
+**フロントエンド:** React 18 + TypeScript / Vite / Material-UI (MUI) v5
+**インフラ:** Docker + Docker Compose / Air (Go hot reload)
+**アーキテクチャ:** Clean Architecture + DDD（ドメイン駆動設計）
 
 ### 主な機能（MVP目標）
 
@@ -34,88 +20,80 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 開発環境のセットアップ
 
-### 環境構成
-
-このプロジェクトでは、**全てのサービス**をDockerコンテナで実行します。
+**全てのサービスをDockerコンテナで実行します。**
 
 ```bash
-# 1. Dockerコンテナを起動（全サービス）
-docker compose up -d
-
-# 2. ログを確認
-docker compose logs -f
-
-# 3. ブラウザでアクセス
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8080
+docker compose up -d          # コンテナ起動
+docker compose logs -f        # ログ確認
+# Frontend: http://localhost:3000 / Backend API: http://localhost:8080
 ```
 
-詳細は [Dockerガイド](docs/development/docker-guide.md) を参照してください。
+詳細は [Dockerガイド](docs/development/docker-guide.md) を参照。
 
 ## プロジェクト構造
 
 ```
 backend/
 ├── cmd/api/              # メインアプリケーション
-├── domain/               # ドメイン層（✅ 実装済み）
+│   └── di/              # DI コンテナ
+├── domain/               # ドメイン層
 │   ├── entity/          # エンティティ
 │   ├── value/           # 値オブジェクト
 │   ├── service/         # ドメインサービス
 │   └── repository/      # リポジトリinterface
-├── usecase/             # ユースケース層（未実装）
-├── infrastructure/      # インフラストラクチャ層（✅ 一部実装済み）
+├── usecase/             # ユースケース層
+├── infrastructure/      # インフラストラクチャ層
 │   ├── database/        # データベース実装
+│   ├── auth/            # セッション認証・ミドルウェア
+│   ├── router/          # ルーティング設定
 │   └── migrations/      # マイグレーション
-├── interfaces/          # インターフェース層（✅ 実装済み）
+├── interfaces/          # インターフェース層
 │   └── handler/         # HTTPハンドラー
-└── sqlc/                # sqlc設定・クエリ定義
+├── sqlc/                # sqlc設定・クエリ定義
+└── pkg/
+    └── logger/          # 構造化ログ（log/slog）
 
 frontend/
 ├── src/
-│   ├── components/      # 共通コンポーネント
-│   ├── pages/           # ページコンポーネント
+│   ├── components/      # 共通コンポーネント（未実装）
+│   ├── pages/           # ページコンポーネント（未実装）
 │   ├── App.tsx
 │   └── main.tsx
 
 docs/
 ├── architecture/        # アーキテクチャドキュメント
-│   ├── clean-architecture.md
-│   └── ddd-patterns.md
 ├── development/         # 開発ガイド
-│   ├── testing-strategy.md
-│   ├── docker-guide.md
-│   └── database-guide.md
 ├── work-logs/           # 作業ログ
 └── task-dashboard.md    # タスクダッシュボード
 ```
 
-## アーキテクチャ設計
+## 現在の実装状況
 
-このプロジェクトは**Clean Architecture + DDD**を採用しています。
-
-### 現在の実装状況
+バックエンドは Phase 1-2 完了。フロントエンドは Phase 3 で未実装。
 
 ```
-✅ Domain Layer
-   ✅ entity/user.go, workout.go, exercise.go, workout_set.go, profile.go
-   ✅ value/email.go, password.go, hashed_password.go
-   ✅ repository/ - User, Session, Workout, Exercise, WorkoutSet interfaces
-   ✅ service/user_service.go, workout_service.go, exercise_service.go
+✅ Domain Layer（完全実装 + テスト）
+   entity/ - User, Workout, Exercise, WorkoutSet, Profile
+   value/ - Email, Password, HashedPassword
+   repository/ - User, Session, Workout, Exercise, WorkoutSet, Profile interfaces
+   service/ - UserService, WorkoutService, ExerciseService
 
-✅ Usecase Layer
-   ✅ user_usecase.go - Register, Login, Logout, GetUser, ChangePassword
-   ✅ workout_usecase.go - RecordWorkout, GetWorkout, GetUserWorkouts等
-   ✅ exercise_usecase.go - CRUD操作
+✅ Usecase Layer（完全実装 + テスト）
+   user_usecase.go - Register, Login, Logout, GetUser, ChangePassword
+   workout_usecase.go - RecordWorkout, GetWorkout, GetUserWorkouts, UpdateWorkoutMemo, AddWorkoutSets, DeleteWorkoutSet, DeleteWorkout, GetContributionData
+   exercise_usecase.go - Create, List, Get, Update, Delete
 
-✅ Infrastructure Layer
-   ✅ database/ - UserRepo, WorkoutRepo, ExerciseRepo, WorkoutSetRepo
-   ✅ auth/session_store.go, middleware.go - Session認証
-   ✅ router/router.go - ルーティング設定
+✅ Infrastructure Layer（完全実装 + テスト）
+   database/ - UserRepo, WorkoutRepo, ExerciseRepo, WorkoutSetRepo
+   auth/session_store.go, middleware.go - Redis Session認証
+   router/router.go - ルーティング設定
 
-✅ Interfaces Layer
-   ✅ handler/user_handler.go - 5エンドポイント
-   ✅ handler/workout_handler.go - 8エンドポイント
-   ✅ handler/exercise_handler.go - 5エンドポイント
+✅ Interfaces Layer（完全実装 + テスト）
+   handler/user_handler.go - 5エンドポイント
+   handler/workout_handler.go - 8エンドポイント
+   handler/exercise_handler.go - 5エンドポイント
+
+🚧 Frontend（基本構造のみ - Phase 3 未実装）
 ```
 
 **詳細**: [Clean Architecture](docs/architecture/clean-architecture.md) | [DDD実装パターン](docs/architecture/ddd-patterns.md)
@@ -131,7 +109,7 @@ docs/
 docker compose exec backend go test ./...
 docker compose exec frontend npm test
 
-# ❌ 間違い: ホストで直接実行（環境が揃っていない）
+# ❌ 間違い: ホストで直接実行
 go test ./...
 npm test
 ```
@@ -139,11 +117,8 @@ npm test
 ### テスト実行
 
 ```bash
-# 全テストを実行
-docker compose exec backend go test -v ./...
-
-# カバレッジ付きで実行
-docker compose exec backend go test -v -coverprofile=coverage.out ./...
+docker compose exec backend go test -v ./...                              # 全テスト
+docker compose exec backend go test -v -coverprofile=coverage.out ./...   # カバレッジ付き
 ```
 
 **詳細**: [テスト戦略](docs/development/testing-strategy.md)
@@ -151,183 +126,25 @@ docker compose exec backend go test -v -coverprofile=coverage.out ./...
 ### データベース操作
 
 ```bash
-# PostgreSQLに接続
-docker compose exec db psql -U whiskey -d whiskey
-
-# sqlcコード生成
-docker compose exec backend sqlc generate
+docker compose exec db psql -U whiskey -d whiskey   # PostgreSQLに接続
+docker compose exec backend sqlc generate            # sqlcコード生成
 ```
 
 **詳細**: [データベースガイド](docs/development/database-guide.md)
 
 ### ログ出力ルール
 
-**重要: 全てのログ出力は`backend/pkg/logger`パッケージを使用する**
+**全てのログ出力は`backend/pkg/logger`パッケージを使用する。** 標準ライブラリの`log`パッケージや`fmt.Println()`は使用禁止。
 
-#### 禁止事項
-
-- ❌ 標準ライブラリの`log.Print()`, `log.Printf()`, `log.Println()`を使用しない
-- ❌ `fmt.Println()`でのデバッグ出力を残さない
-- ❌ コミット前にデバッグ用の`fmt.Print`系を削除する
-
-#### ログレベルの使い分け
-
-```go
-import "github.com/ucchy108/whiskey/backend/pkg/logger"
-
-// DEBUG: 開発中のデバッグ情報（本番環境では出力されない）
-logger.Debug("User data", "user_id", userID, "email", email)
-
-// INFO: 通常の動作情報（サーバー起動、リクエスト処理など）
-logger.Info("Server starting", "address", addr, "port", port)
-logger.Info("Successfully connected to database")
-
-// WARN: 警告レベルの問題（非推奨機能の使用、リトライ可能なエラーなど）
-logger.Warn("Deprecated API called", "endpoint", "/old/api")
-logger.Warn("Retry attempt", "attempt", retryCount, "max", maxRetries)
-
-// ERROR: エラー情報（データベース接続失敗、APIエラーなど）
-logger.Error("Failed to connect to database", "error", err)
-logger.Error("API request failed", "url", url, "status", statusCode, "error", err)
-```
-
-#### 構造化ログの書き方
-
-**✅ 良い例（key-value形式）:**
-```go
-logger.Info("HTTP request",
-    "method", r.Method,
-    "uri", r.RequestURI,
-    "status", statusCode,
-    "duration_ms", duration.Milliseconds(),
-)
-```
-
-**❌ 悪い例（文字列連結）:**
-```go
-logger.Info(fmt.Sprintf("HTTP request: %s %s %d", r.Method, r.URI, statusCode))
-```
-
-#### Context対応のログ
-
-リクエストコンテキストがある場合は、Context対応の関数を使用:
-
-```go
-logger.InfoContext(ctx, "Processing request", "user_id", userID)
-logger.ErrorContext(ctx, "Database query failed", "error", err, "query", query)
-```
-
-#### 共通属性を持つロガー
-
-複数のログで共通の属性を使用する場合:
-
-```go
-// リクエストID付きロガーを作成
-reqLogger := logger.With("request_id", requestID, "user_id", userID)
-reqLogger.Info("Starting processing")
-reqLogger.Info("Processing completed", "duration_ms", duration)
-```
-
-#### ログ出力例
-
-**起動ログ:**
-```
-time=2026-02-05T01:09:34Z level=INFO msg="Starting whiskey API server" environment=development go_version=1.23
-time=2026-02-05T01:09:34Z level=INFO msg="Successfully connected to PostgreSQL"
-time=2026-02-05T01:09:34Z level=INFO msg="Successfully connected to Redis" redis_url=redis:6379
-```
-
-**HTTPリクエストログ:**
-```
-time=2026-02-05T01:09:44Z level=INFO msg="HTTP request" method=GET uri=/health status=200 duration_ms=0
-time=2026-02-05T01:10:33Z level=WARN msg="HTTP request" method=GET uri=/api/users/invalid status=401 duration_ms=5
-time=2026-02-05T01:11:22Z level=ERROR msg="HTTP request" method=POST uri=/api/users status=500 duration_ms=120 error="database connection failed"
-```
-
-#### 環境変数による設定
-
-開発環境と本番環境でログレベルや出力形式を切り替え可能:
-
-```bash
-# 開発環境（デフォルト）
-LOG_LEVEL=debug
-LOG_FORMAT=text
-
-# 本番環境（推奨）
-LOG_LEVEL=info
-LOG_FORMAT=json
-```
+**詳細**: [ログ出力ガイド](docs/development/logging-guide.md)
 
 ## Git ワークフロー
 
-### ブランチ戦略
+- **必ず新しいブランチを作成**してから作業を開始（mainへの直接コミット禁止）
+- コミットは**論理的な単位で細かく**行う
+- `--no-verify`フラグ禁止、`push --force to main` 禁止
 
-**作業開始時:**
-- ✅ **必ず新しいブランチを作成**してから作業を開始
-- ✅ mainブランチから分岐
-- ✅ ブランチ命名規則:
-  - 機能追加: `feature/<task-name>`
-  - バグ修正: `fix/<issue-name>`
-  - リファクタリング: `refactor/<description>`
-  - ドキュメント: `docs/<description>`
-
-**作業完了時:**
-- ✅ コミット時に`Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`を付与
-- ✅ PRを作成してマージ
-
-### コミットの粒度
-
-**重要: コミットは細かい単位で行う**
-
-```bash
-# ❌ 悪い例: 全ての変更を一度にコミット
-git add .
-git commit -m "feat: 複数機能を追加"
-
-# ✅ 良い例: 論理的な単位でコミット
-git add backend/domain/entity/user.go
-git commit -m "feat: User entityを追加"
-
-git add backend/domain/value/email.go
-git commit -m "feat: Email値オブジェクトを追加"
-
-git add backend/domain/value/password.go
-git commit -m "feat: Password値オブジェクトを追加"
-```
-
-**コミット単位の基準**:
-- ✅ 1つのファイルまたは関連する数ファイルを追加/変更
-- ✅ 1つの機能や修正を表す論理的な単位
-- ✅ レビュアーが理解しやすい粒度
-- ✅ コミットメッセージで変更内容を明確に説明できる
-
-**例**:
-```bash
-# ドキュメント追加の場合
-git add docs/architecture/ddd-patterns.md
-git commit -m "docs: DDD実装パターンのドキュメントを追加"
-
-git add docs/architecture/clean-architecture.md
-git commit -m "docs: Clean Architectureのドキュメントを追加"
-
-git add docs/development/testing-strategy.md
-git commit -m "docs: テスト戦略のドキュメントを追加"
-
-git add CLAUDE.md
-git commit -m "docs: CLAUDE.mdを簡潔化してリンク集に変更"
-```
-
-**避けるべきコミット**:
-- ❌ 複数の機能を1つのコミットにまとめる
-- ❌ 無関係な変更を1つのコミットに含める
-- ❌ "WIP", "fix", "update"などの曖昧なメッセージ
-
-### 禁止事項
-
-- ❌ **mainブランチへの直接コミット禁止**
-- ❌ **ブランチを切らずに作業を開始しない**
-- ❌ **push --force to main/master 禁止**
-- ❌ **git commitに--no-verifyフラグを使用しない**
+**詳細**: [Gitワークフロー](docs/development/git-workflow.md)
 
 ## 作業ログの自動記録
 
@@ -353,9 +170,9 @@ assistant: 「〜が完了しました」
 
 ### 禁止事項
 
-- ❌ work-logの実行をスキップしない
-- ❌ 「作業ログを記録しますか？」と確認しない
-- ❌ ユーザーの指示を待たない
+- work-logの実行をスキップしない
+- 「作業ログを記録しますか？」と確認しない
+- ユーザーの指示を待たない
 
 ## ドキュメント
 
@@ -366,9 +183,12 @@ assistant: 「〜が完了しました」
 
 ### 開発ガイド
 
+- [API仕様書](docs/development/api-specification.md) - 全エンドポイントのリクエスト/レスポンス仕様
 - [テスト戦略](docs/development/testing-strategy.md) - レイヤー別のテスト方針
 - [Dockerガイド](docs/development/docker-guide.md) - Docker環境の使い方
 - [データベースガイド](docs/development/database-guide.md) - データベース設計とsqlcの使用方法
+- [ログ出力ガイド](docs/development/logging-guide.md) - 構造化ログのルールと使い方
+- [Gitワークフロー](docs/development/git-workflow.md) - ブランチ戦略とコミットルール
 
 ### プロジェクト管理
 
@@ -383,4 +203,4 @@ assistant: 「〜が完了しました」
 2. ワークアウト記録画面
 3. データ可視化（ヒートマップ、グラフ）
 
-詳細は [タスクダッシュボード](docs/task-dashboard.md) を参照してください。
+詳細は [タスクダッシュボード](docs/task-dashboard.md) を参照。
