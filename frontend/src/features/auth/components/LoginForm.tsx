@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -16,18 +15,7 @@ import Mail from '@mui/icons-material/Mail';
 import Lock from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'メールアドレスを入力してください')
-    .email('正しいメールアドレスを入力してください'),
-  password: z
-    .string()
-    .min(1, 'パスワードを入力してください'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormValues } from '../schemas';
 
 export interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
