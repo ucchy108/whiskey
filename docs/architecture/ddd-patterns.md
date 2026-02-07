@@ -133,47 +133,150 @@ func ReconstructUser(id uuid.UUID, email, passwordHash string, createdAt, update
 
 ### 目的
 
-- 複数のエンティティにまたがるビジネスルール
-- エンティティ単体では表現できないロジック
+エンティティや値オブジェクトに属さないドメインロジックの置き場所。特に、**リポジトリへの問い合わせが必要なビジネスルール**をUsecaseから分離し、ドメイン層に閉じ込める。
+
+### なぜUsecaseではなくドメインサービスに切り出すのか
+
+「メールアドレスは一意でなければならない」「同日のワークアウトは1件まで」といったルールは**ドメインのビジネスルール**であり、アプリケーション固有のユースケースロジックではない。
+
+```
+❌ Usecaseに直接書く場合:
+   - ビジネスルールがUsecaseに散在し、再利用できない
+   - 複数のUsecaseが同じルールを重複実装するリスク
+   - ドメインの知識がUsecase層に漏れる
+
+✅ ドメインサービスに切り出す場合:
+   - ビジネスルールがDomain層に集約される
+   - 複数のUsecaseから再利用可能
+   - Usecaseはオーケストレーションに専念できる
+```
+
+### 責務の分離: Usecase → ドメインサービスへの委譲
+
+```
+Usecase（オーケストレーション）
+  │
+  ├─ ドメインサービスを呼び出し → ビジネスルールの検証
+  ├─ エンティティを生成        → バリデーション + 生成
+  └─ リポジトリで永続化        → データの保存
+```
+
+例: `UserUsecase.Register()` の流れ
+
+```go
+func (u *UserUsecase) Register(ctx context.Context, email, password string) (*entity.User, error) {
+    emailVO, err := value.NewEmail(email)               // 値オブジェクトで形式バリデーション
+    if err != nil { return nil, err }
+
+    err = u.userService.CheckEmailUniqueness(ctx, emailVO) // ドメインサービスでユニーク性検証
+    if err != nil { return nil, err }
+
+    user, err := entity.NewUser(email, password)          // エンティティ生成（パスワードハッシュ化）
+    if err != nil { return nil, err }
+
+    err = u.userRepo.Create(ctx, user)                    // 永続化
+    return user, err
+}
+```
+
+### 現在のドメインサービス一覧
+
+| サービス | メソッド | 責務 | 呼び出し元Usecase |
+|---------|---------|------|------------------|
+| UserService | `CheckEmailUniqueness` | メールアドレスの一意性検証 | `UserUsecase.Register` |
+| WorkoutService | `CheckDateUniqueness` | 同日ワークアウトの重複検証 | `WorkoutUsecase.RecordWorkout` |
+| ExerciseService | `CheckNameUniqueness` | エクササイズ名の一意性検証 | `ExerciseUsecase.Create/Update` |
+
+全て**「リポジトリへの問い合わせを伴うユニーク性検証」**という共通パターンに従っている。
 
 ### 実装例
+
+#### UserService - メールアドレスのユニーク性
 
 ```go
 // backend/domain/service/user_service.go
 type UserService struct {
-    userRepo repository.UserRepository  // インターフェースに依存
+    userRepo repository.UserRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserService {
-    return &UserService{userRepo: userRepo}
-}
-
-// メールアドレスのユニーク性チェック
 func (s *UserService) CheckEmailUniqueness(ctx context.Context, email value.Email) error {
     exists, err := s.userRepo.ExistsByEmail(ctx, email.String())
     if err != nil {
         return err
     }
-
     if exists {
         return value.ErrEmailAlreadyExists
     }
-
     return nil
 }
 ```
 
-### ドメインサービスの判断基準
+#### WorkoutService - 同日ワークアウトの重複防止
 
-- ✅ エンティティ単体のメソッドとして不自然な場合
-- ✅ 複数のエンティティにまたがるルール
-- ✅ 外部リソース（Repository）への問い合わせが必要
+```go
+// backend/domain/service/workout_service.go
+var ErrDuplicateWorkoutDate = errors.New("workout already exists for this date")
 
-### 例
+type WorkoutService struct {
+    workoutRepo repository.WorkoutRepository
+}
 
-- メールアドレスのユニーク性チェック → **ドメインサービス**
-- パスワードのハッシュ化 → **値オブジェクトのメソッド**
-- ユーザーのメールアドレス変更 → **エンティティのメソッド**
+func (s *WorkoutService) CheckDateUniqueness(ctx context.Context, userID uuid.UUID, date time.Time) error {
+    exists, err := s.workoutRepo.ExistsByUserIDAndDate(ctx, userID, date)
+    if err != nil {
+        return err
+    }
+    if exists {
+        return ErrDuplicateWorkoutDate
+    }
+    return nil
+}
+```
+
+#### ExerciseService - エクササイズ名のユニーク性
+
+```go
+// backend/domain/service/exercise_service.go
+var ErrExerciseNameAlreadyExists = errors.New("exercise name already exists")
+
+type ExerciseService struct {
+    exerciseRepo repository.ExerciseRepository
+}
+
+func (s *ExerciseService) CheckNameUniqueness(ctx context.Context, name string) error {
+    exists, err := s.exerciseRepo.ExistsByName(ctx, name)
+    if err != nil {
+        return err
+    }
+    if exists {
+        return ErrExerciseNameAlreadyExists
+    }
+    return nil
+}
+```
+
+### ドメインサービスに切り出す判断基準
+
+| 判断基準 | 例 | 配置先 |
+|---------|-----|-------|
+| リポジトリへの問い合わせが必要なビジネスルール | メールの一意性、日付の重複防止 | **ドメインサービス** |
+| エンティティ自身の状態に基づくロジック | パスワードの検証、メモの更新 | **エンティティのメソッド** |
+| 値の生成時バリデーション | メール形式チェック、パスワード長チェック | **値オブジェクトのコンストラクタ** |
+| 複数サービスの連携・外部リソース操作 | セッション作成 + ユーザー認証 | **Usecase** |
+
+### ドメインサービスのエラー定義
+
+ドメインサービスが返すエラーは `domain/service` パッケージ内で定義する。Handler層でエラーマッピングに使用される。
+
+```go
+// domain/service/ で定義
+service.ErrDuplicateWorkoutDate
+service.ErrExerciseNameAlreadyExists
+
+// interfaces/handler/ でHTTPステータスに変換
+case service.ErrDuplicateWorkoutDate:
+    respondError(w, http.StatusConflict, "Workout already exists for this date")
+```
 
 ## リポジトリパターン
 
