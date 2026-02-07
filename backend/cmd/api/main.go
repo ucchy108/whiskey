@@ -7,17 +7,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
-	"github.com/ucchy108/whiskey/backend/domain/service"
-	"github.com/ucchy108/whiskey/backend/infrastructure/auth"
-	"github.com/ucchy108/whiskey/backend/infrastructure/database"
+	"github.com/ucchy108/whiskey/backend/cmd/api/di"
 	"github.com/ucchy108/whiskey/backend/infrastructure/router"
-	"github.com/ucchy108/whiskey/backend/interfaces/handler"
 	"github.com/ucchy108/whiskey/backend/pkg/logger"
-	"github.com/ucchy108/whiskey/backend/usecase"
 )
 
 func main() {
@@ -74,36 +69,7 @@ func main() {
 	logger.Info("Successfully connected to Redis", "redis_url", redisURL)
 
 	// 依存関係の注入（DI）
-	// Infrastructure層
-	userRepo := database.NewUserRepository(db)
-	sessionStore := auth.NewSessionStore(redisClient)
-	workoutRepo := database.NewWorkoutRepository(db)
-	workoutSetRepo := database.NewWorkoutSetRepository(db)
-	exerciseRepo := database.NewExerciseRepository(db)
-
-	// Domain層
-	userService := service.NewUserService(userRepo)
-	workoutService := service.NewWorkoutService(workoutRepo)
-	exerciseService := service.NewExerciseService(exerciseRepo)
-
-	// Usecase層
-	sessionTTL := 24 * time.Hour // セッション有効期限: 24時間
-	userUsecase := usecase.NewUserUsecase(userRepo, userService, sessionStore, sessionTTL)
-	workoutUsecase := usecase.NewWorkoutUsecase(workoutRepo, workoutSetRepo, exerciseRepo, workoutService)
-	exerciseUsecase := usecase.NewExerciseUsecase(exerciseRepo, exerciseService)
-
-	// Interface層
-	userHandler := handler.NewUserHandler(userUsecase)
-	workoutHandler := handler.NewWorkoutHandler(workoutUsecase)
-	exerciseHandler := handler.NewExerciseHandler(exerciseUsecase)
-
-	// ルーターの設定
-	routerConfig := router.RouterConfig{
-		UserHandler:     userHandler,
-		WorkoutHandler:  workoutHandler,
-		ExerciseHandler: exerciseHandler,
-		SessionRepo:     sessionStore,
-	}
+	routerConfig := di.BuildRouterConfig(db, redisClient)
 	r := router.NewRouter(routerConfig)
 
 	// サーバー起動
