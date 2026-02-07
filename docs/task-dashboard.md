@@ -98,12 +98,22 @@
 - [x] `backend/infrastructure/database/workout_set_repository.go`
 - [x] 統合テスト（36テスト全パス）
 
-### 2.3 Usecase層の実装
-- [ ] `backend/usecase/workout_usecase.go`
-  - ワークアウト記録
-  - ワークアウト一覧取得
-  - ワークアウト詳細取得
-- [ ] ユニットテスト
+### 2.3 Usecase層の実装 ✅
+- [x] `backend/usecase/exercise_usecase.go`
+  - エクササイズCRUD（Create, Get, List, Update, Delete）
+- [x] `backend/usecase/exercise_usecase_test.go`
+  - ExerciseUsecaseユニットテスト（18テスト）
+- [x] `backend/usecase/workout_usecase.go`
+  - ワークアウト記録（RecordWorkout）
+  - ワークアウト詳細取得（GetWorkout）
+  - ワークアウト一覧取得（GetUserWorkouts）
+  - メモ更新（UpdateWorkoutMemo）
+  - セット追加（AddWorkoutSets）
+  - セット削除（DeleteWorkoutSet）
+  - ワークアウト削除（DeleteWorkout）
+  - コントリビューションデータ取得（GetContributionData）
+- [x] `backend/usecase/workout_usecase_test.go`
+  - WorkoutUsecaseユニットテスト（30テスト）
 
 ### 2.4 Interfaces層の実装
 - [ ] `backend/interfaces/handler/workout_handler.go`
@@ -157,10 +167,11 @@
 6. ~~ワークアウトInfrastructure層（Phase 2.2）~~ ✅ 完了
 
 ### 🟡 Medium Priority（次にやるべき）
-7. ワークアウトUsecase層（Phase 2.3） ← **次のタスク**
+7. ~~ワークアウトUsecase層（Phase 2.3）~~ ✅ 完了
+8. ワークアウトInterfaces層（Phase 2.4） ← **次のタスク**
 
 ### 🟢 Low Priority（後でやる）
-7. フロントエンド実装（Phase 3）
+9. フロントエンド実装（Phase 3）
 8. 追加機能（Phase 4）
 
 ## 現在のアーキテクチャ状況
@@ -176,6 +187,10 @@
 ✅ Usecase Layer
   ✅ user_usecase.go (実装済み - Session管理含む)
   ✅ user_usecase_test.go (実装済み)
+  ✅ exercise_usecase.go (実装済み - CRUD)
+  ✅ exercise_usecase_test.go (実装済み)
+  ✅ workout_usecase.go (実装済み - Record/Get/Update/Delete/Contribution)
+  ✅ workout_usecase_test.go (実装済み)
 
 ✅ Interfaces Layer
   ✅ handler/user_handler.go (実装済み - Clean Architecture準拠)
@@ -194,13 +209,13 @@
 
 ## 次のステップ
 
-**最優先タスク**: Phase 2.3 - ワークアウトUsecase層の実装
+**最優先タスク**: Phase 2.4 - ワークアウトInterfaces層の実装
 
-1. `backend/usecase/workout_usecase.go`を実装
-   - ワークアウト記録
-   - ワークアウト一覧取得
-   - ワークアウト詳細取得
-2. ユニットテストの実装
+1. `backend/interfaces/handler/workout_handler.go`を実装
+   - POST /api/workouts - ワークアウト記録
+   - GET /api/workouts - 一覧取得
+   - GET /api/workouts/:id - 詳細取得
+2. ハンドラーのユニットテストの実装
 
 **Phase 1完了 🎉**: ユーザー認証機能が完全に動作可能な状態になりました！
 
