@@ -77,21 +77,32 @@ func main() {
 	// Infrastructure層
 	userRepo := database.NewUserRepository(db)
 	sessionStore := auth.NewSessionStore(redisClient)
+	workoutRepo := database.NewWorkoutRepository(db)
+	workoutSetRepo := database.NewWorkoutSetRepository(db)
+	exerciseRepo := database.NewExerciseRepository(db)
 
 	// Domain層
 	userService := service.NewUserService(userRepo)
+	workoutService := service.NewWorkoutService(workoutRepo)
+	exerciseService := service.NewExerciseService(exerciseRepo)
 
 	// Usecase層
 	sessionTTL := 24 * time.Hour // セッション有効期限: 24時間
 	userUsecase := usecase.NewUserUsecase(userRepo, userService, sessionStore, sessionTTL)
+	workoutUsecase := usecase.NewWorkoutUsecase(workoutRepo, workoutSetRepo, exerciseRepo, workoutService)
+	exerciseUsecase := usecase.NewExerciseUsecase(exerciseRepo, exerciseService)
 
 	// Interface層
 	userHandler := handler.NewUserHandler(userUsecase)
+	workoutHandler := handler.NewWorkoutHandler(workoutUsecase)
+	exerciseHandler := handler.NewExerciseHandler(exerciseUsecase)
 
 	// ルーターの設定
 	routerConfig := router.RouterConfig{
-		UserHandler: userHandler,
-		SessionRepo: sessionStore,
+		UserHandler:     userHandler,
+		WorkoutHandler:  workoutHandler,
+		ExerciseHandler: exerciseHandler,
+		SessionRepo:     sessionStore,
 	}
 	r := router.NewRouter(routerConfig)
 

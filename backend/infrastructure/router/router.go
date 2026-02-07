@@ -14,8 +14,10 @@ import (
 
 // RouterConfig はルーター設定のための構成オプション。
 type RouterConfig struct {
-	UserHandler *handler.UserHandler
-	SessionRepo repository.SessionRepository
+	UserHandler     *handler.UserHandler
+	WorkoutHandler  *handler.WorkoutHandler
+	ExerciseHandler *handler.ExerciseHandler
+	SessionRepo     repository.SessionRepository
 }
 
 // NewRouter はすべてのルートとミドルウェアが設定された新しいHTTPルーターを生成する。
@@ -48,6 +50,24 @@ func NewRouter(config RouterConfig) *mux.Router {
 	authRequired.HandleFunc("/auth/logout", config.UserHandler.Logout).Methods("POST")
 	authRequired.HandleFunc("/users/{id}", config.UserHandler.GetUser).Methods("GET")
 	authRequired.HandleFunc("/users/{id}/password", config.UserHandler.ChangePassword).Methods("PUT")
+
+	// ワークアウトルート
+	// 注意: /workouts/contributions は /workouts/{id} より前に登録（Gorilla Muxの優先順位）
+	authRequired.HandleFunc("/workouts", config.WorkoutHandler.RecordWorkout).Methods("POST")
+	authRequired.HandleFunc("/workouts", config.WorkoutHandler.GetUserWorkouts).Methods("GET")
+	authRequired.HandleFunc("/workouts/contributions", config.WorkoutHandler.GetContributionData).Methods("GET")
+	authRequired.HandleFunc("/workouts/{id}", config.WorkoutHandler.GetWorkout).Methods("GET")
+	authRequired.HandleFunc("/workouts/{id}/memo", config.WorkoutHandler.UpdateWorkoutMemo).Methods("PUT")
+	authRequired.HandleFunc("/workouts/{id}/sets", config.WorkoutHandler.AddWorkoutSets).Methods("POST")
+	authRequired.HandleFunc("/workouts/{id}", config.WorkoutHandler.DeleteWorkout).Methods("DELETE")
+	authRequired.HandleFunc("/workout-sets/{id}", config.WorkoutHandler.DeleteWorkoutSet).Methods("DELETE")
+
+	// エクササイズルート
+	authRequired.HandleFunc("/exercises", config.ExerciseHandler.CreateExercise).Methods("POST")
+	authRequired.HandleFunc("/exercises", config.ExerciseHandler.ListExercises).Methods("GET")
+	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.GetExercise).Methods("GET")
+	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.UpdateExercise).Methods("PUT")
+	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.DeleteExercise).Methods("DELETE")
 
 	return r
 }
