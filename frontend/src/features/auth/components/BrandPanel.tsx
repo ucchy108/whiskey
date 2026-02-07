@@ -45,6 +45,7 @@ export function BrandPanel() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
         bgcolor: 'dark.main',

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -14,6 +17,18 @@ import Lock from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'メールアドレスを入力してください')
+    .email('正しいメールアドレスを入力してください'),
+  password: z
+    .string()
+    .min(1, 'パスワードを入力してください'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
   error?: string;
@@ -27,19 +42,25 @@ export function LoginForm({
   isLoading = false,
   onRegisterClick,
 }: LoginFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(email, password);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onValid = (data: LoginFormValues) => {
+    onSubmit(data.email, data.password);
   };
 
   return (
     <Box
       component="form"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onValid)}
+      noValidate
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -76,10 +97,11 @@ export function LoginForm({
             id="email"
             type="email"
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
             fullWidth
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            {...register('email')}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -103,10 +125,11 @@ export function LoginForm({
             id="password"
             type={showPassword ? 'text' : 'password'}
             placeholder="パスワードを入力"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             fullWidth
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            {...register('password')}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
