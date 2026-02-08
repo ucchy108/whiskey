@@ -1,0 +1,1 @@
+export { WorkoutDetailPage } from './WorkoutDetailPage';

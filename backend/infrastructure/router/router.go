@@ -20,19 +20,18 @@ type RouterConfig struct {
 	SessionRepo     repository.SessionRepository
 }
 
-// NewRouter はすべてのルートとミドルウェアが設定された新しいHTTPルーターを生成する。
+// NewRouter はすべてのルートとミドルウェアが設定された新しいHTTPハンドラーを生成する。
 //
 // パラメータ:
 //   - config: ハンドラーとリポジトリを含むルーター設定
 //
 // 戻り値:
-//   - *mux.Router: 設定済みのGorilla Muxルーター
-func NewRouter(config RouterConfig) *mux.Router {
+//   - http.Handler: CORS・ロギングミドルウェア付きのHTTPハンドラー
+func NewRouter(config RouterConfig) http.Handler {
 	r := mux.NewRouter()
 
-	// グローバルミドルウェア（全てのルートに適用）
+	// ロギングミドルウェア（ルートマッチ後に適用）
 	r.Use(loggingMiddleware)
-	r.Use(corsMiddleware)
 
 	// ヘルスチェックエンドポイント（認証不要）
 	r.HandleFunc("/health", healthCheckHandler).Methods("GET")
@@ -69,7 +68,11 @@ func NewRouter(config RouterConfig) *mux.Router {
 	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.UpdateExercise).Methods("PUT")
 	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.DeleteExercise).Methods("DELETE")
 
-	return r
+	// CORSミドルウェアをルーター全体にラップ（ルートマッチ前に実行される）
+	// Gorilla Mux の r.Use() はマッチしたルートでのみ実行されるため、
+	// OPTIONS プリフライトリクエスト（ルートマッチしない）にも CORS ヘッダーを返すには
+	// ルーター外側でラップする必要がある。
+	return corsMiddleware(r)
 }
 
 // healthCheckHandler はサービスの健全性をチェックするためのシンプルなハンドラー。
@@ -124,11 +127,20 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 // corsMiddleware はCross-Origin Resource Sharing (CORS)ヘッダーを設定する。
-// 開発環境では全てのオリジンからのアクセスを許可する。
+// credentials: "include" を使用するため、Allow-Origin にはワイルドカード(*) ではなく
+// リクエスト元のオリジンを明示的に返す必要がある。
 func corsMiddleware(next http.Handler) http.Handler {
+	// TODO: 本番環境では許可するオリジンを環境変数で管理する
+	allowedOrigins := map[string]bool{
+		"http://localhost:3000": true,
+		"http://localhost:5173": true,
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: 本番環境では特定のオリジンのみを許可するように変更
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")

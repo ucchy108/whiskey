@@ -1,0 +1,1 @@
+export { WorkoutFormPage } from './WorkoutFormPage';
