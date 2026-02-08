@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -12,9 +10,7 @@ import ArrowForward from '@mui/icons-material/ArrowForward';
 import CircularProgress from '@mui/material/CircularProgress';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import Mail from '@mui/icons-material/Mail';
-import Lock from '@mui/icons-material/Lock';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { PasswordField } from '@/shared/components';
 import { loginSchema, type LoginFormValues } from '../../schemas';
 
 export interface LoginFormProps {
@@ -30,8 +26,6 @@ export function LoginForm({
   isLoading = false,
   onRegisterClick,
 }: LoginFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
-
   const {
     register,
     handleSubmit,
@@ -101,53 +95,15 @@ export function LoginForm({
           />
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          <Typography
-            component="label"
-            htmlFor="password"
-            sx={{ fontSize: 14, fontWeight: 500, color: 'text.primary' }}
-          >
-            パスワード
-          </Typography>
-          <TextField
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="パスワードを入力"
-            disabled={isLoading}
-            fullWidth
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            {...register('password')}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ fontSize: 18, color: 'textMuted.main' }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                    size="small"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <Visibility
-                        sx={{ fontSize: 18, color: 'textMuted.main' }}
-                      />
-                    ) : (
-                      <VisibilityOff
-                        sx={{ fontSize: 18, color: 'textMuted.main' }}
-                      />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
-              sx: { height: 48 },
-            }}
-          />
-        </Box>
+        <PasswordField
+          id="password"
+          label="パスワード"
+          placeholder="パスワードを入力"
+          disabled={isLoading}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register('password')}
+        />
       </Box>
 
       {/* Actions */}
