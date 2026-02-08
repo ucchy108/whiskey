@@ -1,4 +1,4 @@
-import preview from '../../../../.storybook/preview';
+import preview from '../../../../../.storybook/preview';
 import { BrandPanel } from './BrandPanel';
 
 const meta = preview.meta({

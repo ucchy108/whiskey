@@ -2,6 +2,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { theme } from "@/shared/theme";
+import { AuthProvider } from "@/features/auth/hooks/useAuth";
 import { AppRoutes } from "@/routes";
 
 function App() {
@@ -9,7 +10,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <AppRoutes />
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

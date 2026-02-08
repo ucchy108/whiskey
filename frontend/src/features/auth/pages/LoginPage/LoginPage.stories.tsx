@@ -1,5 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
-import preview from '../../../../.storybook/preview';
+import preview from '../../../../../.storybook/preview';
+import { AuthProvider } from '../../hooks/useAuth';
 import { LoginPage } from './LoginPage';
 
 const meta = preview.meta({
@@ -11,7 +12,9 @@ const meta = preview.meta({
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <Story />
+        <AuthProvider>
+          <Story />
+        </AuthProvider>
       </MemoryRouter>
     ),
   ],

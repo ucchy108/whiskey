@@ -19,6 +19,15 @@
 - [x] Usecase層: ユニットテスト実装
 - [x] Interfaces層: UserHandler実装（5つのRESTful APIエンドポイント）
 - [x] Interfaces層: ユニットテスト実装
+- [x] フロントエンド基盤: featureベース構成、Vite、MUIテーマ、ルーティング
+- [x] フロントエンド基盤: Storybook 10 (CSF4) セットアップ
+- [x] フロントエンド基盤: Vitest + Testing Library テスト基盤
+- [x] フロントエンド: ログインページ実装（LoginForm + BrandPanel + LoginPage）
+- [x] フロントエンド: 認証コンポーネントテスト（15テスト）
+- [x] フロントエンド: RegisterPage実装、useAuthフック、バックエンドAPI接続（Phase 3.1完了）
+- [x] フロントエンド: Vitest + Testing Library導入、テスト戦略ドキュメント整備
+- [x] フロントエンド: コンポーネント単位のフォルダ構成に整理
+- [x] フロントエンド: PasswordField共通コンポーネント抽出（shared/components）
 
 ### 🚧 次にやるべきこと
 
@@ -140,21 +149,43 @@
 
 ## Phase 3: フロントエンド実装
 
-### 3.1 認証画面
-- [ ] `frontend/src/pages/Login.tsx`
-- [ ] `frontend/src/pages/Register.tsx`
-- [ ] `frontend/src/hooks/useAuth.ts`
+### 3.0 フロントエンド基盤 ✅
+- [x] featureベースディレクトリ構成の導入（`features/auth`, `features/workout`, `features/exercise`, `features/dashboard`）
+- [x] パスエイリアス（`@/` → `src/`）設定（Vite + tsconfig）
+- [x] MUIテーマ定義（`shared/theme/theme.ts`）
+- [x] 共通APIクライアント（`shared/api/client.ts`）
+- [x] ルーティング基盤（`src/routes/index.tsx` — react-router-dom v6）
+- [x] 全ドメインの型定義（auth, workout, exercise）
+- [x] Storybook 10 セットアップ（CSF4 / CSF Factories）
+- [x] Vitest + Testing Library テスト基盤（jsdom, Portable Stories）
+- [x] 開発ドキュメント整備（`frontend/CLAUDE.md`, テスト戦略, アーキテクチャ）
+
+### 3.1 認証画面 ✅
+- [x] `features/auth/pages/LoginPage.tsx` — 左右分割レイアウト（BrandPanel + LoginForm）
+- [x] `features/auth/components/LoginForm.tsx` — RHF + zod バリデーション、パスワード表示切替、エラー/ローディング状態
+- [x] `features/auth/components/BrandPanel.tsx` — ロゴ、タグライン、ヒートマッププレビュー、統計
+- [x] `features/auth/schemas.ts` — zod バリデーションスキーマ
+- [x] `features/auth/api.ts` — 認証API関数
+- [x] Storybook ストーリー（LoginForm / BrandPanel / LoginPage / RegisterForm / RegisterPage）
+- [x] テスト（schemas: 11, LoginForm: 6, BrandPanel: 2, LoginPage: 4, RegisterForm: 7, RegisterPage: 4, useAuth: 7, ProtectedRoute: 2, PasswordField: 6 = 計49テスト）
+- [x] `features/auth/pages/RegisterPage.tsx` — 新規登録画面（RegisterForm + BrandPanel）
+- [x] `features/auth/components/RegisterForm.tsx` — RHF + zod、パスワード確認、エラー/ローディング状態
+- [x] `features/auth/hooks/useAuth.ts` — 認証状態管理フック（AuthContext + AuthProvider）
+- [x] `features/auth/components/ProtectedRoute.tsx` — 認証ガード
+- [x] `shared/components/PasswordField.tsx` — 共通パスワードフィールド（forwardRef + RHF互換）
+- [x] LoginForm / RegisterForm ↔ バックエンドAPI接続
 
 ### 3.2 ワークアウト記録画面
-- [ ] `frontend/src/pages/WorkoutForm.tsx`
-- [ ] `frontend/src/components/ExerciseSelector.tsx`
-- [ ] `frontend/src/components/SetInput.tsx`
+- [ ] `features/workout/pages/WorkoutFormPage.tsx` — ワークアウト記録画面
+- [ ] `features/workout/components/ExerciseSelector.tsx` — 種目選択
+- [ ] `features/workout/components/SetInput.tsx` — セット入力
+- [ ] `features/workout/pages/WorkoutListPage.tsx` — 一覧画面の実装（現在プレースホルダー）
+- [ ] `features/workout/pages/WorkoutDetailPage.tsx` — 詳細画面の実装（現在プレースホルダー）
 
 ### 3.3 データ可視化
-- [ ] `frontend/src/components/WorkoutHeatmap.tsx`
-  - GitHub風のヒートマップ
-- [ ] `frontend/src/components/ProgressChart.tsx`
-  - 重量推移グラフ
+- [ ] `features/dashboard/components/WorkoutHeatmap.tsx` — GitHub風のヒートマップ
+- [ ] `features/dashboard/components/ProgressChart.tsx` — 重量推移グラフ
+- [ ] `features/dashboard/pages/DashboardPage.tsx` — ダッシュボード画面の実装（現在プレースホルダー）
 
 ## Phase 4: 追加機能
 
@@ -187,9 +218,13 @@
 7. ~~ワークアウトUsecase層（Phase 2.3）~~ ✅ 完了
 8. ~~ワークアウトInterfaces層（Phase 2.4）~~ ✅ 完了
 
+### 🟡 Medium Priority（次にやるべき）
+9. ~~フロントエンド認証完成（RegisterPage, useAuth, API接続）~~ ✅ 完了
+10. ワークアウト記録画面（Phase 3.2）← **次のタスク**
+11. データ可視化（Phase 3.3）
+
 ### 🟢 Low Priority（後でやる）
-9. フロントエンド実装（Phase 3） ← **次のタスク**
-10. 追加機能（Phase 4）
+12. 追加機能（Phase 4）
 
 ## 現在のアーキテクチャ状況
 
@@ -226,15 +261,51 @@
 ✅ Pkg Layer
   ✅ logger/logger.go (実装済み - 構造化ログ)
   ✅ logger/logger_test.go (実装済み)
+
+🚧 Frontend (featureベース構成)
+  ✅ shared/theme/theme.ts (MUIテーマ)
+  ✅ shared/api/client.ts (APIクライアント)
+  ✅ routes/index.tsx (ルーティング)
+  ✅ features/auth/pages/LoginPage.tsx (実装済み)
+  ✅ features/auth/pages/RegisterPage.tsx (実装済み)
+  ✅ features/auth/components/LoginForm.tsx (実装済み - RHF + zod)
+  ✅ features/auth/components/RegisterForm.tsx (実装済み - RHF + zod)
+  ✅ features/auth/components/BrandPanel.tsx (実装済み)
+  ✅ features/auth/components/ProtectedRoute.tsx (実装済み)
+  ✅ features/auth/schemas.ts (実装済み - zodスキーマ)
+  ✅ features/auth/hooks/useAuth.tsx (実装済み - AuthContext + AuthProvider)
+  ✅ shared/components/PasswordField.tsx (実装済み - forwardRef + RHF互換)
+  🔲 features/workout/ (プレースホルダーのみ)
+  🔲 features/dashboard/ (プレースホルダーのみ)
+
+  ✅ Storybook (CSF4)
+    ✅ LoginForm.stories.tsx (Default / WithError / Loading)
+    ✅ RegisterForm.stories.tsx (Default / WithError / Loading)
+    ✅ BrandPanel.stories.tsx (Default)
+    ✅ LoginPage.stories.tsx (Default)
+    ✅ RegisterPage.stories.tsx (Default)
+    ✅ PasswordField.stories.tsx (Default / WithError / Disabled)
+
+  ✅ Tests (Vitest + Testing Library) — 49テスト
+    ✅ schemas.test.ts (11テスト)
+    ✅ LoginForm.test.tsx (6テスト)
+    ✅ RegisterForm.test.tsx (7テスト)
+    ✅ BrandPanel.test.tsx (2テスト)
+    ✅ LoginPage.test.tsx (4テスト)
+    ✅ RegisterPage.test.tsx (4テスト)
+    ✅ useAuth.test.tsx (7テスト)
+    ✅ ProtectedRoute.test.tsx (2テスト)
+    ✅ PasswordField.test.tsx (6テスト)
 ```
 
 ## 次のステップ
 
-**最優先タスク**: Phase 3 - フロントエンド実装
+**最優先タスク**: Phase 3 - フロントエンド実装の継続
 
-1. 認証画面（Login, Register）
-2. ワークアウト記録画面
-3. データ可視化（ヒートマップ、グラフ）
+1. ~~認証画面（LoginPage）~~ ✅ 完了
+2. ~~認証完成（RegisterPage実装、useAuthフック、バックエンドAPI接続）~~ ✅ 完了
+3. ワークアウト記録画面 ← **次のタスク**
+4. データ可視化（ヒートマップ、グラフ）
 
 **Phase 1完了 🎉**: ユーザー認証機能が完全に動作可能な状態になりました！
 

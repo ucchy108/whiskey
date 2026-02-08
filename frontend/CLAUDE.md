@@ -147,15 +147,34 @@ docker compose exec frontend npx vitest run src/features/auth/schemas.test.ts
 
 ### テストファイル配置
 
-テスト対象と同じディレクトリに `<ファイル名>.test.ts(x)` で配置する。
+コンポーネント単位でフォルダ分けし、テスト・ストーリーを同一フォルダに配置する。
 
 ```
 features/auth/
 ├── schemas.ts
-├── schemas.test.ts          ← 同じディレクトリ
+├── schemas.test.ts
 ├── components/
-│   ├── LoginForm.tsx
-│   └── LoginForm.test.tsx   ← 同じディレクトリ
+│   ├── LoginForm/
+│   │   ├── index.ts              ← re-export
+│   │   ├── LoginForm.tsx
+│   │   ├── LoginForm.test.tsx
+│   │   └── LoginForm.stories.tsx
+│   └── BrandPanel/
+│       ├── index.ts
+│       ├── BrandPanel.tsx
+│       ├── BrandPanel.test.tsx
+│       └── BrandPanel.stories.tsx
+├── pages/
+│   └── LoginPage/
+│       ├── index.ts
+│       ├── LoginPage.tsx
+│       ├── LoginPage.test.tsx
+│       └── LoginPage.stories.tsx
+└── hooks/
+    └── useAuth/
+        ├── index.ts
+        ├── useAuth.tsx
+        └── useAuth.test.tsx
 ```
 
 ### テストの書き方ルール
