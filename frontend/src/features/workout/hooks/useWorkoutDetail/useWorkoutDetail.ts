@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { exerciseApi } from '@/features/exercise/api';
 import type { Exercise } from '@/features/exercise';
 import { workoutApi } from '../../api';
@@ -52,5 +52,43 @@ export function useWorkoutDetail(id: string | undefined) {
     await reload();
   };
 
-  return { detail, exercises, deleteWorkout, deleteSet, saveMemo, addSet };
+  const exerciseNames = useMemo(() => {
+    if (!detail) return '';
+    const ids = [...new Set(detail.sets.map((s) => s.exercise_id))];
+    return ids
+      .map((eid) => exercises.find((e) => e.id === eid)?.name ?? '不明')
+      .join(', ');
+  }, [detail, exercises]);
+
+  const dateStr = useMemo(() => {
+    if (!detail) return '';
+    return new Date(detail.workout.date).toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, [detail]);
+
+  const totalVolume = useMemo(() => {
+    if (!detail) return 0;
+    return detail.sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+  }, [detail]);
+
+  const maxEstimated1RM = useMemo(() => {
+    if (!detail || detail.sets.length === 0) return 0;
+    return Math.max(...detail.sets.map((s) => s.estimated_1rm));
+  }, [detail]);
+
+  return {
+    detail,
+    exercises,
+    exerciseNames,
+    dateStr,
+    totalVolume,
+    maxEstimated1RM,
+    deleteWorkout,
+    deleteSet,
+    saveMemo,
+    addSet,
+  };
 }

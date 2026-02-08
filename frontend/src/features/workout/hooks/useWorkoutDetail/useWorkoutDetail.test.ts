@@ -99,6 +99,19 @@ describe('useWorkoutDetail', () => {
     expect(mockGet).toHaveBeenCalledWith('w1');
   });
 
+  it('導出データ（exerciseNames, dateStr, totalVolume, maxEstimated1RM）を返す', async () => {
+    const { result } = renderHook(() => useWorkoutDetail('w1'));
+
+    await waitFor(() => {
+      expect(result.current.detail).not.toBeNull();
+    });
+
+    expect(result.current.exerciseNames).toBe('ベンチプレス');
+    expect(result.current.dateStr).toContain('2026');
+    expect(result.current.totalVolume).toBe(800);
+    expect(result.current.maxEstimated1RM).toBe(107);
+  });
+
   it('addSet が最後のセットを複製して追加する', async () => {
     const { result } = renderHook(() => useWorkoutDetail('w1'));
 

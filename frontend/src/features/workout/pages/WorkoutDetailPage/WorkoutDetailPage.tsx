@@ -4,22 +4,31 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import { PageHeader } from '@/shared/components';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
 import { EditableMemo } from '../../components/EditableMemo';
 import { SummaryRow } from '../../components/SummaryRow';
-import { WorkoutSetsTable } from '../../components/WorkoutSetsTable';
+import { WorkoutSetsSection } from '../../components/WorkoutSetsSection';
 import { WorkoutSummaryPanel } from '../../components/WorkoutSummaryPanel';
+import { WeightProgressionCard } from '../../components/WeightProgressionCard';
 import { useWorkoutDetail } from '../../hooks/useWorkoutDetail';
 
 export function WorkoutDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showError, showSuccess } = useSnackbar();
-  const { detail, exercises, deleteWorkout, deleteSet, saveMemo, addSet } =
-    useWorkoutDetail(id);
+  const {
+    detail,
+    exerciseNames,
+    dateStr,
+    totalVolume,
+    maxEstimated1RM,
+    deleteWorkout,
+    deleteSet,
+    saveMemo,
+    addSet,
+  } = useWorkoutDetail(id);
 
   const handleDeleteWorkout = async () => {
     try {
@@ -69,26 +78,6 @@ export function WorkoutDetailPage() {
       </Box>
     );
   }
-
-  const exerciseIds = [...new Set(detail.sets.map((s) => s.exercise_id))];
-  const exerciseNames = exerciseIds
-    .map((eid) => exercises.find((e) => e.id === eid)?.name ?? '不明')
-    .join(', ');
-
-  const dateStr = new Date(detail.workout.date).toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const totalVolume = detail.sets.reduce(
-    (sum, s) => sum + s.weight * s.reps,
-    0,
-  );
-  const maxEstimated1RM =
-    detail.sets.length > 0
-      ? Math.max(...detail.sets.map((s) => s.estimated_1rm))
-      : 0;
 
   return (
     <Box
@@ -144,38 +133,11 @@ export function WorkoutDetailPage() {
             gap: 2.5,
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.25,
-            }}
-          >
-            <Typography
-              sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
-            >
-              セット
-            </Typography>
-            <WorkoutSetsTable
-              sets={detail.sets}
-              onDeleteSet={handleDeleteSet}
-            />
-            <Button
-              variant="text"
-              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-              onClick={handleAddSet}
-              sx={{
-                color: 'primary.main',
-                fontSize: 14,
-                fontWeight: 600,
-                justifyContent: 'center',
-                borderRadius: '10px',
-                py: 1.25,
-              }}
-            >
-              セットを追加
-            </Button>
-          </Box>
+          <WorkoutSetsSection
+            sets={detail.sets}
+            onDeleteSet={handleDeleteSet}
+            onAddSet={handleAddSet}
+          />
 
           <Box
             sx={{
@@ -222,40 +184,7 @@ export function WorkoutDetailPage() {
             />
           </WorkoutSummaryPanel>
 
-          <Box
-            sx={{
-              borderRadius: '12px',
-              bgcolor: 'background.paper',
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontSize: 14,
-                fontWeight: 700,
-              }}
-            >
-              重量推移
-            </Typography>
-            <Box
-              sx={{
-                borderRadius: '8px',
-                bgcolor: 'background.subtle',
-                height: 160,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography sx={{ fontSize: 13, color: 'textMuted.main' }}>
-                グラフは今後実装予定
-              </Typography>
-            </Box>
-          </Box>
+          <WeightProgressionCard />
         </Box>
       </Box>
     </Box>
