@@ -15,7 +15,7 @@ import Mail from '@mui/icons-material/Mail';
 import Lock from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { loginSchema, type LoginFormValues } from '../schemas';
+import { loginSchema, type LoginFormValues } from '../../schemas';
 
 export interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;

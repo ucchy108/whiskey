@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { ApiRequestError } from '@/shared/api';
-import { useAuth } from '../hooks/useAuth';
-import { BrandPanel } from '../components/BrandPanel';
-import { LoginForm } from '../components/LoginForm';
+import { useAuth } from '../../hooks/useAuth';
+import { BrandPanel } from '../../components/BrandPanel';
+import { RegisterForm } from '../../components/RegisterForm';
 
-export function LoginPage() {
+export function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -16,21 +16,31 @@ export function LoginPage() {
     setError(undefined);
     setIsLoading(true);
     try {
-      await login(email, password);
+      await register(email, password);
       navigate('/');
     } catch (e) {
-      if (e instanceof ApiRequestError && e.status === 401) {
-        setError('メールアドレスまたはパスワードが正しくありません');
+      if (e instanceof ApiRequestError) {
+        if (e.status === 409) {
+          setError('このメールアドレスは既に登録されています');
+        } else if (e.status === 400) {
+          setError('入力内容に誤りがあります');
+        } else {
+          setError(
+            '登録に失敗しました。しばらく経ってからお試しください',
+          );
+        }
       } else {
-        setError('ログインに失敗しました。しばらく経ってからお試しください');
+        setError(
+          '登録に失敗しました。しばらく経ってからお試しください',
+        );
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRegisterClick = () => {
-    navigate('/register');
+  const handleLoginClick = () => {
+    navigate('/login');
   };
 
   return (
@@ -45,7 +55,7 @@ export function LoginPage() {
         <BrandPanel />
       </Box>
 
-      {/* Right: Login Form */}
+      {/* Right: Register Form */}
       <Box
         sx={{
           flex: 1,
@@ -56,11 +66,11 @@ export function LoginPage() {
           p: '60px 80px',
         }}
       >
-        <LoginForm
+        <RegisterForm
           onSubmit={handleSubmit}
           error={error}
           isLoading={isLoading}
-          onRegisterClick={handleRegisterClick}
+          onLoginClick={handleLoginClick}
         />
       </Box>
     </Box>

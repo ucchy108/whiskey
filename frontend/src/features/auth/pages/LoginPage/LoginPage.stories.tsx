@@ -1,11 +1,11 @@
 import { MemoryRouter } from 'react-router-dom';
-import preview from '../../../../.storybook/preview';
-import { AuthProvider } from '../hooks/useAuth';
-import { RegisterPage } from './RegisterPage';
+import preview from '../../../../../.storybook/preview';
+import { AuthProvider } from '../../hooks/useAuth';
+import { LoginPage } from './LoginPage';
 
 const meta = preview.meta({
-  component: RegisterPage,
-  title: 'features/auth/RegisterPage',
+  component: LoginPage,
+  title: 'features/auth/LoginPage',
   parameters: {
     layout: 'fullscreen',
   },

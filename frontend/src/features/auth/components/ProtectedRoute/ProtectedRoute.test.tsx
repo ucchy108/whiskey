@@ -2,11 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 
-vi.mock('../hooks/useAuth', () => ({
+vi.mock('../../hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 describe('ProtectedRoute', () => {
   it('認証済みの場合は children を表示する', () => {

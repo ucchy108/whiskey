@@ -5,8 +5,8 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import { authApi } from '../api';
-import type { User } from '../types';
+import { authApi } from '../../api';
+import type { User } from '../../types';
 
 const STORAGE_KEY = 'whiskey_user';
 

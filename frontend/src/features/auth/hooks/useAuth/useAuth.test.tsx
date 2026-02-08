@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { AuthProvider, useAuth } from './useAuth';
 
-vi.mock('../api', () => ({
+vi.mock('../../api', () => ({
   authApi: {
     login: vi.fn(),
     register: vi.fn(),
@@ -10,7 +10,7 @@ vi.mock('../api', () => ({
   },
 }));
 
-import { authApi } from '../api';
+import { authApi } from '../../api';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>

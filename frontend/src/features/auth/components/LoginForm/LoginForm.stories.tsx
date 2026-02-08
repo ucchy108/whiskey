@@ -1,9 +1,9 @@
-import preview from '../../../../.storybook/preview';
-import { RegisterForm } from './RegisterForm';
+import preview from '../../../../../.storybook/preview';
+import { LoginForm } from './LoginForm';
 
 const meta = preview.meta({
-  component: RegisterForm,
-  title: 'features/auth/RegisterForm',
+  component: LoginForm,
+  title: 'features/auth/LoginForm',
   parameters: {
     layout: 'centered',
   },
@@ -20,7 +20,7 @@ export const Default = meta.story({
 export const WithError = meta.story({
   args: {
     onSubmit: () => {},
-    error: 'このメールアドレスは既に登録されています',
+    error: 'メールアドレスまたはパスワードが正しくありません',
   },
 });
 
