@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Default, WithError, Loading } from './LoginForm.stories';
+import { Default, Loading } from './LoginForm.stories';
 
 describe('LoginForm', () => {
   describe('レンダリング', () => {
@@ -50,16 +50,6 @@ describe('LoginForm', () => {
           screen.getByText('パスワードを入力してください'),
         ).toBeInTheDocument();
       });
-    });
-  });
-
-  describe('エラー表示', () => {
-    it('error prop でサーバーエラーが表示される', () => {
-      render(<WithError.Component />);
-
-      expect(
-        screen.getByText('メールアドレスまたはパスワードが正しくありません'),
-      ).toBeInTheDocument();
     });
   });
 

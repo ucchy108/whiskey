@@ -64,7 +64,7 @@ describe('RegisterPage', () => {
     });
   });
 
-  it('登録失敗 (409) でエラーメッセージが表示される', async () => {
+  it('登録失敗 (409) で Snackbar にエラーが表示される', async () => {
     mockRegister.mockRejectedValue(new ApiRequestError(409, 'Conflict'));
     const user = userEvent.setup();
     render(<Default.Component />);
@@ -77,9 +77,9 @@ describe('RegisterPage', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText('このメールアドレスは既に登録されています'),
-      ).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'このメールアドレスは既に登録されています',
+      );
     });
   });
 });

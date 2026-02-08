@@ -63,7 +63,7 @@ describe('LoginPage', () => {
     });
   });
 
-  it('ログイン失敗 (401) でエラーメッセージが表示される', async () => {
+  it('ログイン失敗 (401) で Snackbar にエラーが表示される', async () => {
     mockLogin.mockRejectedValue(new ApiRequestError(401, 'Unauthorized'));
     const user = userEvent.setup();
     render(<Default.Component />);
@@ -75,9 +75,9 @@ describe('LoginPage', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText('メールアドレスまたはパスワードが正しくありません'),
-      ).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'メールアドレスまたはパスワードが正しくありません',
+      );
     });
   });
 });

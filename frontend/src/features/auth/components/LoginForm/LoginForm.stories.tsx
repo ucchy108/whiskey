@@ -17,13 +17,6 @@ export const Default = meta.story({
   },
 });
 
-export const WithError = meta.story({
-  args: {
-    onSubmit: () => {},
-    error: 'メールアドレスまたはパスワードが正しくありません',
-  },
-});
-
 export const Loading = meta.story({
   args: {
     onSubmit: () => {},

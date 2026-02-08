@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { ApiRequestError } from '@/shared/api';
+import { useSnackbar } from '@/shared/hooks';
 import { useAuth } from '../../hooks/useAuth';
 import { BrandPanel } from '../../components/BrandPanel';
 import { RegisterForm } from '../../components/RegisterForm';
@@ -9,11 +10,10 @@ import { RegisterForm } from '../../components/RegisterForm';
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [error, setError] = useState<string | undefined>();
+  const { showError } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (email: string, password: string) => {
-    setError(undefined);
     setIsLoading(true);
     try {
       await register(email, password);
@@ -21,18 +21,14 @@ export function RegisterPage() {
     } catch (e) {
       if (e instanceof ApiRequestError) {
         if (e.status === 409) {
-          setError('このメールアドレスは既に登録されています');
+          showError('このメールアドレスは既に登録されています');
         } else if (e.status === 400) {
-          setError('入力内容に誤りがあります');
+          showError('入力内容に誤りがあります');
         } else {
-          setError(
-            '登録に失敗しました。しばらく経ってからお試しください',
-          );
+          showError('登録に失敗しました。しばらく経ってからお試しください');
         }
       } else {
-        setError(
-          '登録に失敗しました。しばらく経ってからお試しください',
-        );
+        showError('登録に失敗しました。しばらく経ってからお試しください');
       }
     } finally {
       setIsLoading(false);
@@ -68,7 +64,6 @@ export function RegisterPage() {
       >
         <RegisterForm
           onSubmit={handleSubmit}
-          error={error}
           isLoading={isLoading}
           onLoginClick={handleLoginClick}
         />
