@@ -6,12 +6,15 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import { PageHeader } from '@/shared/components';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
 import { exerciseApi } from '@/features/exercise/api';
 import type { Exercise } from '@/features/exercise';
 import { workoutApi } from '../../api';
 import { WorkoutForm } from '../../components/WorkoutForm';
+import { SummaryRow } from '../../components/SummaryRow';
+import { WorkoutSummaryPanel } from '../../components/WorkoutSummaryPanel';
 import type { WorkoutFormHandle } from '../../components/WorkoutForm/WorkoutForm';
 import type { WorkoutFormValues } from '../../schemas';
 import type { SetInput } from '../../types';
@@ -123,62 +126,45 @@ export function WorkoutFormPage() {
         height: '100%',
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontSize: 28, fontWeight: 700 }}
-          >
-            ワークアウト記録
-          </Typography>
-          <Typography sx={{ fontSize: 15, color: 'text.secondary' }}>
-            セットを記録して進歩を追跡しましょう
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button
-            variant="outlined"
-            startIcon={<CloseIcon sx={{ fontSize: 18 }} />}
-            onClick={() => navigate('/workouts')}
-            disabled={isLoading}
-            sx={{
-              height: 44,
-              borderRadius: '12px',
-              borderColor: 'border.main',
-              color: 'text.secondary',
-            }}
-          >
-            キャンセル
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={
-              isLoading ? (
-                <CircularProgress size={18} color="inherit" />
-              ) : (
-                <SaveIcon sx={{ fontSize: 18 }} />
-              )
-            }
-            onClick={() => formRef.current?.submit()}
-            disabled={isLoading}
-            sx={{ height: 44, borderRadius: '12px' }}
-          >
-            保存
-          </Button>
-        </Box>
-      </Box>
+      <PageHeader
+        title="ワークアウト記録"
+        subtitle="セットを記録して進歩を追跡しましょう"
+        actions={
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CloseIcon sx={{ fontSize: 18 }} />}
+              onClick={() => navigate('/workouts')}
+              disabled={isLoading}
+              sx={{
+                height: 44,
+                borderRadius: '12px',
+                borderColor: 'border.main',
+                color: 'text.secondary',
+              }}
+            >
+              キャンセル
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={
+                isLoading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <SaveIcon sx={{ fontSize: 18 }} />
+                )
+              }
+              onClick={() => formRef.current?.submit()}
+              disabled={isLoading}
+              sx={{ height: 44, borderRadius: '12px' }}
+            >
+              保存
+            </Button>
+          </Box>
+        }
+      />
 
-      {/* Main content: form + summary panel */}
       <Box sx={{ display: 'flex', gap: 3, flex: 1, overflow: 'auto' }}>
-        {/* Left: Form */}
         <Box sx={{ flex: 1 }}>
           <WorkoutForm
             ref={formRef}
@@ -188,7 +174,6 @@ export function WorkoutFormPage() {
           />
         </Box>
 
-        {/* Right: Summary panel */}
         <Box
           sx={{
             width: 320,
@@ -198,26 +183,7 @@ export function WorkoutFormPage() {
             gap: 2,
           }}
         >
-          <Box
-            sx={{
-              borderRadius: '12px',
-              bgcolor: 'background.paper',
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontSize: 16,
-                fontWeight: 700,
-              }}
-            >
-              ワークアウトサマリー
-            </Typography>
-            <Box sx={{ height: 1, bgcolor: '#F0F0F0' }} />
+          <WorkoutSummaryPanel>
             {summary.length === 0 ? (
               <Typography sx={{ fontSize: 13, color: 'textMuted.main' }}>
                 エクササイズを追加するとサマリーが表示されます
@@ -232,10 +198,7 @@ export function WorkoutFormPage() {
                     gap: 1,
                   }}
                 >
-                  <SummaryRow
-                    label="エクササイズ"
-                    value={item.exerciseName}
-                  />
+                  <SummaryRow label="エクササイズ" value={item.exerciseName} />
                   <SummaryRow
                     label="総セット数"
                     value={String(item.setCount)}
@@ -250,45 +213,14 @@ export function WorkoutFormPage() {
                     highlight
                   />
                   {i < summary.length - 1 && (
-                    <Box sx={{ height: 1, bgcolor: '#F0F0F0' }} />
+                    <Box sx={{ height: 1, bgcolor: 'border.light' }} />
                   )}
                 </Box>
               ))
             )}
-          </Box>
+          </WorkoutSummaryPanel>
         </Box>
       </Box>
-    </Box>
-  );
-}
-
-function SummaryRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Typography sx={{ fontSize: 13, color: '#888888' }}>{label}</Typography>
-      <Typography
-        sx={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: highlight ? 'primary.main' : 'text.primary',
-        }}
-      >
-        {value}
-      </Typography>
     </Box>
   );
 }

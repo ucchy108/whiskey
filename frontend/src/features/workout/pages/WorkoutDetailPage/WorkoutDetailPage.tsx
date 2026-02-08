@@ -2,17 +2,20 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import { PageHeader } from '@/shared/components';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
 import { exerciseApi } from '@/features/exercise/api';
 import type { Exercise } from '@/features/exercise';
 import { workoutApi } from '../../api';
+import { EditableMemo } from '../../components/EditableMemo';
+import { SummaryRow } from '../../components/SummaryRow';
 import { WorkoutSetsTable } from '../../components/WorkoutSetsTable';
+import { WorkoutSummaryPanel } from '../../components/WorkoutSummaryPanel';
 import type { WorkoutDetail } from '../../types';
 
 export function WorkoutDetailPage() {
@@ -21,8 +24,6 @@ export function WorkoutDetailPage() {
   const { showError, showSuccess } = useSnackbar();
   const [detail, setDetail] = useState<WorkoutDetail | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [memo, setMemo] = useState('');
-  const [isMemoEditing, setIsMemoEditing] = useState(false);
 
   const loadDetail = useCallback(async () => {
     if (!id) return;
@@ -33,7 +34,6 @@ export function WorkoutDetailPage() {
       ]);
       setDetail(d);
       setExercises(exList);
-      setMemo(d.workout.memo ?? '');
     } catch {
       showError('ワークアウトの取得に失敗しました');
     }
@@ -64,12 +64,11 @@ export function WorkoutDetailPage() {
     }
   };
 
-  const handleSaveMemo = async () => {
+  const handleSaveMemo = async (newMemo: string) => {
     if (!id) return;
     try {
-      await workoutApi.updateMemo(id, memo || null);
+      await workoutApi.updateMemo(id, newMemo || null);
       showSuccess('メモを更新しました');
-      setIsMemoEditing(false);
       await loadDetail();
     } catch {
       showError('メモの更新に失敗しました');
@@ -137,59 +136,42 @@ export function WorkoutDetailPage() {
         height: '100%',
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontSize: 28, fontWeight: 700 }}
-          >
-            {exerciseNames}
-          </Typography>
-          <Typography sx={{ fontSize: 15, color: 'text.secondary' }}>
-            {dateStr}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon sx={{ fontSize: 18 }} />}
-            onClick={() => navigate('/workouts')}
-            sx={{
-              height: 44,
-              borderRadius: '12px',
-              borderColor: 'border.main',
-              color: 'text.secondary',
-            }}
-          >
-            戻る
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<DeleteIcon sx={{ fontSize: 18 }} />}
-            onClick={handleDeleteWorkout}
-            sx={{
-              height: 44,
-              borderRadius: '12px',
-              bgcolor: 'error.main',
-              '&:hover': { bgcolor: '#DC2626' },
-            }}
-          >
-            削除
-          </Button>
-        </Box>
-      </Box>
+      <PageHeader
+        title={exerciseNames}
+        subtitle={dateStr}
+        actions={
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon sx={{ fontSize: 18 }} />}
+              onClick={() => navigate('/workouts')}
+              sx={{
+                height: 44,
+                borderRadius: '12px',
+                borderColor: 'border.main',
+                color: 'text.secondary',
+              }}
+            >
+              戻る
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon sx={{ fontSize: 18 }} />}
+              onClick={handleDeleteWorkout}
+              sx={{
+                height: 44,
+                borderRadius: '12px',
+                bgcolor: 'error.main',
+                '&:hover': { bgcolor: 'error.dark' },
+              }}
+            >
+              削除
+            </Button>
+          </Box>
+        }
+      />
 
-      {/* Content: left + right */}
       <Box sx={{ display: 'flex', gap: 3, flex: 1, overflow: 'auto' }}>
-        {/* Left: sets + memo */}
         <Box
           sx={{
             flex: 1,
@@ -198,7 +180,6 @@ export function WorkoutDetailPage() {
             gap: 2.5,
           }}
         >
-          {/* Sets */}
           <Box
             sx={{
               display: 'flex',
@@ -232,7 +213,6 @@ export function WorkoutDetailPage() {
             </Button>
           </Box>
 
-          {/* Memo */}
           <Box
             sx={{
               display: 'flex',
@@ -245,66 +225,13 @@ export function WorkoutDetailPage() {
             >
               メモ
             </Typography>
-            {isMemoEditing ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                }}
-              >
-                <TextField
-                  multiline
-                  minRows={3}
-                  value={memo}
-                  onChange={(e) => setMemo(e.target.value)}
-                  fullWidth
-                  sx={{
-                    '& .MuiOutlinedInput-root': { borderRadius: '8px' },
-                  }}
-                />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={handleSaveMemo}
-                    sx={{ borderRadius: '8px' }}
-                  >
-                    保存
-                  </Button>
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => {
-                      setMemo(detail.workout.memo ?? '');
-                      setIsMemoEditing(false);
-                    }}
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    キャンセル
-                  </Button>
-                </Box>
-              </Box>
-            ) : (
-              <Box
-                onClick={() => setIsMemoEditing(true)}
-                sx={{
-                  borderRadius: '8px',
-                  bgcolor: '#F9FAFB',
-                  p: '12px 14px',
-                  cursor: 'pointer',
-                  '&:hover': { bgcolor: '#F0F0F0' },
-                }}
-              >
-                <Typography sx={{ fontSize: 14, color: 'text.primary' }}>
-                  {detail.workout.memo || 'メモを追加...'}
-                </Typography>
-              </Box>
-            )}
+            <EditableMemo
+              value={detail.workout.memo ?? ''}
+              onSave={handleSaveMemo}
+            />
           </Box>
         </Box>
 
-        {/* Right: summary panel */}
         <Box
           sx={{
             width: 320,
@@ -314,27 +241,7 @@ export function WorkoutDetailPage() {
             gap: 2,
           }}
         >
-          {/* Summary card */}
-          <Box
-            sx={{
-              borderRadius: '12px',
-              bgcolor: 'background.paper',
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: '"Bricolage Grotesque", sans-serif',
-                fontSize: 16,
-                fontWeight: 700,
-              }}
-            >
-              ワークアウトサマリー
-            </Typography>
-            <Box sx={{ height: 1, bgcolor: '#F0F0F0' }} />
+          <WorkoutSummaryPanel>
             <SummaryRow label="エクササイズ" value={exerciseNames} />
             <SummaryRow
               label="総セット数"
@@ -349,9 +256,8 @@ export function WorkoutDetailPage() {
               value={`${maxEstimated1RM} kg`}
               highlight
             />
-          </Box>
+          </WorkoutSummaryPanel>
 
-          {/* Weight trend placeholder */}
           <Box
             sx={{
               borderRadius: '12px',
@@ -374,7 +280,7 @@ export function WorkoutDetailPage() {
             <Box
               sx={{
                 borderRadius: '8px',
-                bgcolor: '#F9FAFB',
+                bgcolor: 'background.subtle',
                 height: 160,
                 display: 'flex',
                 alignItems: 'center',
@@ -388,37 +294,6 @@ export function WorkoutDetailPage() {
           </Box>
         </Box>
       </Box>
-    </Box>
-  );
-}
-
-function SummaryRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Typography sx={{ fontSize: 13, color: '#888888' }}>{label}</Typography>
-      <Typography
-        sx={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: highlight ? 'primary.main' : 'text.primary',
-        }}
-      >
-        {value}
-      </Typography>
     </Box>
   );
 }

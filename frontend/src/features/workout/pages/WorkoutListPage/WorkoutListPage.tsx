@@ -2,20 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import SearchIcon from '@mui/icons-material/Search';
-import InputAdornment from '@mui/material/InputAdornment';
+import { PageHeader, Pagination } from '@/shared/components';
 import { useSnackbar } from '@/shared/hooks';
 import { exerciseApi } from '@/features/exercise/api';
 import type { Exercise } from '@/features/exercise';
 import { workoutApi } from '../../api';
 import { WorkoutCard } from '../../components/WorkoutCard';
+import { WorkoutFilterBar } from '../../components/WorkoutFilterBar';
 import type { Workout, WorkoutDetail } from '../../types';
 
 const ITEMS_PER_PAGE = 5;
@@ -85,84 +80,35 @@ export function WorkoutListPage() {
         height: '100%',
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ fontSize: 28, fontWeight: 700 }}
+      <PageHeader
+        title="ワークアウト履歴"
+        subtitle="過去のワークアウトを確認・管理"
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+            onClick={() => navigate('/workouts/new')}
+            sx={{ height: 44, borderRadius: '12px' }}
           >
-            ワークアウト履歴
-          </Typography>
-          <Typography sx={{ fontSize: 15, color: 'text.secondary' }}>
-            過去のワークアウトを確認・管理
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-          onClick={() => navigate('/workouts/new')}
-          sx={{ height: 44, borderRadius: '12px' }}
-        >
-          記録する
-        </Button>
-      </Box>
+            記録する
+          </Button>
+        }
+      />
 
-      {/* Filters */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <TextField
-          placeholder="ワークアウトを検索..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setPage(1);
-          }}
-          size="small"
-          sx={{ flex: 1 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 18, color: 'textMuted.main' }} />
-              </InputAdornment>
-            ),
-            sx: {
-              height: 40,
-              borderRadius: '10px',
-              bgcolor: 'background.paper',
-            },
-          }}
-        />
-        <Select
-          value={exerciseFilter}
-          onChange={(e) => {
-            setExerciseFilter(e.target.value);
-            setPage(1);
-          }}
-          size="small"
-          sx={{
-            width: 180,
-            height: 40,
-            borderRadius: '10px',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <MenuItem value="all">全エクササイズ</MenuItem>
-          {exercises.map((ex) => (
-            <MenuItem key={ex.id} value={ex.id}>
-              {ex.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
+      <WorkoutFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={(query) => {
+          setSearchQuery(query);
+          setPage(1);
+        }}
+        exerciseFilter={exerciseFilter}
+        onExerciseFilterChange={(id) => {
+          setExerciseFilter(id);
+          setPage(1);
+        }}
+        exercises={exercises}
+      />
 
-      {/* Workout list */}
       <Box
         sx={{
           display: 'flex',
@@ -194,82 +140,14 @@ export function WorkoutListPage() {
           ))
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 1,
-              py: 1,
-            }}
-          >
-            <PageButton
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeftIcon sx={{ fontSize: 18 }} />
-            </PageButton>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <PageButton
-                key={p}
-                active={p === page}
-                onClick={() => setPage(p)}
-              >
-                {p}
-              </PageButton>
-            ))}
-            <PageButton
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              <ChevronRightIcon sx={{ fontSize: 18 }} />
-            </PageButton>
-          </Box>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         )}
       </Box>
-    </Box>
-  );
-}
-
-function PageButton({
-  children,
-  active,
-  disabled,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Box
-      component="button"
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: '8px',
-        border: 'none',
-        bgcolor: active ? 'primary.main' : 'background.paper',
-        color: active ? '#FFFFFF' : 'text.secondary',
-        fontSize: 13,
-        fontWeight: active ? 600 : 400,
-        cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        '&:hover': {
-          bgcolor: active ? 'primary.main' : '#F0F0F0',
-        },
-      }}
-    >
-      {children}
     </Box>
   );
 }
