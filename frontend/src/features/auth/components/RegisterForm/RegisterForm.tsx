@@ -8,21 +8,18 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import CircularProgress from '@mui/material/CircularProgress';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import Mail from '@mui/icons-material/Mail';
 import { PasswordField } from '@/shared/components';
 import { registerSchema, type RegisterFormValues } from '../../schemas';
 
 export interface RegisterFormProps {
   onSubmit: (email: string, password: string) => void;
-  error?: string;
   isLoading?: boolean;
   onLoginClick?: () => void;
 }
 
 export function RegisterForm({
   onSubmit,
-  error,
   isLoading = false,
   onLoginClick,
 }: RegisterFormProps) {
@@ -118,26 +115,6 @@ export function RegisterForm({
 
       {/* Actions */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {error && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              bgcolor: '#FEF2F2',
-              borderRadius: 3,
-              p: '12px 16px',
-            }}
-          >
-            <ErrorOutline sx={{ fontSize: 18, color: 'error.main' }} />
-            <Typography
-              sx={{ fontSize: 14, fontWeight: 500, color: 'error.main' }}
-            >
-              {error}
-            </Typography>
-          </Box>
-        )}
-
         <Button
           type="submit"
           variant="contained"

@@ -116,9 +116,36 @@ import { request } from '@/shared/api';
 | `types.ts` | 型定義（API request/response、ドメインモデル） | `User`, `Workout`, `SetInput` |
 | `api.ts` | API呼び出し関数（`shared/api/client.ts` を使用） | `authApi.login()`, `workoutApi.record()` |
 | `hooks/` | カスタムhooks（状態管理、API呼び出しのラッパー） | `useAuth()`, `useWorkouts()` |
-| `components/` | UIコンポーネント（再利用可能な部品） | `LoginForm`, `SetInput` |
-| `pages/` | ページコンポーネント（components + hooks を組み合わせ） | `LoginPage`, `WorkoutListPage` |
+| `components/` | UIコンポーネント（Pure UI、再利用可能な部品） | `LoginForm`, `SetInput` |
+| `pages/` | ページコンポーネント（components + hooks + API呼び出し + エラー表示） | `LoginPage`, `WorkoutListPage` |
 | `index.ts` | barrel export（外部公開API） | `export * from './types'` |
+
+### Page 層の責務（重要）
+
+Page は feature 内の components / hooks / api を組み合わせる「接着層」です。以下の責務は Page のみが持ちます。
+
+- **API 呼び出し**: データ取得（GET）や作成・更新・削除（POST/PUT/DELETE）は Page で実行する
+- **エラー表示**: API エラーは `useSnackbar` の `showError()` で Snackbar 表示する（Page の責務）
+- **成功通知**: 「記録しました」等の成功メッセージも `showSuccess()` で Snackbar 表示する
+- **ナビゲーション**: `useNavigate` による画面遷移は Page が行う
+- **ローディング管理**: `isLoading` state の管理は Page が行い、Component に props で渡す
+
+### Component の責務
+
+Component（Form 等）は **Pure UI** に徹します。
+
+- `onSubmit` callback で入力値を Page に返す
+- `isLoading` / `disabled` 等の表示状態は props で受け取る
+- zod バリデーションエラーはフィールド横の `helperText` で表示する（Component の責務）
+- API 呼び出しやエラー表示のロジックは持たない
+
+### エラー表示の方針
+
+| エラー種別 | 表示方法 | 責務 |
+|---|---|---|
+| zod バリデーション（必須、形式不正等） | TextField の helperText | Component |
+| API エラー（401, 409, 500等） | Snackbar (`showError`) | Page |
+| 成功通知（記録完了等） | Snackbar (`showSuccess`) | Page |
 
 ## ルーティング構成
 

@@ -130,6 +130,78 @@ function Card({ children }: { children: React.ReactNode }) {
 - `padding`: 要素内部の余白（自身が設定）
 - `margin`: **使用禁止**
 
+### Page 層の責務
+
+Page は components と hooks を組み合わせる「接着層」。以下の責務は **Page のみ** が持つ。
+
+| 責務 | Page | Component |
+|---|---|---|
+| API 呼び出し（データ取得・作成・更新・削除） | ✅ | ❌ |
+| エラー表示（Snackbar） | ✅ | ❌ |
+| ナビゲーション（`useNavigate`） | ✅ | ❌（callback で Page に委譲） |
+| ローディング state 管理 | ✅ | ❌（props で受け取るのみ） |
+
+**Component（Form等）は Pure UI に徹する**。API呼び出しやエラー表示のロジックを持たず、`onSubmit` callback で値を返し、`isLoading` / `disabled` 等の表示状態を props で受け取る。
+
+```typescript
+// ✅ 正しい: Page が API 呼び出し + エラー表示
+function WorkoutPage() {
+  const { showError, showSuccess } = useSnackbar();
+
+  const handleSubmit = async (data: WorkoutFormValues) => {
+    try {
+      await workoutApi.create(data);
+      showSuccess('ワークアウトを記録しました');
+    } catch (e) {
+      showError('記録に失敗しました');
+    }
+  };
+
+  return <WorkoutForm onSubmit={handleSubmit} />;
+}
+
+// ❌ 間違い: Component 内で API 呼び出し
+function WorkoutForm() {
+  const handleSubmit = async (data) => {
+    await workoutApi.create(data); // Component が API を直接呼ぶ
+  };
+}
+```
+
+### エラー表示: Snackbar に統一
+
+API エラーの表示には MUI Snackbar を使用する。Form 内のインラインエラーボックスは使用しない。
+
+- **Snackbar 表示は Page 層の責務**: Page が `useSnackbar` の `showError()` / `showSuccess()` を呼ぶ
+- **zod バリデーションエラーは従来通り**: フィールド横の `helperText` で表示（これは Component の責務）
+- **`SnackbarProvider`**: `App.tsx` でラップし、アプリ全体で利用可能にする
+
+```typescript
+// ✅ 正しい: Page で Snackbar 表示
+function LoginPage() {
+  const { showError } = useSnackbar();
+
+  const handleSubmit = async (email: string, password: string) => {
+    try {
+      await login(email, password);
+    } catch (e) {
+      showError('メールアドレスまたはパスワードが正しくありません');
+    }
+  };
+
+  return <LoginForm onSubmit={handleSubmit} />;
+}
+
+// ❌ 間違い: Form に error prop を渡してインライン表示
+<LoginForm onSubmit={handleSubmit} error={error} />
+```
+
+| エラー種別 | 表示方法 | 責務 |
+|---|---|---|
+| zod バリデーション（必須、形式不正等） | TextField の helperText | Component |
+| API エラー（401, 409, 500等） | Snackbar | Page |
+| 成功通知（記録完了等） | Snackbar | Page |
+
 ## テスト
 
 ### 実行方法

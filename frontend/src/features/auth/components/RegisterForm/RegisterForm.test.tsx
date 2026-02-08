@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Default, WithError, Loading } from './RegisterForm.stories';
+import { Default, Loading } from './RegisterForm.stories';
 
 describe('RegisterForm', () => {
   describe('レンダリング', () => {
@@ -103,15 +103,6 @@ describe('RegisterForm', () => {
           screen.getByText('パスワードは8文字以上で入力してください'),
         ).toBeInTheDocument();
       });
-    });
-  });
-
-  describe('エラー表示', () => {
-    it('error prop でサーバーエラーが表示される', () => {
-      render(<WithError.Component />);
-      expect(
-        screen.getByText('このメールアドレスは既に登録されています'),
-      ).toBeInTheDocument();
     });
   });
 
