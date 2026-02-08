@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import { ApiRequestError } from '@/shared/api';
+import { useAuth } from '../hooks/useAuth';
 import { BrandPanel } from '../components/BrandPanel';
 import { LoginForm } from '../components/LoginForm';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -13,12 +16,14 @@ export function LoginPage() {
     setError(undefined);
     setIsLoading(true);
     try {
-      // TODO: API連携時に実装
-      console.log('Login attempt:', { email, password });
-      void email;
-      void password;
-    } catch {
-      setError('メールアドレスまたはパスワードが正しくありません');
+      await login(email, password);
+      navigate('/');
+    } catch (e) {
+      if (e instanceof ApiRequestError && e.status === 401) {
+        setError('メールアドレスまたはパスワードが正しくありません');
+      } else {
+        setError('ログインに失敗しました。しばらく経ってからお試しください');
+      }
     } finally {
       setIsLoading(false);
     }
