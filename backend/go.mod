@@ -1,6 +1,6 @@
 module github.com/ucchy108/whiskey/backend
 
-go 1.23
+go 1.25
 
 require (
 	github.com/google/uuid v1.6.0

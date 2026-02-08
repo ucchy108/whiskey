@@ -1,12 +1,12 @@
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 # Install development tools
 RUN apk add --no-cache curl && \
-    go install github.com/air-verse/air@v1.61.1 && \
-    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
+    go install github.com/air-verse/air@v1.64.4 && \
+    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.19.1/migrate.linux-amd64.tar.gz | tar xvz && \
     mv migrate /usr/local/bin/migrate && \
     chmod +x /usr/local/bin/migrate && \
-    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.25.0
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
 
 WORKDIR /app
 
