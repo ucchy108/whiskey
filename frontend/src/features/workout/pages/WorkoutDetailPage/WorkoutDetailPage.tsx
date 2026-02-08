@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,44 +8,22 @@ import AddIcon from '@mui/icons-material/Add';
 import { PageHeader } from '@/shared/components';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
-import { exerciseApi } from '@/features/exercise/api';
-import type { Exercise } from '@/features/exercise';
-import { workoutApi } from '../../api';
 import { EditableMemo } from '../../components/EditableMemo';
 import { SummaryRow } from '../../components/SummaryRow';
 import { WorkoutSetsTable } from '../../components/WorkoutSetsTable';
 import { WorkoutSummaryPanel } from '../../components/WorkoutSummaryPanel';
-import type { WorkoutDetail } from '../../types';
+import { useWorkoutDetail } from '../../hooks/useWorkoutDetail';
 
 export function WorkoutDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showError, showSuccess } = useSnackbar();
-  const [detail, setDetail] = useState<WorkoutDetail | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-
-  const loadDetail = useCallback(async () => {
-    if (!id) return;
-    try {
-      const [d, exList] = await Promise.all([
-        workoutApi.get(id),
-        exerciseApi.list(),
-      ]);
-      setDetail(d);
-      setExercises(exList);
-    } catch {
-      showError('ワークアウトの取得に失敗しました');
-    }
-  }, [id, showError]);
-
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
+  const { detail, exercises, deleteWorkout, deleteSet, saveMemo, addSet } =
+    useWorkoutDetail(id);
 
   const handleDeleteWorkout = async () => {
-    if (!id) return;
     try {
-      await workoutApi.delete(id);
+      await deleteWorkout();
       showSuccess('ワークアウトを削除しました');
       navigate('/workouts');
     } catch {
@@ -56,39 +33,26 @@ export function WorkoutDetailPage() {
 
   const handleDeleteSet = async (setId: string) => {
     try {
-      await workoutApi.deleteSet(setId);
+      await deleteSet(setId);
       showSuccess('セットを削除しました');
-      await loadDetail();
     } catch {
       showError('セットの削除に失敗しました');
     }
   };
 
   const handleSaveMemo = async (newMemo: string) => {
-    if (!id) return;
     try {
-      await workoutApi.updateMemo(id, newMemo || null);
+      await saveMemo(newMemo);
       showSuccess('メモを更新しました');
-      await loadDetail();
     } catch {
       showError('メモの更新に失敗しました');
     }
   };
 
   const handleAddSet = async () => {
-    if (!id || !detail || detail.sets.length === 0) return;
-    const lastSet = detail.sets[detail.sets.length - 1];
     try {
-      await workoutApi.addSets(id, [
-        {
-          exercise_id: lastSet.exercise_id,
-          set_number: lastSet.set_number + 1,
-          reps: lastSet.reps,
-          weight: lastSet.weight,
-        },
-      ]);
+      await addSet();
       showSuccess('セットを追加しました');
-      await loadDetail();
     } catch (e) {
       if (e instanceof ApiRequestError && e.status === 404) {
         showError('エクササイズが見つかりません');

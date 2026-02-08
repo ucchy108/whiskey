@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,100 +9,26 @@ import CloseIcon from '@mui/icons-material/Close';
 import { PageHeader } from '@/shared/components';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
-import { exerciseApi } from '@/features/exercise/api';
-import type { Exercise } from '@/features/exercise';
-import { workoutApi } from '../../api';
+import { useExercises } from '@/features/exercise/hooks/useExercises';
 import { WorkoutForm } from '../../components/WorkoutForm';
 import { SummaryRow } from '../../components/SummaryRow';
 import { WorkoutSummaryPanel } from '../../components/WorkoutSummaryPanel';
+import { useWorkoutSummary } from '../../hooks/useWorkoutSummary';
+import { useRecordWorkout } from '../../hooks/useRecordWorkout';
 import type { WorkoutFormHandle } from '../../components/WorkoutForm/WorkoutForm';
 import type { WorkoutFormValues } from '../../schemas';
-import type { SetInput } from '../../types';
-
-function computeSummary(data: WorkoutFormValues, exercises: Exercise[]) {
-  const items: Array<{
-    exerciseName: string;
-    setCount: number;
-    totalVolume: number;
-    maxWeight: number;
-  }> = [];
-
-  for (const block of data.exerciseBlocks) {
-    const exercise = exercises.find((e) => e.id === block.exerciseId);
-    let totalVolume = 0;
-    let maxWeight = 0;
-
-    for (const set of block.sets) {
-      const w = Number(set.weight) || 0;
-      const r = Number(set.reps) || 0;
-      totalVolume += w * r;
-      if (w > maxWeight) maxWeight = w;
-    }
-
-    items.push({
-      exerciseName: exercise?.name ?? '未選択',
-      setCount: block.sets.length,
-      totalVolume,
-      maxWeight,
-    });
-  }
-
-  return items;
-}
 
 export function WorkoutFormPage() {
   const navigate = useNavigate();
   const { showError, showSuccess } = useSnackbar();
   const formRef = useRef<WorkoutFormHandle>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [summary, setSummary] = useState<ReturnType<typeof computeSummary>>(
-    [],
-  );
-
-  useEffect(() => {
-    exerciseApi
-      .list()
-      .then(setExercises)
-      .catch(() => {
-        showError('エクササイズの取得に失敗しました');
-      });
-  }, [showError]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!formRef.current) return;
-      try {
-        const values = formRef.current.getValues();
-        setSummary(computeSummary(values, exercises));
-      } catch {
-        // form not ready yet
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [exercises]);
+  const exercises = useExercises();
+  const { recordWorkout, isLoading } = useRecordWorkout();
+  const summary = useWorkoutSummary(formRef, exercises);
 
   const handleSubmit = async (data: WorkoutFormValues) => {
-    setIsLoading(true);
     try {
-      const sets: SetInput[] = [];
-      for (const block of data.exerciseBlocks) {
-        block.sets.forEach((set, index) => {
-          sets.push({
-            exercise_id: block.exerciseId,
-            set_number: index + 1,
-            reps: Number(set.reps),
-            weight: Number(set.weight),
-          });
-        });
-      }
-
-      await workoutApi.record({
-        date: `${data.date}T00:00:00Z`,
-        memo: data.memo || null,
-        sets,
-      });
-
+      await recordWorkout(data);
       showSuccess('ワークアウトを記録しました');
       navigate('/workouts');
     } catch (e) {
@@ -111,8 +37,6 @@ export function WorkoutFormPage() {
       } else {
         showError('ワークアウトの記録に失敗しました');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -1,0 +1,1 @@
+export { useWorkoutDetail } from './useWorkoutDetail';
