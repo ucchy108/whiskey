@@ -93,7 +93,8 @@ assistant: 「〜が完了しました」
 ### 開発ガイド
 
 - [API仕様書](docs/development/api-specification.md) - 全エンドポイントのリクエスト/レスポンス仕様
-- [テスト戦略](docs/development/testing-strategy.md) - レイヤー別のテスト方針
+- [バックエンドテスト戦略](docs/development/testing-strategy.md) - Go レイヤー別のテスト方針
+- [フロントエンドテスト戦略](docs/development/frontend-testing-strategy.md) - React テストの方針・原則
 - [Dockerガイド](docs/development/docker-guide.md) - Docker環境の使い方
 - [データベースガイド](docs/development/database-guide.md) - データベース設計とsqlcの使用方法
 - [ログ出力ガイド](docs/development/logging-guide.md) - 構造化ログのルールと使い方

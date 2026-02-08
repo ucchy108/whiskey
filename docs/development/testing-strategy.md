@@ -1,11 +1,12 @@
-# テスト戦略
+# バックエンドテスト戦略
 
-このドキュメントでは、whiskyプロジェクトのテスト戦略とレイヤー別のテスト方針を説明します。
+このドキュメントでは、whiskey バックエンド（Go）のテスト方針とレイヤー別のテスト戦略を説明します。
+
+フロントエンドのテスト方針は [フロントエンドテスト戦略](./frontend-testing-strategy.md) を参照。
 
 ## テストフレームワーク
 
 - **Go**: `testing`パッケージ（標準ライブラリ）
-- **React**: Vitest + Testing Library（予定）
 
 ## テスト実行方法
 
@@ -373,4 +374,5 @@ go test ./...  # 環境が揃っていない可能性
 
 - [Clean Architecture](../architecture/clean-architecture.md)
 - [DDD実装パターン](../architecture/ddd-patterns.md)
+- [フロントエンドテスト戦略](./frontend-testing-strategy.md)
 - [Dockerガイド](./docker-guide.md)
