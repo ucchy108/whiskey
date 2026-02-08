@@ -60,7 +60,7 @@ docker compose exec backend go test -v ./...                              # 全�
 docker compose exec backend go test -v -coverprofile=coverage.out ./...   # カバレッジ付き
 ```
 
-**詳細**: [テスト戦略](../docs/development/testing-strategy.md)
+**詳細**: [バックエンドテスト戦略](../docs/development/testing-strategy.md)
 
 ## データベース操作
 

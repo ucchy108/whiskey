@@ -91,13 +91,105 @@ features/A → features/B ⚠️ index.ts 経由のみ
 <Box sx={{ color: '#1976d2', padding: '16px' }}>
 ```
 
-## テスト実行
+### レイアウトルール: margin 禁止・親が子の配置を決める
+
+コンポーネントに `margin` を設定しない。子要素の間隔・配置は**親要素**が `gap`・`padding` で制御する。
+
+**理由**: margin はコンポーネントの外側に影響を及ぼし、再利用時に意図しないレイアウト崩れを起こす。親が責任を持つことで、コンポーネントの独立性と配置の予測可能性を保つ。
+
+```typescript
+// ✅ 正しい: 親が gap/padding で子の間隔を制御
+<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3 }}>
+  <TextField />
+  <TextField />
+  <Button>送信</Button>
+</Box>
+
+// ❌ 間違い: 子が margin で自身の外側を制御
+<Box sx={{ display: 'flex', flexDirection: 'column' }}>
+  <TextField sx={{ mb: 2 }} />
+  <TextField sx={{ mb: 2 }} />
+  <Button sx={{ mt: 1 }}>送信</Button>
+</Box>
+```
+
+```typescript
+// ✅ 正しい: コンポーネント内部の padding で内側の余白を設定
+function Card({ children }: { children: React.ReactNode }) {
+  return <Box sx={{ p: 3 }}>{children}</Box>;
+}
+
+// ❌ 間違い: コンポーネントに margin を持たせる
+function Card({ children }: { children: React.ReactNode }) {
+  return <Box sx={{ m: 2, p: 3 }}>{children}</Box>;
+}
+```
+
+**まとめ**:
+- `gap`: 兄弟要素間のスペーシング（親が設定）
+- `padding`: 要素内部の余白（自身が設定）
+- `margin`: **使用禁止**
+
+## テスト
+
+### 実行方法
 
 ```bash
+# 全テスト実行
 docker compose exec frontend npm test
+
+# ウォッチモード
+docker compose exec frontend npm run test:watch
+
+# 特定ファイル
+docker compose exec frontend npx vitest run src/features/auth/schemas.test.ts
 ```
+
+### テストファイル配置
+
+テスト対象と同じディレクトリに `<ファイル名>.test.ts(x)` で配置する。
+
+```
+features/auth/
+├── schemas.ts
+├── schemas.test.ts          ← 同じディレクトリ
+├── components/
+│   ├── LoginForm.tsx
+│   └── LoginForm.test.tsx   ← 同じディレクトリ
+```
+
+### テストの書き方ルール
+
+- **Storybook Portable Stories**: ストーリーがある場合は `Story.Component` でレンダリング（ThemeProvider 等は自動適用）
+- **ストーリーバリアント活用**: `WithError`, `Loading` 等のバリアントがあればそのまま使う。テスト側で同じ props を再定義しない
+- **ユーザー視点**: `getByRole` > `getByLabelText` > `getByText` の順で要素取得。`data-testid` は最終手段
+- **userEvent.setup()**: `fireEvent` ではなく `userEvent.setup()` を使う
+- **waitFor**: 非同期操作（バリデーション、API）は `waitFor` で待機
+- **モック最小限**: 外部依存（API、ルーティング）のみ。子コンポーネントはモックしない
+
+```typescript
+// ✅ 正しい: ストーリーを再利用
+import { Default, WithError } from './MyComponent.stories';
+render(<Default.Component />);
+render(<WithError.Component />);
+
+// ❌ 間違い: テスト側で手動ラップ
+render(<ThemeProvider theme={theme}><MyComponent /></ThemeProvider>);
+```
+
+### 新規追加時の必須テスト
+
+| 追加するもの | 最低限のテスト |
+|---|---|
+| zod スキーマ | 正常系 + 異常系 + エラーメッセージ |
+| コンポーネント | レンダリング + ユーザー操作 + props 反映 |
+| ページ | 子コンポーネント表示 + ナビゲーション |
+| カスタムフック | 初期状態 + 状態変化 |
+
+**詳細**: [フロントエンドテスト戦略](../docs/development/frontend-testing-strategy.md)
 
 ## アーキテクチャ参照
 
 - [フロントエンドアーキテクチャ](../docs/architecture/frontend-architecture.md) - featureベース構成の詳細
+- [フロントエンドテスト戦略](../docs/development/frontend-testing-strategy.md) - テストの方針・原則・コード例
 - [API仕様書](../docs/development/api-specification.md) - バックエンドAPIの仕様
