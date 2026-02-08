@@ -3,13 +3,16 @@ import { createTheme } from '@mui/material/styles';
 declare module '@mui/material/styles' {
   interface Palette {
     dark: Palette['primary'];
-    border: { main: string };
+    border: { main: string; light: string };
     textMuted: { main: string };
   }
   interface PaletteOptions {
     dark?: PaletteOptions['primary'];
-    border?: { main: string };
+    border?: { main: string; light: string };
     textMuted?: { main: string };
+  }
+  interface TypeBackground {
+    subtle: string;
   }
 }
 
@@ -25,6 +28,7 @@ export const theme = createTheme({
     },
     error: {
       main: '#EF4444',
+      dark: '#DC2626',
     },
     text: {
       primary: '#1A1A1A',
@@ -33,6 +37,7 @@ export const theme = createTheme({
     background: {
       default: '#F6F7F8',
       paper: '#FFFFFF',
+      subtle: '#F9FAFB',
     },
     dark: {
       main: '#1A1A1A',
@@ -40,6 +45,7 @@ export const theme = createTheme({
     },
     border: {
       main: '#E5E7EB',
+      light: '#F0F0F0',
     },
     textMuted: {
       main: '#9CA3AF',

@@ -44,11 +44,11 @@ export function WorkoutCard({
         bgcolor: 'background.paper',
         p: '18px 20px',
         cursor: 'pointer',
-        '&:hover': { bgcolor: '#F9FAFB' },
+        '&:hover': { bgcolor: 'background.subtle' },
       }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-        <Typography sx={{ fontSize: 12, color: '#888888' }}>
+        <Typography sx={{ fontSize: 12, color: 'textMuted.main' }}>
           {dateStr}
         </Typography>
         <Typography sx={{ fontSize: 16, fontWeight: 600, color: 'text.primary' }}>
@@ -58,11 +58,11 @@ export function WorkoutCard({
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {sets.length}セット
           </Typography>
-          <Typography sx={{ fontSize: 13, color: '#CCCCCC' }}>·</Typography>
+          <Typography sx={{ fontSize: 13, color: 'border.main' }}>·</Typography>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             総量 {totalVolume.toLocaleString()} kg
           </Typography>
-          <Typography sx={{ fontSize: 13, color: '#CCCCCC' }}>·</Typography>
+          <Typography sx={{ fontSize: 13, color: 'border.main' }}>·</Typography>
           <Typography
             sx={{ fontSize: 13, fontWeight: 500, color: 'primary.main' }}
           >
@@ -70,7 +70,7 @@ export function WorkoutCard({
           </Typography>
         </Box>
       </Box>
-      <ChevronRightIcon sx={{ color: '#CCCCCC' }} />
+      <ChevronRightIcon sx={{ color: 'border.main' }} />
     </Box>
   );
 }

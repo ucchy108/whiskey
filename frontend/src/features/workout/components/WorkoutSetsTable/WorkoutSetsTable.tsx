@@ -25,7 +25,7 @@ export function WorkoutSetsTable({ sets, onDeleteSet }: WorkoutSetsTableProps) {
           alignItems: 'center',
           px: 1.75,
           py: 1.25,
-          bgcolor: '#F9FAFB',
+          bgcolor: 'background.subtle',
           borderBottom: '1px solid',
           borderColor: 'border.main',
         }}

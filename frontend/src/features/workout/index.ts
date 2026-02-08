@@ -1,8 +1,16 @@
 export * from './types';
 export { workoutApi } from './api';
 export * from './schemas';
-export { SetInputRow } from './components/SetInputRow';
+export { EditableMemo } from './components/EditableMemo';
+export type { EditableMemoProps } from './components/EditableMemo';
 export { ExerciseBlock } from './components/ExerciseBlock';
-export { WorkoutForm } from './components/WorkoutForm';
+export { SetInputRow } from './components/SetInputRow';
+export { SummaryRow } from './components/SummaryRow';
+export type { SummaryRowProps } from './components/SummaryRow';
 export { WorkoutCard } from './components/WorkoutCard';
+export { WorkoutFilterBar } from './components/WorkoutFilterBar';
+export type { WorkoutFilterBarProps } from './components/WorkoutFilterBar';
+export { WorkoutForm } from './components/WorkoutForm';
 export { WorkoutSetsTable } from './components/WorkoutSetsTable';
+export { WorkoutSummaryPanel } from './components/WorkoutSummaryPanel';
+export type { WorkoutSummaryPanelProps } from './components/WorkoutSummaryPanel';

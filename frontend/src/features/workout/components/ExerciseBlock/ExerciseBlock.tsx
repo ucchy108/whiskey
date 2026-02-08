@@ -87,7 +87,7 @@ export function ExerciseBlock({
             gap: 1.5,
             px: 1.75,
             py: 1.25,
-            bgcolor: '#F9FAFB',
+            bgcolor: 'background.subtle',
             borderBottom: '1px solid',
             borderColor: 'border.main',
           }}
