@@ -24,6 +24,10 @@
 - [x] フロントエンド基盤: Vitest + Testing Library テスト基盤
 - [x] フロントエンド: ログインページ実装（LoginForm + BrandPanel + LoginPage）
 - [x] フロントエンド: 認証コンポーネントテスト（15テスト）
+- [x] フロントエンド: RegisterPage実装、useAuthフック、バックエンドAPI接続（Phase 3.1完了）
+- [x] フロントエンド: Vitest + Testing Library導入、テスト戦略ドキュメント整備
+- [x] フロントエンド: コンポーネント単位のフォルダ構成に整理
+- [x] フロントエンド: PasswordField共通コンポーネント抽出（shared/components）
 
 ### 🚧 次にやるべきこと
 
@@ -156,17 +160,20 @@
 - [x] Vitest + Testing Library テスト基盤（jsdom, Portable Stories）
 - [x] 開発ドキュメント整備（`frontend/CLAUDE.md`, テスト戦略, アーキテクチャ）
 
-### 3.1 認証画面
+### 3.1 認証画面 ✅
 - [x] `features/auth/pages/LoginPage.tsx` — 左右分割レイアウト（BrandPanel + LoginForm）
 - [x] `features/auth/components/LoginForm.tsx` — RHF + zod バリデーション、パスワード表示切替、エラー/ローディング状態
 - [x] `features/auth/components/BrandPanel.tsx` — ロゴ、タグライン、ヒートマッププレビュー、統計
 - [x] `features/auth/schemas.ts` — zod バリデーションスキーマ
 - [x] `features/auth/api.ts` — 認証API関数
-- [x] Storybook ストーリー（LoginForm / BrandPanel / LoginPage）
-- [x] テスト（schemas: 5, LoginForm: 6, BrandPanel: 2, LoginPage: 2 = 計15テスト）
-- [ ] `features/auth/pages/RegisterPage.tsx` — 新規登録画面の実装（現在プレースホルダー）
-- [ ] `features/auth/hooks/useAuth.ts` — 認証状態管理フック
-- [ ] LoginForm ↔ バックエンドAPI接続
+- [x] Storybook ストーリー（LoginForm / BrandPanel / LoginPage / RegisterForm / RegisterPage）
+- [x] テスト（schemas: 11, LoginForm: 6, BrandPanel: 2, LoginPage: 4, RegisterForm: 7, RegisterPage: 4, useAuth: 7, ProtectedRoute: 2, PasswordField: 6 = 計49テスト）
+- [x] `features/auth/pages/RegisterPage.tsx` — 新規登録画面（RegisterForm + BrandPanel）
+- [x] `features/auth/components/RegisterForm.tsx` — RHF + zod、パスワード確認、エラー/ローディング状態
+- [x] `features/auth/hooks/useAuth.ts` — 認証状態管理フック（AuthContext + AuthProvider）
+- [x] `features/auth/components/ProtectedRoute.tsx` — 認証ガード
+- [x] `shared/components/PasswordField.tsx` — 共通パスワードフィールド（forwardRef + RHF互換）
+- [x] LoginForm / RegisterForm ↔ バックエンドAPI接続
 
 ### 3.2 ワークアウト記録画面
 - [ ] `features/workout/pages/WorkoutFormPage.tsx` — ワークアウト記録画面
@@ -212,8 +219,8 @@
 8. ~~ワークアウトInterfaces層（Phase 2.4）~~ ✅ 完了
 
 ### 🟡 Medium Priority（次にやるべき）
-9. フロントエンド認証完成（RegisterPage, useAuth, API接続）← **次のタスク**
-10. ワークアウト記録画面（Phase 3.2）
+9. ~~フロントエンド認証完成（RegisterPage, useAuth, API接続）~~ ✅ 完了
+10. ワークアウト記録画面（Phase 3.2）← **次のタスク**
 11. データ可視化（Phase 3.3）
 
 ### 🟢 Low Priority（後でやる）
@@ -260,24 +267,35 @@
   ✅ shared/api/client.ts (APIクライアント)
   ✅ routes/index.tsx (ルーティング)
   ✅ features/auth/pages/LoginPage.tsx (実装済み)
+  ✅ features/auth/pages/RegisterPage.tsx (実装済み)
   ✅ features/auth/components/LoginForm.tsx (実装済み - RHF + zod)
+  ✅ features/auth/components/RegisterForm.tsx (実装済み - RHF + zod)
   ✅ features/auth/components/BrandPanel.tsx (実装済み)
+  ✅ features/auth/components/ProtectedRoute.tsx (実装済み)
   ✅ features/auth/schemas.ts (実装済み - zodスキーマ)
-  🔲 features/auth/pages/RegisterPage.tsx (プレースホルダー)
-  🔲 features/auth/hooks/useAuth.ts (未実装)
+  ✅ features/auth/hooks/useAuth.tsx (実装済み - AuthContext + AuthProvider)
+  ✅ shared/components/PasswordField.tsx (実装済み - forwardRef + RHF互換)
   🔲 features/workout/ (プレースホルダーのみ)
   🔲 features/dashboard/ (プレースホルダーのみ)
 
   ✅ Storybook (CSF4)
     ✅ LoginForm.stories.tsx (Default / WithError / Loading)
+    ✅ RegisterForm.stories.tsx (Default / WithError / Loading)
     ✅ BrandPanel.stories.tsx (Default)
     ✅ LoginPage.stories.tsx (Default)
+    ✅ RegisterPage.stories.tsx (Default)
+    ✅ PasswordField.stories.tsx (Default / WithError / Disabled)
 
-  ✅ Tests (Vitest + Testing Library)
-    ✅ schemas.test.ts (5テスト)
+  ✅ Tests (Vitest + Testing Library) — 49テスト
+    ✅ schemas.test.ts (11テスト)
     ✅ LoginForm.test.tsx (6テスト)
+    ✅ RegisterForm.test.tsx (7テスト)
     ✅ BrandPanel.test.tsx (2テスト)
-    ✅ LoginPage.test.tsx (2テスト)
+    ✅ LoginPage.test.tsx (4テスト)
+    ✅ RegisterPage.test.tsx (4テスト)
+    ✅ useAuth.test.tsx (7テスト)
+    ✅ ProtectedRoute.test.tsx (2テスト)
+    ✅ PasswordField.test.tsx (6テスト)
 ```
 
 ## 次のステップ
@@ -285,8 +303,8 @@
 **最優先タスク**: Phase 3 - フロントエンド実装の継続
 
 1. ~~認証画面（LoginPage）~~ ✅ 完了
-2. 認証完成（RegisterPage実装、useAuthフック、バックエンドAPI接続）
-3. ワークアウト記録画面
+2. ~~認証完成（RegisterPage実装、useAuthフック、バックエンドAPI接続）~~ ✅ 完了
+3. ワークアウト記録画面 ← **次のタスク**
 4. データ可視化（ヒートマップ、グラフ）
 
 **Phase 1完了 🎉**: ユーザー認証機能が完全に動作可能な状態になりました！
