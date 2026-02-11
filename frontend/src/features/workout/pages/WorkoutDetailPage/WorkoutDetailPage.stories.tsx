@@ -10,7 +10,7 @@ const meta = preview.meta({
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
-      <MemoryRouter initialEntries={['/workouts/w1']}>
+      <MemoryRouter initialEntries={['/workouts/w1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/workouts/:id" element={<Story />} />
         </Routes>

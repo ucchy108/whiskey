@@ -9,7 +9,7 @@ const meta = preview.meta({
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
-      <MemoryRouter initialEntries={['/workouts/new']}>
+      <MemoryRouter initialEntries={['/workouts/new']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Story />
       </MemoryRouter>
     ),
