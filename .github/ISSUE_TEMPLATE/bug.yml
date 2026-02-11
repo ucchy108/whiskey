@@ -1,0 +1,58 @@
+name: バグ報告
+description: バグや不具合を報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。再現手順をできるだけ詳しく記載してください。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 対象領域
+      options:
+        - フロントエンド
+        - バックエンド
+        - インフラ / DevOps
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: バグの内容
+      description: 何が起きているかを簡潔に説明してください
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現するための手順を記述してください
+      placeholder: |
+        1. '...' ページを開く
+        2. '...' ボタンをクリック
+        3. エラーが表示される
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      description: 本来どう動作すべきかを記述してください
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 現在どう動作しているかを記述してください
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 補足情報
+      description: スクリーンショット、エラーログ、環境情報など
+    validations:
+      required: false

@@ -102,15 +102,15 @@ assistant: 「〜が完了しました」
 
 ### プロジェクト管理
 
-- [タスクダッシュボード](docs/task-dashboard.md) - 実装予定の機能一覧
+- [GitHub Issues](https://github.com/ucchy108/whiskey/issues) - タスク管理（ラベル・マイルストーンで分類）
 - [作業ログ](docs/work-logs/) - 日々の作業記録
 
 ## 次のステップ
 
-現在の最優先タスク: **フロントエンド実装（Phase 3）**
+現在の最優先タスク: **データ可視化（Phase 3.3）**
 
-1. 認証画面（Login, Register）
-2. ワークアウト記録画面
-3. データ可視化（ヒートマップ、グラフ）
+1. GitHub風ワークアウトヒートマップ
+2. 種目別の重量推移グラフ
+3. DashboardPage の実装
 
-詳細は [タスクダッシュボード](docs/task-dashboard.md) を参照。
+詳細は [GitHub Issues](https://github.com/ucchy108/whiskey/issues) を参照。

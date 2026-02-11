@@ -1,0 +1,53 @@
+name: 機能リクエスト
+description: 新しい機能や改善を提案する
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能リクエストの起票ありがとうございます。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 対象領域
+      options:
+        - フロントエンド
+        - バックエンド
+        - インフラ / DevOps
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 実装したい機能を簡潔に説明してください
+      placeholder: "例: DashboardPage に GitHub 風のヒートマップを表示する"
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 背景・モチベーション
+      description: なぜこの機能が必要ですか？
+      placeholder: "例: ワークアウトの継続状況を一目で把握したい"
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 実装タスク
+      description: 実装に必要な作業をチェックリストで記述してください
+      placeholder: |
+        - [ ] コンポーネントの実装
+        - [ ] API との接続
+        - [ ] テスト作成
+    validations:
+      required: false
+  - type: textarea
+    id: references
+    attributes:
+      label: 参考情報
+      description: 参考リンク、スクリーンショット、関連 Issue など
+    validations:
+      required: false
