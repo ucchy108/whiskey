@@ -21,3 +21,8 @@ coverage.html
 
 # Storybook
 frontend/storybook-static/
+
+# documents
+docs/work-logs/
+docs/task-dashboard.md
+docs/ui/
