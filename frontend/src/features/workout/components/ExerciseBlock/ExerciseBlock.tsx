@@ -8,7 +8,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { ExerciseSelector } from '@/features/exercise/components/ExerciseSelector';
 import { SetInputRow } from '../SetInputRow';
 import type { Exercise } from '@/features/exercise';
-import type { WorkoutFormValues } from '../../schemas';
+import type { WorkoutFormFieldValues } from '../../schemas';
 
 export interface ExerciseBlockProps {
   blockIndex: number;
@@ -28,7 +28,7 @@ export function ExerciseBlock({
     watch,
     setValue,
     formState: { errors },
-  } = useFormContext<WorkoutFormValues>();
+  } = useFormContext<WorkoutFormFieldValues>();
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -131,13 +131,13 @@ export function ExerciseBlock({
               onWeightChange={(val) =>
                 setValue(
                   `exerciseBlocks.${blockIndex}.sets.${setIndex}.weight`,
-                  val === '' ? ('' as unknown as number) : Number(val),
+                  val,
                 )
               }
               onRepsChange={(val) =>
                 setValue(
                   `exerciseBlocks.${blockIndex}.sets.${setIndex}.reps`,
-                  val === '' ? ('' as unknown as number) : Number(val),
+                  val,
                 )
               }
               onDelete={() => remove(setIndex)}
@@ -154,7 +154,7 @@ export function ExerciseBlock({
         variant="text"
         size="small"
         startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-        onClick={() => append({ weight: '' as unknown as number, reps: '' as unknown as number })}
+        onClick={() => append({ weight: '', reps: '' })}
         disabled={disabled}
         sx={{
           color: 'primary.main',

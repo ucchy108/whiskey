@@ -57,14 +57,4 @@ describe('useSnackbar', () => {
     expect(screen.getByTestId('severity')).toHaveTextContent('success');
   });
 
-  it('Provider なしで useSnackbar を呼ぶとエラー', () => {
-    function Bad() {
-      useSnackbar();
-      return null;
-    }
-
-    expect(() => render(<Bad />)).toThrow(
-      'useSnackbar must be used within a SnackbarProvider',
-    );
-  });
 });

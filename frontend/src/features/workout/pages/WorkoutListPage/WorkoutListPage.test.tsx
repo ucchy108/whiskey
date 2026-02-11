@@ -42,7 +42,7 @@ vi.mock('@/features/exercise/api', () => ({
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <SnackbarProvider>
           <WorkoutListPage />
           <AppSnackbar />
@@ -57,11 +57,15 @@ describe('WorkoutListPage', () => {
     mockNavigate.mockClear();
   });
 
-  it('ヘッダーと記録するボタンが表示される', () => {
+  it('ヘッダーと記録するボタンが表示される', async () => {
     renderPage();
 
     expect(screen.getByText('ワークアウト履歴')).toBeInTheDocument();
     expect(screen.getByText('記録する')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('ベンチプレス')).toBeInTheDocument();
+    });
   });
 
   it('ワークアウトカードが表示される', async () => {
@@ -80,8 +84,12 @@ describe('WorkoutListPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/workouts/new');
   });
 
-  it('検索フィールドが表示される', () => {
+  it('検索フィールドが表示される', async () => {
     renderPage();
     expect(screen.getByPlaceholderText('ワークアウトを検索...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('ベンチプレス')).toBeInTheDocument();
+    });
   });
 });

@@ -268,6 +268,58 @@ render(<WithError.Component />);
 render(<ThemeProvider theme={theme}><MyComponent /></ThemeProvider>);
 ```
 
+### API モック: MSW を使う
+
+API モックには **MSW (Mock Service Worker) v2** を使用。`vi.mock('../../api')` ではなく、ネットワークレベルでインターセプトする。
+
+```typescript
+// ✅ 正しい: MSW でエラーケースを上書き
+import { http, HttpResponse } from 'msw';
+import { server } from '@/test/mocks/server';
+
+it('API エラーでSnackbarが表示される', async () => {
+  server.use(
+    http.get('/api/workouts', () =>
+      HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 }),
+    ),
+  );
+  // ... テスト本体
+});
+
+// ❌ 間違い: vi.mock で API モジュールを差し替え
+vi.mock('../../api', () => ({ workoutApi: { list: vi.fn() } }));
+```
+
+**MSW 関連ファイル**:
+- `src/test/mocks/handlers/` — ドメイン別ハンドラ（auth, exercise, workout）
+- `src/test/mocks/data/` — 共有モックデータ
+- `src/test/mocks/server.ts` — Vitest 用サーバー
+
+### Storybook ストーリーの標準バリアント
+
+ページストーリーでは以下のバリアントを標準で作成する。MSW ハンドラを `parameters.msw.handlers` で上書き。
+
+```typescript
+export const Default = meta.story({});                          // 正常データ
+export const Loading = meta.story({                             // ローディング
+  parameters: { msw: { handlers: { workout: [
+    http.get('/api/workouts', async () => { await delay('infinite'); return HttpResponse.json([]); }),
+  ] } } },
+});
+export const Error = meta.story({                               // サーバーエラー
+  parameters: { msw: { handlers: { workout: [
+    http.get('/api/workouts', () => HttpResponse.json({ error: '...' }, { status: 500 })),
+  ] } } },
+});
+export const Empty = meta.story({                               // 空データ（一覧系）
+  parameters: { msw: { handlers: { workout: [
+    http.get('/api/workouts', () => HttpResponse.json([])),
+  ] } } },
+});
+```
+
+**詳細**: [フロントエンドテスト戦略 — MSWセクション](../docs/development/frontend-testing-strategy.md#msw-によるapiモック戦略)
+
 ### 新規追加時の必須テスト
 
 | 追加するもの | 最低限のテスト |

@@ -54,7 +54,7 @@ vi.mock('@/features/exercise/api', () => ({
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
-      <MemoryRouter initialEntries={['/workouts/w1']}>
+      <MemoryRouter initialEntries={['/workouts/w1']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <SnackbarProvider>
           <Routes>
             <Route path="/workouts/:id" element={<WorkoutDetailPage />} />

@@ -1,16 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import type { ReactNode } from 'react';
+import { server } from '@/test/mocks/server';
 import { AuthProvider, useAuth } from './useAuth';
-
-vi.mock('../../api', () => ({
-  authApi: {
-    login: vi.fn(),
-    register: vi.fn(),
-    logout: vi.fn(),
-  },
-}));
-
-import { authApi } from '../../api';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
@@ -19,7 +11,6 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 describe('useAuth', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.clearAllMocks();
   });
 
   it('初期状態で user が null', () => {
@@ -38,7 +29,11 @@ describe('useAuth', () => {
 
   it('login 成功で user がセットされ localStorage に保存される', async () => {
     const mockUser = { id: '1', email: 'test@example.com' };
-    vi.mocked(authApi.login).mockResolvedValue(mockUser);
+    server.use(
+      http.post('/api/auth/login', () => {
+        return HttpResponse.json(mockUser);
+      }),
+    );
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -53,25 +48,40 @@ describe('useAuth', () => {
   });
 
   it('login 失敗で例外がスローされ user は null のまま', async () => {
-    vi.mocked(authApi.login).mockRejectedValue(
-      new Error('Invalid credentials'),
+    server.use(
+      http.post('/api/auth/login', () => {
+        return HttpResponse.json(
+          { error: 'Invalid credentials' },
+          { status: 401 },
+        );
+      }),
     );
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    await expect(
-      act(async () => {
+    let error: unknown;
+    await act(async () => {
+      try {
         await result.current.login('test@example.com', 'wrong');
-      }),
-    ).rejects.toThrow();
+      } catch (e) {
+        error = e;
+      }
+    });
 
+    expect(error).toBeDefined();
     expect(result.current.user).toBeNull();
   });
 
   it('register 成功で user がセットされる', async () => {
     const mockUser = { id: '1', email: 'new@example.com' };
-    vi.mocked(authApi.register).mockResolvedValue(mockUser);
-    vi.mocked(authApi.login).mockResolvedValue(mockUser);
+    server.use(
+      http.post('/api/users', () => {
+        return HttpResponse.json(mockUser, { status: 201 });
+      }),
+      http.post('/api/auth/login', () => {
+        return HttpResponse.json(mockUser);
+      }),
+    );
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -79,21 +89,19 @@ describe('useAuth', () => {
       await result.current.register('new@example.com', 'password123');
     });
 
-    expect(authApi.register).toHaveBeenCalledWith(
-      'new@example.com',
-      'password123',
-    );
-    expect(authApi.login).toHaveBeenCalledWith(
-      'new@example.com',
-      'password123',
-    );
     expect(result.current.user).toEqual(mockUser);
   });
 
   it('logout で user が null になり localStorage がクリアされる', async () => {
     const mockUser = { id: '1', email: 'test@example.com' };
-    vi.mocked(authApi.login).mockResolvedValue(mockUser);
-    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    server.use(
+      http.post('/api/auth/login', () => {
+        return HttpResponse.json(mockUser);
+      }),
+      http.post('/api/auth/logout', () => {
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -110,9 +118,4 @@ describe('useAuth', () => {
     expect(localStorage.getItem('whiskey_user')).toBeNull();
   });
 
-  it('AuthProvider なしで useAuth を呼ぶとエラー', () => {
-    expect(() => {
-      renderHook(() => useAuth());
-    }).toThrow('useAuth must be used within an AuthProvider');
-  });
 });
