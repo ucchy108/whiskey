@@ -10,8 +10,8 @@ function toSetInputs(data: WorkoutFormValues): SetInput[] {
       sets.push({
         exercise_id: block.exerciseId,
         set_number: index + 1,
-        reps: Number(set.reps),
-        weight: Number(set.weight),
+        reps: set.reps,
+        weight: set.weight,
       });
     });
   }

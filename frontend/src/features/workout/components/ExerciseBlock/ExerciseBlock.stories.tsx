@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import preview from '../../../../../.storybook/preview';
 import { ExerciseBlock } from './ExerciseBlock';
-import { workoutFormSchema, type WorkoutFormValues } from '../../schemas';
+import { workoutFormSchema, type WorkoutFormFieldValues, type WorkoutFormValues } from '../../schemas';
 
 const mockExercises = [
   { id: '1', name: 'ベンチプレス', description: null, body_part: 'chest', created_at: '', updated_at: '' },
@@ -10,14 +10,14 @@ const mockExercises = [
 ];
 
 function Wrapper({ children }: { children: React.ReactNode }) {
-  const methods = useForm<WorkoutFormValues>({
+  const methods = useForm<WorkoutFormFieldValues, unknown, WorkoutFormValues>({
     resolver: zodResolver(workoutFormSchema),
     defaultValues: {
       date: '2026-02-07',
       exerciseBlocks: [
         {
           exerciseId: '1',
-          sets: [{ weight: 60, reps: 10 }, { weight: 65, reps: 8 }],
+          sets: [{ weight: '60', reps: '10' }, { weight: '65', reps: '8' }],
         },
       ],
     },

@@ -7,12 +7,12 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import { ExerciseBlock } from '../ExerciseBlock';
-import { workoutFormSchema, type WorkoutFormValues } from '../../schemas';
+import { workoutFormSchema, type WorkoutFormValues, type WorkoutFormFieldValues } from '../../schemas';
 import type { Exercise } from '@/features/exercise';
 
 export interface WorkoutFormHandle {
   submit: () => void;
-  getValues: () => WorkoutFormValues;
+  getValues: () => WorkoutFormFieldValues;
 }
 
 export interface WorkoutFormProps {
@@ -23,22 +23,22 @@ export interface WorkoutFormProps {
 
 export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
   function WorkoutForm({ exercises, onSubmit, isLoading = false }, ref) {
-    const methods = useForm<WorkoutFormValues>({
+    const methods = useForm<WorkoutFormFieldValues, unknown, WorkoutFormValues>({
       resolver: zodResolver(workoutFormSchema),
       defaultValues: {
         date: new Date().toISOString().slice(0, 10),
         exerciseBlocks: [
           {
-            exerciseId: '',
+            exerciseId: "",
             sets: [
               {
-                weight: '' as unknown as number,
-                reps: '' as unknown as number,
+                weight: "",
+                reps: "",
               },
             ],
           },
         ],
-        memo: '',
+        memo: "",
       },
     });
 
@@ -52,7 +52,7 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
 
     const { fields, append, remove } = useFieldArray({
       control,
-      name: 'exerciseBlocks',
+      name: "exerciseBlocks",
     });
 
     useImperativeHandle(ref, () => ({
@@ -70,14 +70,14 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
           component="form"
           onSubmit={handleSubmit(onValid)}
           noValidate
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
         >
           {/* Date */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             <Typography
               component="label"
               htmlFor="date"
-              sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
+              sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}
             >
               日付
             </Typography>
@@ -88,7 +88,7 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
               fullWidth
               error={!!errors.date}
               helperText={errors.date?.message}
-              {...register('date')}
+              {...register("date")}
               InputProps={{ sx: { height: 44 } }}
             />
           </Box>
@@ -97,14 +97,14 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
           {fields.map((field, index) => (
             <Box
               key={field.id}
-              sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}
+              sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}
             >
               {index === 0 && (
                 <Typography
                   sx={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: 'text.secondary',
+                    color: "text.secondary",
                   }}
                 >
                   エクササイズ
@@ -125,22 +125,22 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
             startIcon={<AddIcon />}
             onClick={() =>
               append({
-                exerciseId: '',
+                exerciseId: "",
                 sets: [
                   {
-                    weight: '' as unknown as number,
-                    reps: '' as unknown as number,
+                    weight: "",
+                    reps: "",
                   },
                 ],
               })
             }
             disabled={isLoading}
             sx={{
-              borderColor: 'border.main',
-              color: 'text.secondary',
-              '&:hover': {
-                borderColor: 'primary.main',
-                color: 'primary.main',
+              borderColor: "border.main",
+              color: "text.secondary",
+              "&:hover": {
+                borderColor: "primary.main",
+                color: "primary.main",
               },
             }}
           >
@@ -148,17 +148,17 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
           </Button>
 
           {errors.exerciseBlocks?.message && (
-            <Typography sx={{ fontSize: 12, color: 'error.main' }}>
+            <Typography sx={{ fontSize: 12, color: "error.main" }}>
               {errors.exerciseBlocks.message}
             </Typography>
           )}
 
           {/* Memo */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             <Typography
               component="label"
               htmlFor="memo"
-              sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}
+              sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}
             >
               メモ
             </Typography>
@@ -169,9 +169,9 @@ export const WorkoutForm = forwardRef<WorkoutFormHandle, WorkoutFormProps>(
               placeholder="今日のワークアウトについてメモ..."
               disabled={isLoading}
               fullWidth
-              {...register('memo')}
+              {...register("memo")}
               sx={{
-                '& .MuiOutlinedInput-root': { borderRadius: '10px' },
+                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
               }}
             />
           </Box>

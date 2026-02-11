@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Exercise } from '@/features/exercise';
-import type { WorkoutFormValues } from '../../schemas';
+import type { WorkoutFormFieldValues } from '../../schemas';
 import type { WorkoutFormHandle } from '../../components/WorkoutForm/WorkoutForm';
 
 export interface WorkoutSummaryItem {
@@ -11,7 +11,7 @@ export interface WorkoutSummaryItem {
 }
 
 function computeSummary(
-  data: WorkoutFormValues,
+  data: WorkoutFormFieldValues,
   exercises: Exercise[],
 ): WorkoutSummaryItem[] {
   const items: WorkoutSummaryItem[] = [];
