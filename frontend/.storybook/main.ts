@@ -14,6 +14,11 @@ export default defineMain({
       ...config.resolve.alias,
       '@': resolve(__dirname, '../src'),
     };
+    // MSWがインターセプトできるよう、APIベースURLを空にする
+    config.define = {
+      ...config.define,
+      'import.meta.env.VITE_API_URL': JSON.stringify(''),
+    };
     return config;
   },
 });

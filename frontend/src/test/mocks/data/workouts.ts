@@ -1,4 +1,5 @@
 import type {
+  ContributionData,
   Workout,
   WorkoutDetail,
   WorkoutSet,
@@ -72,3 +73,4 @@ export const mockWorkoutDetails: Record<string, WorkoutDetail> = {
   w1: { workout: mockWorkouts[0], sets: mockSets.w1 },
   w2: { workout: mockWorkouts[1], sets: mockSets.w2 },
 };
+
