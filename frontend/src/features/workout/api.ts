@@ -6,6 +6,7 @@ import type {
   RecordWorkoutRequest,
   SetInput,
   ContributionData,
+  WeightProgressionData,
 } from './types';
 
 export const workoutApi = {
@@ -51,4 +52,9 @@ export const workoutApi = {
       `/api/workouts/contributions?${params.toString()}`,
     );
   },
+
+  getWeightProgression: (exerciseId: string) =>
+    request<WeightProgressionData[]>(
+      `/api/exercises/${exerciseId}/progression`,
+    ),
 };

@@ -162,6 +162,44 @@ func (r *workoutSetRepository) GetMaxEstimated1RMByExerciseAndUser(ctx context.C
 	return parseFloat(result)
 }
 
+// GetWeightProgression は日別の最大推定1RMを取得する。
+// sqlc生成の GetMaxEstimated1RMByExercise クエリを使用する。
+func (r *workoutSetRepository) GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]repository.WeightProgressionPoint, error) {
+	rows, err := r.queries.GetMaxEstimated1RMByExercise(ctx, db.GetMaxEstimated1RMByExerciseParams{
+		UserID:     userID,
+		ExerciseID: exerciseID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	points := make([]repository.WeightProgressionPoint, 0, len(rows))
+	for _, row := range rows {
+		// MAX(estimated_1rm) は interface{} で返される。実際の値は []byte (DECIMAL文字列)
+		max1rmStr, ok := row.Max1rm.(string)
+		if !ok {
+			// database/sql が []byte で返す場合
+			if b, ok2 := row.Max1rm.([]byte); ok2 {
+				max1rmStr = string(b)
+			} else {
+				continue
+			}
+		}
+
+		max1rm, err := parseFloat(max1rmStr)
+		if err != nil {
+			continue
+		}
+
+		points = append(points, repository.WeightProgressionPoint{
+			Date:   row.Date,
+			Max1RM: max1rm,
+		})
+	}
+
+	return points, nil
+}
+
 // formatFloat はfloat64をstring（小数点2桁）に変換する
 func formatFloat(f float64) string {
 	return strconv.FormatFloat(f, 'f', 2, 64)

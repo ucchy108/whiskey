@@ -25,3 +25,11 @@ export const MONTH_LABELS = [
   '11月',
   '12月',
 ] as const;
+
+export const PERIOD_OPTIONS = [
+  { label: '1ヶ月', value: '1m' as const, days: 30 },
+  { label: '3ヶ月', value: '3m' as const, days: 90 },
+  { label: '6ヶ月', value: '6m' as const, days: 180 },
+  { label: '1年', value: '1y' as const, days: 365 },
+  { label: '全期間', value: 'all' as const, days: null },
+] as const;

@@ -18,6 +18,11 @@ export const workoutHandlers = [
     return HttpResponse.json(detail);
   }),
 
+  http.get('/api/workouts/contributions', () => {
+    const contributions = mockContributions;
+    return HttpResponse.json(contributions);
+  }),
+
   http.post('/api/workouts', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
