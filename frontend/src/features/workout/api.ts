@@ -5,6 +5,7 @@ import type {
   WorkoutSet,
   RecordWorkoutRequest,
   SetInput,
+  ContributionData,
 } from './types';
 
 export const workoutApi = {
@@ -41,4 +42,13 @@ export const workoutApi = {
 
   deleteSet: (setId: string) =>
     request<void>(`/api/workout-sets/${setId}`, { method: 'DELETE' }),
+
+  contributions: (startDate: string, endDate: string) => {
+    const params = new URLSearchParams();
+    params.set('start_date', startDate);
+    params.set('end_date', endDate);
+    return request<ContributionData[]>(
+      `/api/workouts/contributions?${params.toString()}`,
+    );
+  },
 };

@@ -5,11 +5,25 @@ declare module '@mui/material/styles' {
     dark: Palette['primary'];
     border: { main: string; light: string };
     textMuted: { main: string };
+    heatmap: {
+      level0: string;
+      level1: string;
+      level2: string;
+      level3: string;
+      level4: string;
+    };
   }
   interface PaletteOptions {
     dark?: PaletteOptions['primary'];
     border?: { main: string; light: string };
     textMuted?: { main: string };
+    heatmap?: {
+      level0: string;
+      level1: string;
+      level2: string;
+      level3: string;
+      level4: string;
+    };
   }
   interface TypeBackground {
     subtle: string;
@@ -49,6 +63,13 @@ export const theme = createTheme({
     },
     textMuted: {
       main: '#9CA3AF',
+    },
+    heatmap: {
+      level0: '#EBEDF0',
+      level1: '#9BE9A8',
+      level2: '#40C463',
+      level3: '#30A14E',
+      level4: '#216E39',
     },
   },
   typography: {

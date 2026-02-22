@@ -1,0 +1,1 @@
+export { useHeatmapGrid } from './useHeatmapGrid';

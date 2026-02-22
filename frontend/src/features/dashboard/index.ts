@@ -1,1 +1,5 @@
-// dashboard feature - components and hooks will be added here
+export * from './types';
+export { WorkoutHeatmap } from './components/WorkoutHeatmap';
+export type { WorkoutHeatmapProps } from './components/WorkoutHeatmap';
+export { useHeatmapGrid } from './hooks/useHeatmapGrid';
+export { useContributions } from './hooks/useContributions';

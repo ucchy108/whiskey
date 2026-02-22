@@ -1,7 +1,11 @@
 import { http, HttpResponse } from 'msw';
-import { mockWorkouts, mockWorkoutDetails } from '../data';
+import { mockWorkouts, mockWorkoutDetails, mockContributions } from '../data';
 
 export const workoutHandlers = [
+  http.get('/api/workouts/contributions', () => {
+    return HttpResponse.json(mockContributions);
+  }),
+
   http.get('/api/workouts', () => {
     return HttpResponse.json(mockWorkouts);
   }),
