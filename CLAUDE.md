@@ -54,34 +54,6 @@ npm test
 
 **詳細**: [Gitワークフロー](docs/development/git-workflow.md)
 
-## 作業ログの自動記録
-
-### 実行タイミング（優先度: 最高）
-
-**Rule 1: タスク開始時（最優先）**
-```
-user: [任意のタスク依頼]
-↓
-assistant: [Skillツール: work-log] ← 必ず最初に実行
-assistant: [TaskCreate] ← タスクを作成
-assistant: [その他のツール実行...]
-```
-
-**Rule 2: タスク完了時（最優先）**
-```
-assistant: [最後のEdit/Write]
-↓
-assistant: [作業ログファイルに完了サマリーを追記]
-assistant: [TaskUpdate: completed] ← タスクを完了
-assistant: 「〜が完了しました」
-```
-
-### 禁止事項
-
-- work-logの実行をスキップしない
-- 「作業ログを記録しますか？」と確認しない
-- ユーザーの指示を待たない
-
 ## ドキュメント
 
 ### アーキテクチャ
@@ -103,7 +75,6 @@ assistant: 「〜が完了しました」
 ### プロジェクト管理
 
 - [GitHub Issues](https://github.com/ucchy108/whiskey/issues) - タスク管理（ラベル・マイルストーンで分類）
-- [作業ログ](docs/work-logs/) - 日々の作業記録
 
 ## 次のステップ
 
