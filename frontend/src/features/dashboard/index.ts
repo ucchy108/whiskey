@@ -1,5 +1,12 @@
 export * from './types';
 export { WorkoutHeatmap } from './components/WorkoutHeatmap';
 export type { WorkoutHeatmapProps } from './components/WorkoutHeatmap';
+export { WeightProgressionChart } from './components/WeightProgressionChart';
+export type { WeightProgressionChartProps } from './components/WeightProgressionChart';
+export { ExerciseSelector } from './components/ExerciseSelector';
+export type { ExerciseSelectorProps } from './components/ExerciseSelector';
+export { PeriodFilter } from './components/PeriodFilter';
+export type { PeriodFilterProps } from './components/PeriodFilter';
 export { useHeatmapGrid } from './hooks/useHeatmapGrid';
 export { useContributions } from './hooks/useContributions';
+export { useWeightProgression } from './hooks/useWeightProgression';

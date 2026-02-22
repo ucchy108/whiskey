@@ -1,22 +1,38 @@
 import { useEffect } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { PageHeader } from '@/shared/components';
 import { useSnackbar } from '@/shared/hooks';
+import { ExerciseSelector } from '../../components/ExerciseSelector';
+import { PeriodFilter } from '../../components/PeriodFilter';
+import { WeightProgressionChart } from '../../components/WeightProgressionChart';
 import { WorkoutHeatmap } from '../../components/WorkoutHeatmap';
 import { useContributions } from '../../hooks/useContributions';
+import { useWeightProgression } from '../../hooks/useWeightProgression';
 
 export function DashboardPage() {
   const { showError } = useSnackbar();
-  const { data, loading, error } = useContributions();
+  const { data: contributions, loading: contribLoading, error: contribError } = useContributions();
+  const {
+    filteredData,
+    loading: progLoading,
+    error: progError,
+    period,
+    setPeriod,
+    exerciseId,
+    setExerciseId,
+  } = useWeightProgression();
 
   useEffect(() => {
-    if (error) {
-      showError(error);
-    }
-  }, [error, showError]);
+    if (contribError) showError(contribError);
+  }, [contribError, showError]);
 
-  if (loading) {
+  useEffect(() => {
+    if (progError) showError(progError);
+  }, [progError, showError]);
+
+  if (contribLoading) {
     return (
       <Box
         sx={{
@@ -45,7 +61,41 @@ export function DashboardPage() {
         title="ダッシュボード"
         subtitle="トレーニングの活動と進捗を確認"
       />
-      <WorkoutHeatmap data={data} />
+      <WorkoutHeatmap data={contributions} />
+
+      {/* 重量推移セクション */}
+      <Box
+        sx={{
+          borderRadius: '12px',
+          bgcolor: 'background.paper',
+          p: { xs: 1.5, sm: 2.5 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+        }}
+      >
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
+          重量推移
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1.5,
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
+          }}
+        >
+          <ExerciseSelector value={exerciseId} onChange={setExerciseId} />
+          <PeriodFilter value={period} onChange={setPeriod} />
+        </Box>
+        <WeightProgressionChart data={filteredData} loading={progLoading} />
+      </Box>
     </Box>
   );
 }

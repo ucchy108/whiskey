@@ -1,0 +1,1 @@
+export { useWeightProgression } from './useWeightProgression';

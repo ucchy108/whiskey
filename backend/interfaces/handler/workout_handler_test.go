@@ -27,7 +27,8 @@ type mockWorkoutUsecase struct {
 	addWorkoutSetsFunc     func(ctx context.Context, userID, workoutID uuid.UUID, sets []usecase.SetInput) ([]*entity.WorkoutSet, error)
 	deleteWorkoutSetFunc   func(ctx context.Context, userID uuid.UUID, workoutSetID uuid.UUID) error
 	deleteWorkoutFunc      func(ctx context.Context, userID, workoutID uuid.UUID) error
-	getContributionDataFunc func(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]usecase.ContributionDataPoint, error)
+	getContributionDataFunc    func(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]usecase.ContributionDataPoint, error)
+	getWeightProgressionFunc   func(ctx context.Context, userID, exerciseID uuid.UUID) ([]usecase.WeightProgressionPoint, error)
 }
 
 func (m *mockWorkoutUsecase) RecordWorkout(ctx context.Context, input usecase.RecordWorkoutInput) (*usecase.RecordWorkoutOutput, error) {
@@ -82,6 +83,13 @@ func (m *mockWorkoutUsecase) DeleteWorkout(ctx context.Context, userID, workoutI
 func (m *mockWorkoutUsecase) GetContributionData(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]usecase.ContributionDataPoint, error) {
 	if m.getContributionDataFunc != nil {
 		return m.getContributionDataFunc(ctx, userID, startDate, endDate)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockWorkoutUsecase) GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]usecase.WeightProgressionPoint, error) {
+	if m.getWeightProgressionFunc != nil {
+		return m.getWeightProgressionFunc(ctx, userID, exerciseID)
 	}
 	return nil, errors.New("not implemented")
 }

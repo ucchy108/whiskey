@@ -226,6 +226,13 @@ func (m *mockWorkoutSetRepository) GetMaxEstimated1RMByExerciseAndUser(ctx conte
 	return 0, nil
 }
 
+func (m *mockWorkoutSetRepository) GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]repository.WeightProgressionPoint, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return []repository.WeightProgressionPoint{}, nil
+}
+
 // テストヘルパー: ワークアウトセットを追加
 func (m *mockWorkoutSetRepository) addWorkoutSet(workoutID, exerciseID uuid.UUID, setNumber, reps int32, weight float64) *entity.WorkoutSet {
 	set, _ := entity.NewWorkoutSet(workoutID, exerciseID, setNumber, reps, weight)

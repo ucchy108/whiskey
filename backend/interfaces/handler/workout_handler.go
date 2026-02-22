@@ -454,6 +454,49 @@ func (h *WorkoutHandler) GetContributionData(w http.ResponseWriter, r *http.Requ
 	respondJSON(w, http.StatusOK, resp)
 }
 
+// WeightProgressionPointResponse は重量推移データポイントのレスポンスボディ
+type WeightProgressionPointResponse struct {
+	Date   string  `json:"date"`
+	Max1RM float64 `json:"max_1rm"`
+}
+
+// GetWeightProgression は種目の重量推移データを取得する。
+// GET /api/exercises/{id}/progression
+//
+// パスパラメータ:
+//   - id: エクササイズID (UUID)
+//
+// レスポンス:
+//   - 200 OK: 取得成功
+//   - 400 Bad Request: エクササイズIDが不正
+//   - 500 Internal Server Error: サーバーエラー
+func (h *WorkoutHandler) GetWeightProgression(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	vars := mux.Vars(r)
+	exerciseID, err := uuid.Parse(vars["id"])
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid exercise ID")
+		return
+	}
+
+	points, err := h.workoutUsecase.GetWeightProgression(r.Context(), userID, exerciseID)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	resp := make([]WeightProgressionPointResponse, 0, len(points))
+	for _, p := range points {
+		resp = append(resp, WeightProgressionPointResponse{
+			Date:   p.Date.Format("2006-01-02"),
+			Max1RM: p.Max1RM,
+		})
+	}
+
+	respondJSON(w, http.StatusOK, resp)
+}
+
 // --- ヘルパー関数 ---
 
 // handleWorkoutUsecaseError はWorkout Usecase層のエラーを適切なHTTPステータスコードに変換する。

@@ -42,6 +42,14 @@ describe('DashboardPage', () => {
     expect(cells.length).toBeGreaterThan(0);
   });
 
+  it('重量推移セクションが表示される', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('重量推移')).toBeInTheDocument();
+    });
+  });
+
   it('APIエラーでSnackbarが表示される', async () => {
     server.use(
       http.get('/api/workouts/contributions', () =>

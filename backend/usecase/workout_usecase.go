@@ -58,6 +58,9 @@ type ContributionDataPoint struct {
 	DailyScore int32
 }
 
+// WeightProgressionPoint は日別の最大推定1RMを表す（レスポンス用エイリアス）。
+type WeightProgressionPoint = repository.WeightProgressionPoint
+
 // WorkoutUsecaseInterface はWorkoutUsecaseのインターフェース。
 // テスト時のモック作成に使用する。
 type WorkoutUsecaseInterface interface {
@@ -69,6 +72,7 @@ type WorkoutUsecaseInterface interface {
 	DeleteWorkoutSet(ctx context.Context, userID uuid.UUID, workoutSetID uuid.UUID) error
 	DeleteWorkout(ctx context.Context, userID, workoutID uuid.UUID) error
 	GetContributionData(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]ContributionDataPoint, error)
+	GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]WeightProgressionPoint, error)
 }
 
 // WorkoutUsecase はワークアウトに関するビジネスロジックを提供する。
@@ -446,6 +450,21 @@ func (u *WorkoutUsecase) getWorkoutWithOwnershipCheck(ctx context.Context, userI
 	}
 
 	return workout, nil
+}
+
+// GetWeightProgression は種目の重量推移データを取得する。
+// 日別の最大推定1RMを返す。
+//
+// パラメータ:
+//   - ctx: リクエストのコンテキスト
+//   - userID: ユーザーID
+//   - exerciseID: エクササイズID
+//
+// 戻り値:
+//   - []WeightProgressionPoint: 日別の推定1RMデータポイント
+//   - error: リポジトリエラー
+func (u *WorkoutUsecase) GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]WeightProgressionPoint, error) {
+	return u.workoutSetRepo.GetWeightProgression(ctx, userID, exerciseID)
 }
 
 // recalculateDailyScore はセットからデイリースコアを再計算し、ワークアウトを更新する。

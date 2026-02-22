@@ -2,10 +2,18 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
 )
+
+// WeightProgressionPoint は日別の最大推定1RMを表す。
+// 重量推移グラフのデータポイントとして使用される。
+type WeightProgressionPoint struct {
+	Date   time.Time
+	Max1RM float64
+}
 
 // WorkoutSetRepository defines the interface for workout set data persistence
 type WorkoutSetRepository interface {
@@ -36,4 +44,8 @@ type WorkoutSetRepository interface {
 	// GetMaxEstimated1RMByExerciseAndUser retrieves the maximum estimated 1RM for an exercise by a user
 	// This is useful for tracking weight progression
 	GetMaxEstimated1RMByExerciseAndUser(ctx context.Context, userID, exerciseID uuid.UUID) (float64, error)
+
+	// GetWeightProgression retrieves daily max estimated 1RM progression for an exercise
+	// Returns data points sorted by date ascending
+	GetWeightProgression(ctx context.Context, userID, exerciseID uuid.UUID) ([]WeightProgressionPoint, error)
 }

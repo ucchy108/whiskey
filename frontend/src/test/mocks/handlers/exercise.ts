@@ -1,7 +1,12 @@
 import { http, HttpResponse } from 'msw';
-import { mockExercises } from '../data';
+import { mockExercises, generateMockProgression } from '../data';
 
 export const exerciseHandlers = [
+  http.get('/api/exercises/:id/progression', ({ params }) => {
+    const data = generateMockProgression(params.id as string);
+    return HttpResponse.json(data);
+  }),
+
   http.get('/api/exercises', ({ request }) => {
     const url = new URL(request.url);
     const bodyPart = url.searchParams.get('body_part');

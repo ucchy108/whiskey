@@ -45,3 +45,8 @@ export interface ContributionData {
   date: string;
   daily_score: number;
 }
+
+export interface WeightProgressionData {
+  date: string;
+  max_1rm: number;
+}

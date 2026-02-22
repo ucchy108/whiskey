@@ -62,6 +62,8 @@ func NewRouter(config RouterConfig) http.Handler {
 	authRequired.HandleFunc("/workout-sets/{id}", config.WorkoutHandler.DeleteWorkoutSet).Methods("DELETE")
 
 	// エクササイズルート
+	// 注意: /exercises/{id}/progression は /exercises/{id} より前に登録（Gorilla Muxの優先順位）
+	authRequired.HandleFunc("/exercises/{id}/progression", config.WorkoutHandler.GetWeightProgression).Methods("GET")
 	authRequired.HandleFunc("/exercises", config.ExerciseHandler.CreateExercise).Methods("POST")
 	authRequired.HandleFunc("/exercises", config.ExerciseHandler.ListExercises).Methods("GET")
 	authRequired.HandleFunc("/exercises/{id}", config.ExerciseHandler.GetExercise).Methods("GET")
