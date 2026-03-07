@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -11,13 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// setupTestRedis creates a test Redis client using miniredis or connects to a test Redis instance.
+// setupTestRedis creates a test Redis client.
+// Redis のアドレスは環境変数 REDIS_ADDR で指定可能（デフォルト: localhost:6379）。
 func setupTestRedis(t *testing.T) *redis.Client {
 	t.Helper()
 
-	// Connect to Redis running in Docker
+	addr := os.Getenv("REDIS_URL")
+	if addr == "" {
+		addr = "localhost:6379"
+	}
+
 	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: addr,
 		DB:   15, // Use DB 15 for testing to avoid conflicts
 	})
 
