@@ -330,6 +330,177 @@ func TestWorkoutSet_UpdateRepsAndWeight(t *testing.T) {
 	}
 }
 
+func TestCalculateEstimated1RMWithFormula_Epley(t *testing.T) {
+	tests := []struct {
+		name        string
+		weight      float64
+		reps        int32
+		expected1RM float64
+	}{
+		{
+			name:        "Epley式: 1レップ（重量そのもの）",
+			weight:      100.0,
+			reps:        1,
+			expected1RM: 100.0,
+		},
+		{
+			name:        "Epley式: 5レップ、100kg",
+			weight:      100.0,
+			reps:        5,
+			expected1RM: 116.67, // 100 * (1 + 5/30) ≈ 116.67
+		},
+		{
+			name:        "Epley式: 10レップ、80kg",
+			weight:      80.0,
+			reps:        10,
+			expected1RM: 106.67, // 80 * (1 + 10/30) ≈ 106.67
+		},
+		{
+			name:        "Epley式: 0レップ（0を返す）",
+			weight:      100.0,
+			reps:        0,
+			expected1RM: 0.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := CalculateEstimated1RMWithFormula(tt.weight, tt.reps, OneRMFormulaEpley)
+			diff := result - tt.expected1RM
+			if diff < 0 {
+				diff = -diff
+			}
+			if diff > 0.01 {
+				t.Errorf("CalculateEstimated1RMWithFormula(Epley) = %v, want %v", result, tt.expected1RM)
+			}
+		})
+	}
+}
+
+func TestCalculateEstimated1RMWithFormula_Brzycki(t *testing.T) {
+	tests := []struct {
+		name        string
+		weight      float64
+		reps        int32
+		expected1RM float64
+	}{
+		{
+			name:        "Brzycki式: 1レップ（重量そのもの）",
+			weight:      100.0,
+			reps:        1,
+			expected1RM: 100.0,
+		},
+		{
+			name:        "Brzycki式: 5レップ、100kg",
+			weight:      100.0,
+			reps:        5,
+			expected1RM: 112.50, // 100 * (36 / (37 - 5)) = 100 * (36/32) = 112.5
+		},
+		{
+			name:        "Brzycki式: 10レップ、80kg",
+			weight:      80.0,
+			reps:        10,
+			expected1RM: 106.67, // 80 * (36 / (37 - 10)) = 80 * (36/27) ≈ 106.67
+		},
+		{
+			name:        "Brzycki式: 15レップ、60kg",
+			weight:      60.0,
+			reps:        15,
+			expected1RM: 98.18, // 60 * (36 / (37 - 15)) = 60 * (36/22) ≈ 98.18
+		},
+		{
+			name:        "Brzycki式: 0レップ（0を返す）",
+			weight:      100.0,
+			reps:        0,
+			expected1RM: 0.0,
+		},
+		{
+			name:        "Brzycki式: 負のレップ（0を返す）",
+			weight:      100.0,
+			reps:        -5,
+			expected1RM: 0.0,
+		},
+		{
+			name:        "Brzycki式: 37レップ以上（0を返す、ゼロ除算防止）",
+			weight:      100.0,
+			reps:        37,
+			expected1RM: 0.0,
+		},
+		{
+			name:        "Brzycki式: 36レップ（有効な上限値）",
+			weight:      50.0,
+			reps:        36,
+			expected1RM: 1800.0, // 50 * (36 / (37 - 36)) = 50 * 36 = 1800
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := CalculateEstimated1RMWithFormula(tt.weight, tt.reps, OneRMFormulaBrzycki)
+			diff := result - tt.expected1RM
+			if diff < 0 {
+				diff = -diff
+			}
+			if diff > 0.01 {
+				t.Errorf("CalculateEstimated1RMWithFormula(Brzycki) = %v, want %v", result, tt.expected1RM)
+			}
+		})
+	}
+}
+
+func TestCalculateEstimated1RMWithFormula_InvalidFormula(t *testing.T) {
+	// 無効な公式はEpley式にフォールバック
+	result := CalculateEstimated1RMWithFormula(100.0, 10, OneRMFormula("unknown"))
+	expected := CalculateEstimated1RMWithFormula(100.0, 10, OneRMFormulaEpley)
+	if result != expected {
+		t.Errorf("Invalid formula should fallback to Epley: got %v, want %v", result, expected)
+	}
+}
+
+func TestOneRMFormula_IsValid(t *testing.T) {
+	tests := []struct {
+		formula OneRMFormula
+		valid   bool
+	}{
+		{OneRMFormulaEpley, true},
+		{OneRMFormulaBrzycki, true},
+		{OneRMFormula("unknown"), false},
+		{OneRMFormula(""), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.formula), func(t *testing.T) {
+			if got := tt.formula.IsValid(); got != tt.valid {
+				t.Errorf("OneRMFormula(%q).IsValid() = %v, want %v", tt.formula, got, tt.valid)
+			}
+		})
+	}
+}
+
+func TestCalculateEstimated1RM_BackwardCompatibility(t *testing.T) {
+	// CalculateEstimated1RM はEpley式と同じ結果を返すことを確認
+	testCases := []struct {
+		weight float64
+		reps   int32
+	}{
+		{100.0, 1},
+		{100.0, 5},
+		{80.0, 10},
+		{60.0, 15},
+		{50.0, 30},
+		{100.0, 0},
+	}
+
+	for _, tc := range testCases {
+		legacy := CalculateEstimated1RM(tc.weight, tc.reps)
+		epley := CalculateEstimated1RMWithFormula(tc.weight, tc.reps, OneRMFormulaEpley)
+		if legacy != epley {
+			t.Errorf("CalculateEstimated1RM(%v, %v) = %v, CalculateEstimated1RMWithFormula(Epley) = %v",
+				tc.weight, tc.reps, legacy, epley)
+		}
+	}
+}
+
 func TestWorkoutSet_UpdateDuration(t *testing.T) {
 	workoutID := uuid.New()
 	exerciseID := uuid.New()

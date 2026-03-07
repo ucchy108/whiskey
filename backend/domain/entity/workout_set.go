@@ -12,7 +12,32 @@ var (
 	ErrInvalidReps           = errors.New("reps must be greater than 0")
 	ErrInvalidExerciseWeight = errors.New("exercise weight must be greater than or equal to 0")
 	ErrInvalidDuration       = errors.New("duration must be greater than or equal to 0")
+	ErrInvalidOneRMFormula   = errors.New("invalid 1RM formula")
+	ErrBrzyckiRepsOutOfRange = errors.New("Brzycki formula requires reps < 37")
 )
+
+// OneRMFormula は推定1RM計算に使用する公式を表す値オブジェクト
+type OneRMFormula string
+
+const (
+	// OneRMFormulaEpley はEpley式: 1RM = weight × (1 + reps / 30)
+	OneRMFormulaEpley OneRMFormula = "epley"
+	// OneRMFormulaBrzycki はBrzycki式: 1RM = weight × (36 / (37 - reps))
+	OneRMFormulaBrzycki OneRMFormula = "brzycki"
+)
+
+// ValidOneRMFormulas は有効な1RM計算式の一覧
+var ValidOneRMFormulas = []OneRMFormula{OneRMFormulaEpley, OneRMFormulaBrzycki}
+
+// IsValid は公式名が有効かどうかを検証する
+func (f OneRMFormula) IsValid() bool {
+	switch f {
+	case OneRMFormulaEpley, OneRMFormulaBrzycki:
+		return true
+	default:
+		return false
+	}
+}
 
 // WorkoutSet はワークアウト内の1セットを表す
 type WorkoutSet struct {
@@ -101,17 +126,42 @@ func (ws *WorkoutSet) UpdateNotes(notes *string) {
 	ws.Notes = notes
 }
 
-// CalculateEstimated1RM はEpley式を使用して推定1RMを計算する
-// 公式: 1RM = 重量 * (1 + レップ数/30)
-// レップ数 = 1の場合、1RM = 重量
+// CalculateEstimated1RM はデフォルト（Epley式）で推定1RMを計算する。
+// 既存コードとの後方互換性を維持するラッパー関数。
 func CalculateEstimated1RM(weight float64, reps int32) float64 {
+	return CalculateEstimated1RMWithFormula(weight, reps, OneRMFormulaEpley)
+}
+
+// CalculateEstimated1RMWithFormula は指定された公式で推定1RMを計算する。
+//
+// サポートする公式:
+//   - Epley式: 1RM = weight × (1 + reps / 30)
+//   - Brzycki式: 1RM = weight × (36 / (37 - reps))
+//
+// 共通ルール:
+//   - reps <= 0 の場合は 0 を返す
+//   - reps == 1 の場合は weight をそのまま返す
+//   - 無効な公式が指定された場合はEpley式にフォールバックする
+func CalculateEstimated1RMWithFormula(weight float64, reps int32, formula OneRMFormula) float64 {
 	if reps <= 0 {
 		return 0
 	}
 	if reps == 1 {
 		return weight
 	}
-	return weight * (1 + float64(reps)/30.0)
+
+	switch formula {
+	case OneRMFormulaBrzycki:
+		if reps >= 37 {
+			return 0
+		}
+		return weight * (36.0 / (37.0 - float64(reps)))
+	case OneRMFormulaEpley:
+		return weight * (1 + float64(reps)/30.0)
+	default:
+		// 無効な公式の場合はEpley式にフォールバック
+		return weight * (1 + float64(reps)/30.0)
+	}
 }
 
 // CalculateVolume はこのセットのボリューム（レップ数 * 重量）を計算する
