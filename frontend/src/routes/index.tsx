@@ -7,6 +7,7 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { WorkoutListPage } from '@/features/workout/pages/WorkoutListPage';
 import { WorkoutFormPage } from '@/features/workout/pages/WorkoutFormPage';
 import { WorkoutDetailPage } from '@/features/workout/pages/WorkoutDetailPage';
+import { ExerciseListPage } from '@/features/exercise/pages/ExerciseListPage';
 
 export function AppRoutes() {
   return (
@@ -21,6 +22,7 @@ export function AppRoutes() {
         <Route path="/workouts" element={<WorkoutListPage />} />
         <Route path="/workouts/new" element={<WorkoutFormPage />} />
         <Route path="/workouts/:id" element={<WorkoutDetailPage />} />
+        <Route path="/exercises" element={<ExerciseListPage />} />
       </Route>
 
       {/* Fallback */}
