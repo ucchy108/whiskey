@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { workoutApi } from '@/features/workout';
 import type { ContributionData } from '@/features/workout';
 
-function toLocalDateString(d: Date): string {
+function toRFC3339DateString(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${y}-${m}-${day}T00:00:00Z`;
 }
 
 export function useContributions() {
@@ -24,8 +24,8 @@ export function useContributions() {
 
     try {
       const result = await workoutApi.contributions(
-        toLocalDateString(start),
-        toLocalDateString(today),
+        toRFC3339DateString(start),
+        toRFC3339DateString(today),
       );
       setData(result);
     } catch (e) {
