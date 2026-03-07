@@ -36,7 +36,7 @@ Phase 3 実装中。featureベース構成導入済み。
 ✅ パスエイリアス (@/)
 ✅ 共通APIクライアント (shared/api/client.ts)
 ✅ MUIテーマ分離 (shared/theme/theme.ts)
-✅ ルーティング基盤 (react-router-dom v6)
+✅ ルーティング基盤 (react-router v7)
 ✅ 全ドメインの型定義 (auth, workout, exercise)
 ✅ プレースホルダーページ (Login, Register, Dashboard, WorkoutList, WorkoutDetail)
 
