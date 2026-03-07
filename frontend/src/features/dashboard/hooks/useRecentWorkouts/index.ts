@@ -1,0 +1,1 @@
+export { useRecentWorkouts } from './useRecentWorkouts';
