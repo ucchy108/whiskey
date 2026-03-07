@@ -72,6 +72,7 @@ npm test
 - [Clean Architecture](docs/architecture/clean-architecture.md) - バックエンドのレイヤー構成と依存関係
 - [DDD実装パターン](docs/architecture/ddd-patterns.md) - 値オブジェクト、エンティティ、ドメインサービス
 - [フロントエンドアーキテクチャ](docs/architecture/frontend-architecture.md) - featureベース構成、設計原則
+- [運動強度スコア設計](docs/architecture/daily-score.md) - daily_scoreの計算ロジックとヒートマップ表示
 
 ### 開発ガイド
 
