@@ -39,81 +39,77 @@ func TestWorkout_CalculateDailyScore(t *testing.T) {
 	date := time.Now()
 	workout := NewWorkout(userID, date)
 
+	// 新ロジック: score = 100 × √(totalVolume / 20000)、上限100
+	// totalVolume（総負荷量 = 重量 × レップ数の全セット合計）のみでスコアを決定
 	tests := []struct {
 		name          string
-		totalSets     int
 		totalVolume   float64
 		expectedScore int32
 	}{
 		{
-			name:          "低強度: 1セット、100kg",
-			totalSets:     1,
-			totalVolume:   100.0,
-			expectedScore: 5, // 1 * 5 = 5
-		},
-		{
-			name:          "中強度: 10セット、800kg",
-			totalSets:     10,
-			totalVolume:   800.0,
-			expectedScore: 50, // 10 * 5 = 50
-		},
-		{
-			name:          "高強度: 10セット、1500kg（ボーナス+10）",
-			totalSets:     10,
-			totalVolume:   1500.0,
-			expectedScore: 60, // 10 * 5 + 10(>1000) = 60
-		},
-		{
-			name:          "高強度: 15セット、6000kg（ボーナス+20）",
-			totalSets:     15,
-			totalVolume:   6000.0,
-			expectedScore: 95, // 15 * 5 + 10(>1000) + 10(>5000) = 95
-		},
-		{
-			name:          "最大値テスト: 20セット、15000kg",
-			totalSets:     20,
-			totalVolume:   15000.0,
-			expectedScore: 100, // 上限100に制限される
-		},
-		{
-			name:          "ゼロセット",
-			totalSets:     0,
+			name:          "ボリューム0: トレーニングなし",
 			totalVolume:   0.0,
 			expectedScore: 0,
 		},
 		{
-			name:          "境界値: 1000kg（ボーナスなし）",
-			totalSets:     10,
+			name:          "軽いウォームアップ: 100kg",
+			totalVolume:   100.0,
+			expectedScore: 7, // 100 * √(100/20000) ≈ 7.07
+		},
+		{
+			name:          "軽いセッション: 500kg",
+			totalVolume:   500.0,
+			expectedScore: 16, // 100 * √(500/20000) ≈ 15.81
+		},
+		{
+			name:          "軽めのトレーニング: 1000kg",
 			totalVolume:   1000.0,
-			expectedScore: 50, // ボーナスは >1000 なので付かない
+			expectedScore: 22, // 100 * √(1000/20000) ≈ 22.36
 		},
 		{
-			name:          "境界値: 1001kg（ボーナス+10）",
-			totalSets:     10,
-			totalVolume:   1001.0,
-			expectedScore: 60, // 10 * 5 + 10 = 60
+			name:          "中程度のトレーニング: 2000kg",
+			totalVolume:   2000.0,
+			expectedScore: 32, // 100 * √(2000/20000) ≈ 31.62
 		},
 		{
-			name:          "境界値: 5001kg（ボーナス+20）",
-			totalSets:     10,
-			totalVolume:   5001.0,
-			expectedScore: 70, // 10 * 5 + 10(>1000) + 10(>5000) = 70
+			name:          "標準的なトレーニング: 5000kg",
+			totalVolume:   5000.0,
+			expectedScore: 50, // 100 * √(5000/20000) = 50.0
 		},
 		{
-			name:          "境界値: 10001kg（ボーナス+30）",
-			totalSets:     10,
-			totalVolume:   10001.0,
-			expectedScore: 80, // 10 * 5 + 10(>1000) + 10(>5000) + 10(>10000) = 80
+			name:          "ハードなトレーニング: 10000kg",
+			totalVolume:   10000.0,
+			expectedScore: 71, // 100 * √(10000/20000) ≈ 70.71
+		},
+		{
+			name:          "非常にハードなトレーニング: 15000kg",
+			totalVolume:   15000.0,
+			expectedScore: 87, // 100 * √(15000/20000) ≈ 86.60
+		},
+		{
+			name:          "最大基準値: 20000kg",
+			totalVolume:   20000.0,
+			expectedScore: 100, // 100 * √(20000/20000) = 100
+		},
+		{
+			name:          "基準値超過: 25000kg（上限100）",
+			totalVolume:   25000.0,
+			expectedScore: 100, // 上限100に制限
+		},
+		{
+			name:          "負の値: -100kg（0として扱う）",
+			totalVolume:   -100.0,
+			expectedScore: 0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			score := workout.CalculateDailyScore(tt.totalSets, tt.totalVolume)
+			score := workout.CalculateDailyScore(tt.totalVolume)
 
 			if score != tt.expectedScore {
-				t.Errorf("CalculateDailyScore(%v, %v) = %v, want %v",
-					tt.totalSets, tt.totalVolume, score, tt.expectedScore)
+				t.Errorf("CalculateDailyScore(%v) = %v, want %v",
+					tt.totalVolume, score, tt.expectedScore)
 			}
 		})
 	}

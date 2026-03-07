@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,32 +59,25 @@ func (w *Workout) UpdateDailyScore(score int32) error {
 	return nil
 }
 
-// CalculateDailyScore はワークアウトセットに基づいて日次スコアを計算する
-// スコア計算:
-// - ベース: セット数 * 5ポイント
-// - ボーナス: 総ボリューム（セット数 * レップ数 * 重量）が閾値を超えた場合
-// - 最大: 100ポイント
-func (w *Workout) CalculateDailyScore(totalSets int, totalVolume float64) int32 {
-	// ベーススコア: セットごとに5ポイント
-	score := int32(totalSets * 5)
+// CalculateDailyScore はトレーニングボリュームに基づいて日次スコアを計算する
+// スコア計算: score = 100 × √(totalVolume / maxVolume)
+// - totalVolume: 総負荷量（重量 × レップ数の全セット合計）
+// - maxVolume: 基準最大ボリューム（20,000kg）
+// - 範囲: 0〜100
+func (w *Workout) CalculateDailyScore(totalVolume float64) int32 {
+	const maxVolume = 20000.0
 
-	// 高ボリュームに対するボーナス
-	if totalVolume > 1000 {
-		score += 10
-	}
-	if totalVolume > 5000 {
-		score += 10
-	}
-	if totalVolume > 10000 {
-		score += 10
+	if totalVolume <= 0 {
+		return 0
 	}
 
-	// 100で上限
+	score := 100.0 * math.Sqrt(totalVolume/maxVolume)
+
 	if score > 100 {
 		score = 100
 	}
 
-	return score
+	return int32(math.Round(score))
 }
 
 // UpdateMemo はワークアウトのメモを更新する
