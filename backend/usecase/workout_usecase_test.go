@@ -452,8 +452,12 @@ func TestWorkoutUsecase_RecordWorkout(t *testing.T) {
 				t.Errorf("RecordWorkout() sets count = %v, want %v", len(output.Sets), len(input.Sets))
 			}
 
-			// デイリースコアが計算されているか確認
-			if output.Workout.DailyScore == 0 && len(input.Sets) > 0 {
+			// デイリースコアが計算されているか確認（ボリュームベースのため、重量0のセットのみの場合はスコア0もあり得る）
+			totalVolume := 0.0
+			for _, s := range input.Sets {
+				totalVolume += float64(s.Reps) * s.Weight
+			}
+			if output.Workout.DailyScore == 0 && totalVolume > 0 {
 				t.Error("RecordWorkout() daily score = 0, want > 0")
 			}
 
@@ -1069,10 +1073,9 @@ func TestWorkoutUsecase_RecordWorkout_DailyScoreCalculation(t *testing.T) {
 		t.Fatalf("RecordWorkout() unexpected error = %v", err)
 	}
 
-	// 3セット × 5ポイント = 15ベーススコア
-	// totalVolume = 10*60 + 8*65 + 6*70 = 600 + 520 + 420 = 1540 > 1000 → +10ボーナス
-	// 合計 = 25
-	expectedScore := int32(25)
+	// totalVolume = 10*60 + 8*65 + 6*70 = 600 + 520 + 420 = 1540
+	// score = 100 * √(1540/20000) ≈ 27.75 → 28
+	expectedScore := int32(28)
 	if output.Workout.DailyScore != expectedScore {
 		t.Errorf("DailyScore = %v, want %v", output.Workout.DailyScore, expectedScore)
 	}

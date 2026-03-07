@@ -469,13 +469,12 @@ func (u *WorkoutUsecase) GetWeightProgression(ctx context.Context, userID, exerc
 
 // recalculateDailyScore はセットからデイリースコアを再計算し、ワークアウトを更新する。
 func (u *WorkoutUsecase) recalculateDailyScore(ctx context.Context, workout *entity.Workout, sets []*entity.WorkoutSet) error {
-	totalSets := len(sets)
 	totalVolume := 0.0
 	for _, set := range sets {
 		totalVolume += set.CalculateVolume()
 	}
 
-	score := workout.CalculateDailyScore(totalSets, totalVolume)
+	score := workout.CalculateDailyScore(totalVolume)
 	if err := workout.UpdateDailyScore(score); err != nil {
 		return err
 	}
