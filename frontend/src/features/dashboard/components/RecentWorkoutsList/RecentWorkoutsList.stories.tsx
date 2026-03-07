@@ -1,4 +1,4 @@
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import preview from '../../../../../.storybook/preview';
 import { RecentWorkoutsList } from './RecentWorkoutsList';
 import type { Workout } from '@/features/workout';

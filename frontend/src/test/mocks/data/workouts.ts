@@ -1,5 +1,4 @@
 import type {
-  ContributionData,
   Workout,
   WorkoutDetail,
   WorkoutSet,

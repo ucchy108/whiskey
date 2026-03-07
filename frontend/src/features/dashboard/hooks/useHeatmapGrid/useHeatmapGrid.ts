@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ContributionData } from '@/features/workout';
-import type { DayCell, WeekColumn } from '../../types';
+import type { WeekColumn } from '../../types';
 
 function scoreToLevel(score: number): number {
   if (score === 0) return 0;
