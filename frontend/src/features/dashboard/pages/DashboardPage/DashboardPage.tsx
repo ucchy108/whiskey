@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -6,14 +7,18 @@ import { PageHeader } from '@/shared/components';
 import { useSnackbar } from '@/shared/hooks';
 import { ExerciseSelector } from '../../components/ExerciseSelector';
 import { PeriodFilter } from '../../components/PeriodFilter';
+import { RecentWorkoutsList } from '../../components/RecentWorkoutsList';
 import { WeightProgressionChart } from '../../components/WeightProgressionChart';
 import { WorkoutHeatmap } from '../../components/WorkoutHeatmap';
 import { useContributions } from '../../hooks/useContributions';
+import { useRecentWorkouts } from '../../hooks/useRecentWorkouts';
 import { useWeightProgression } from '../../hooks/useWeightProgression';
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const { showError } = useSnackbar();
   const { data: contributions, loading: contribLoading, error: contribError } = useContributions();
+  const { data: recentWorkouts, loading: recentLoading, error: recentError } = useRecentWorkouts();
   const {
     filteredData,
     loading: progLoading,
@@ -31,6 +36,10 @@ export function DashboardPage() {
   useEffect(() => {
     if (progError) showError(progError);
   }, [progError, showError]);
+
+  useEffect(() => {
+    if (recentError) showError(recentError);
+  }, [recentError, showError]);
 
   if (contribLoading) {
     return (
@@ -53,7 +62,7 @@ export function DashboardPage() {
         display: 'flex',
         flexDirection: 'column',
         gap: 3.5,
-        p: '32px 40px',
+        p: { xs: '24px 16px', sm: '32px 40px' },
         height: '100%',
       }}
     >
@@ -62,6 +71,33 @@ export function DashboardPage() {
         subtitle="トレーニングの活動と進捗を確認"
       />
       <WorkoutHeatmap data={contributions} />
+
+      {/* 直近のワークアウト */}
+      <Box
+        sx={{
+          borderRadius: '12px',
+          bgcolor: 'background.paper',
+          p: { xs: 1.5, sm: 2.5 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+        }}
+      >
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", sans-serif',
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
+          直近のワークアウト
+        </Typography>
+        <RecentWorkoutsList
+          workouts={recentWorkouts}
+          loading={recentLoading}
+          onClickWorkout={(id) => navigate(`/workouts/${id}`)}
+        />
+      </Box>
 
       {/* 重量推移セクション */}
       <Box

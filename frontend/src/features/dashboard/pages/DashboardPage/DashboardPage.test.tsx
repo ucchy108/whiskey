@@ -80,4 +80,24 @@ describe('DashboardPage', () => {
       expect(screen.getByText('過去1年で0日トレーニング')).toBeInTheDocument();
     });
   });
+
+  it('直近のワークアウトセクションが表示される', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('直近のワークアウト')).toBeInTheDocument();
+    });
+  });
+
+  it('ワークアウトが空の場合はメッセージが表示される', async () => {
+    server.use(
+      http.get('/api/workouts', () => HttpResponse.json([])),
+    );
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('ワークアウトがまだありません')).toBeInTheDocument();
+    });
+  });
 });

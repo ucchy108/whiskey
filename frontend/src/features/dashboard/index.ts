@@ -9,4 +9,7 @@ export { PeriodFilter } from './components/PeriodFilter';
 export type { PeriodFilterProps } from './components/PeriodFilter';
 export { useHeatmapGrid } from './hooks/useHeatmapGrid';
 export { useContributions } from './hooks/useContributions';
+export { useRecentWorkouts } from './hooks/useRecentWorkouts';
 export { useWeightProgression } from './hooks/useWeightProgression';
+export { RecentWorkoutsList } from './components/RecentWorkoutsList';
+export type { RecentWorkoutsListProps } from './components/RecentWorkoutsList';

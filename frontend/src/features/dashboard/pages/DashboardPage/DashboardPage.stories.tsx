@@ -28,6 +28,9 @@ export const Empty = meta.story({
           http.get('/api/workouts/contributions', () =>
             HttpResponse.json([]),
           ),
+          http.get('/api/workouts', () =>
+            HttpResponse.json([]),
+          ),
         ],
         exercise: [
           http.get('/api/exercises/:id/progression', () =>
