@@ -24,7 +24,16 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new ApiRequestError(response.status, errorBody.error || 'Unknown error');
+    const error = new ApiRequestError(response.status, errorBody.error || 'Unknown error');
+
+    const isSessionExpired = response.status === 401;
+    const isAuthEndpoint = path.startsWith('/api/auth/');
+    if (isSessionExpired && !isAuthEndpoint) {
+      localStorage.removeItem('whiskey_user');
+      window.location.href = '/login';
+    }
+
+    throw error;
   }
 
   if (response.status === 204) {

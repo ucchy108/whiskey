@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from 'react';
 import { authApi } from '../../api';
@@ -38,6 +39,7 @@ function clearUser(): void {
 
 interface AuthContextValue {
   user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -46,7 +48,23 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(loadUser);
+  const initialUser = loadUser();
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [isLoading, setIsLoading] = useState<boolean>(initialUser !== null);
+
+  useEffect(() => {
+    if (!initialUser) return;
+
+    authApi.getMe()
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch(() => {
+        clearUser();
+        setUser(null);
+        setIsLoading(false);
+      });
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const loggedInUser = await authApi.login(email, password);
@@ -72,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

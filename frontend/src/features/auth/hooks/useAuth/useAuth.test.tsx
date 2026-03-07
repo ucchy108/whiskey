@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import type { ReactNode } from 'react';
 import { server } from '@/test/mocks/server';
@@ -90,6 +90,61 @@ describe('useAuth', () => {
     });
 
     expect(result.current.user).toEqual(mockUser);
+  });
+
+  it('初期化時にセッション検証を行い、無効なら user を null にする', async () => {
+    localStorage.setItem(
+      'whiskey_user',
+      JSON.stringify({ id: '1', email: 'a@b.com' }),
+    );
+
+    // セッション無効を返す
+    server.use(
+      http.get('/api/auth/me', () => {
+        return HttpResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 },
+        );
+      }),
+    );
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    // 初期状態では localStorage から復元されている
+    expect(result.current.user).toEqual({ id: '1', email: 'a@b.com' });
+
+    // セッション検証完了後に null になる
+    await waitFor(() => {
+      expect(result.current.user).toBeNull();
+    });
+    expect(localStorage.getItem('whiskey_user')).toBeNull();
+  });
+
+  it('初期化時にセッション検証を行い、有効なら user を維持する', async () => {
+    localStorage.setItem(
+      'whiskey_user',
+      JSON.stringify({ id: '1', email: 'a@b.com' }),
+    );
+
+    server.use(
+      http.get('/api/auth/me', () => {
+        return HttpResponse.json({ id: '1', email: 'a@b.com' });
+      }),
+    );
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.user).toEqual({ id: '1', email: 'a@b.com' });
+  });
+
+  it('localStorage にユーザーがなければセッション検証をスキップする', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(result.current.user).toBeNull();
+    expect(result.current.isLoading).toBe(false);
   });
 
   it('logout で user が null になり localStorage がクリアされる', async () => {
