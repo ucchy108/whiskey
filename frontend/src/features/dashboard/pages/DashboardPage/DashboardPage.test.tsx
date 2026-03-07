@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '@/shared/theme';
 import { SnackbarProvider } from '@/shared/hooks';
@@ -11,7 +11,7 @@ import { DashboardPage } from './DashboardPage';
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <SnackbarProvider>
           <DashboardPage />
           <AppSnackbar />

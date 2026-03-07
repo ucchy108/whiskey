@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from 'msw';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import preview from '../../../../../.storybook/preview';
 import { AuthProvider } from '../../hooks/useAuth';
 import { RegisterPage } from './RegisterPage';
@@ -12,7 +12,7 @@ const meta = preview.meta({
   },
   decorators: [
     (Story) => (
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <AuthProvider>
           <Story />
         </AuthProvider>

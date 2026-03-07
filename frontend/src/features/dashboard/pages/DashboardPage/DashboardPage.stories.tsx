@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from 'msw';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import preview from '../../../../../.storybook/preview';
 import { DashboardPage } from './DashboardPage';
 
@@ -9,7 +9,7 @@ const meta = preview.meta({
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
-      <MemoryRouter initialEntries={['/']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={['/']}>
         <Story />
       </MemoryRouter>
     ),

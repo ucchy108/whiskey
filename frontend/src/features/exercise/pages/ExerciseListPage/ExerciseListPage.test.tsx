@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '@/shared/theme';
 import { SnackbarProvider } from '@/shared/hooks';
@@ -12,9 +12,7 @@ import { ExerciseListPage } from './ExerciseListPage';
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
+      <MemoryRouter>
         <SnackbarProvider>
           <ExerciseListPage />
           <AppSnackbar />

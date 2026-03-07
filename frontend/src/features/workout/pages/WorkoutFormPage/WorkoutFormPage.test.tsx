@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "@/shared/theme";
 import { SnackbarProvider } from "@/shared/hooks";
@@ -9,8 +9,8 @@ import { WorkoutFormPage } from "./WorkoutFormPage";
 
 const mockNavigate = vi.fn();
 
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+vi.mock("react-router", async () => {
+  const actual = await vi.importActual("react-router");
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -43,7 +43,7 @@ vi.mock("../../api", () => ({
 function renderPage() {
   return render(
     <ThemeProvider theme={theme}>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <SnackbarProvider>
           <WorkoutFormPage />
           <AppSnackbar />

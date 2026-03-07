@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import preview from '../../../../../.storybook/preview';
 import { WorkoutFormPage } from './WorkoutFormPage';
 
@@ -9,7 +9,7 @@ const meta = preview.meta({
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
-      <MemoryRouter initialEntries={['/workouts/new']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={['/workouts/new']}>
         <Story />
       </MemoryRouter>
     ),

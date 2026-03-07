@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { ProtectedRoute } from './ProtectedRoute';
 
 vi.mock('../../hooks/useAuth', () => ({
@@ -23,7 +23,7 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
@@ -41,7 +41,7 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
@@ -59,7 +59,7 @@ describe('ProtectedRoute', () => {
     });
 
     render(
-      <MemoryRouter initialEntries={['/protected']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={['/protected']}>
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
