@@ -46,6 +46,7 @@ func NewRouter(config RouterConfig) http.Handler {
 	// 認証が必要なエンドポイント
 	authRequired := api.PathPrefix("").Subrouter()
 	authRequired.Use(auth.AuthMiddleware(config.SessionRepo))
+	authRequired.HandleFunc("/auth/me", config.UserHandler.GetMe).Methods("GET")
 	authRequired.HandleFunc("/auth/logout", config.UserHandler.Logout).Methods("POST")
 	authRequired.HandleFunc("/users/{id}", config.UserHandler.GetUser).Methods("GET")
 	authRequired.HandleFunc("/users/{id}/password", config.UserHandler.ChangePassword).Methods("PUT")

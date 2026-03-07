@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
+	"github.com/ucchy108/whiskey/backend/infrastructure/auth"
 	"github.com/ucchy108/whiskey/backend/usecase"
 )
 
@@ -402,6 +403,76 @@ func TestUserHandler_Logout(t *testing.T) {
 				if actualValue, ok := respBody[key]; !ok {
 					t.Errorf("expected key %s not found in response", key)
 				} else if actualValue != expectedValue {
+					t.Errorf("expected %s = %v, got %v", key, expectedValue, actualValue)
+				}
+			}
+		})
+	}
+}
+
+func TestUserHandler_GetMe(t *testing.T) {
+	testUserID := uuid.New()
+
+	tests := []struct {
+		name           string
+		contextUserID  uuid.UUID
+		mockFunc       func(ctx context.Context, userID uuid.UUID) (*entity.User, error)
+		expectedStatus int
+		expectedBody   map[string]interface{}
+	}{
+		{
+			name:          "成功: 認証済みユーザーの情報を取得",
+			contextUserID: testUserID,
+			mockFunc: func(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
+				user, _ := entity.NewUser("test@example.com", "password123")
+				return user, nil
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"email": "test@example.com",
+			},
+		},
+		{
+			name:          "失敗: ユーザーが見つからない",
+			contextUserID: testUserID,
+			mockFunc: func(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
+				return nil, usecase.ErrUserNotFound
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody: map[string]interface{}{
+				"error": "User not found",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockUsecase := &mockUserUsecase{
+				getUserFunc: tt.mockFunc,
+			}
+			h := NewUserHandler(mockUsecase)
+
+			req := httptest.NewRequest(http.MethodGet, "/api/auth/me", nil)
+			// AuthMiddlewareがコンテキストにuserIDを設定する想定
+			ctx := context.WithValue(req.Context(), auth.UserIDContextKey, tt.contextUserID)
+			req = req.WithContext(ctx)
+			rec := httptest.NewRecorder()
+
+			h.GetMe(rec, req)
+
+			if rec.Code != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, rec.Code)
+			}
+
+			var respBody map[string]interface{}
+			if err := json.NewDecoder(rec.Body).Decode(&respBody); err != nil {
+				t.Fatal(err)
+			}
+
+			for key, expectedValue := range tt.expectedBody {
+				if actualValue, ok := respBody[key]; !ok {
+					t.Errorf("expected key %s not found in response", key)
+				} else if key != "id" && actualValue != expectedValue {
 					t.Errorf("expected %s = %v, got %v", key, expectedValue, actualValue)
 				}
 			}

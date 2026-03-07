@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/ucchy108/whiskey/backend/infrastructure/auth"
 	"github.com/ucchy108/whiskey/backend/usecase"
 )
 
@@ -146,6 +147,31 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	resp := LoginResponse{
+		ID:    user.ID.String(),
+		Email: user.Email.String(),
+	}
+
+	respondJSON(w, http.StatusOK, resp)
+}
+
+// GetMe は現在のセッションに紐づくユーザー情報を返す。
+// GET /api/auth/me
+//
+// レスポンス:
+//   - 200 OK: 認証済み（ユーザー情報を返却）
+//   - 401 Unauthorized: 未認証（AuthMiddlewareで処理）
+//   - 404 Not Found: ユーザーが見つからない
+//   - 500 Internal Server Error: サーバーエラー
+func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	user, err := h.userUsecase.GetUser(r.Context(), userID)
+	if err != nil {
+		handleUsecaseError(w, err)
+		return
+	}
+
+	resp := GetUserResponse{
 		ID:    user.ID.String(),
 		Email: user.Email.String(),
 	}
