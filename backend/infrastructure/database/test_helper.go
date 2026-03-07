@@ -40,6 +40,12 @@ func SetupTestDB(t *testing.T) *sql.DB {
 		t.Fatalf("Failed to ping database: %v", err)
 	}
 
+	// テスト開始前にデータをクリーンアップ（並列実行時のデータ干渉を防止）
+	_, err = db.Exec("TRUNCATE TABLE workout_sets, workouts, exercises, users CASCADE")
+	if err != nil {
+		t.Fatalf("Failed to truncate tables on setup: %v", err)
+	}
+
 	return db
 }
 
