@@ -1,17 +1,19 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // ObjectStorageRepository はオブジェクトストレージの汎用インターフェース。
-// S3などのストレージサービスに対するファイル操作を抽象化する。
-// パス（キー）の生成ロジックはUsecase層が担う。
+// ファイルのアップロード・取得は全てPresigned URL経由で行い、
+// バックエンドがファイルデータを直接扱わない設計を強制する。
 type ObjectStorageRepository interface {
-	// Upload はデータをストレージにアップロードする
-	Upload(ctx context.Context, key string, data []byte, contentType string) error
+	// PresignedPutURL はアップロード用のPresigned URLを生成する
+	PresignedPutURL(ctx context.Context, key string, contentType string, expiry time.Duration) (string, error)
 
-	// GetURL はキーに対応するURLを返す
-	// オブジェクトが存在しない場合は空文字列とnilを返す
-	GetURL(ctx context.Context, key string) (string, error)
+	// PresignedGetURL はダウンロード用のPresigned URLを生成する
+	PresignedGetURL(ctx context.Context, key string, expiry time.Duration) (string, error)
 
 	// Delete はキーに対応するオブジェクトを削除する
 	// オブジェクトが存在しない場合でもエラーを返さない

@@ -1,10 +1,14 @@
 package storage_test
 
 import (
+	"bytes"
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -59,19 +63,44 @@ func getBucket() string {
 	return bucket
 }
 
-func TestS3ObjectStorage_Upload(t *testing.T) {
+// putObjectDirect はテストのセットアップ用にS3クライアントで直接オブジェクトを配置する
+func putObjectDirect(t *testing.T, s3Client *s3.Client, bucket, key string, data []byte) {
+	t.Helper()
+	_, err := s3Client.PutObject(context.Background(), &s3.PutObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(data),
+		ContentType: aws.String("image/jpeg"),
+	})
+	require.NoError(t, err)
+}
+
+func TestS3ObjectStorage_PresignedPutURL(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
 	store := storage.NewS3ObjectStorage(s3Client, bucket)
 
 	key := "whiskey/users/" + uuid.New().String() + "/avatar/" + uuid.New().String() + ".jpg"
-	data := []byte("fake-image-data")
 
-	err := store.Upload(ctx, key, data, "image/jpeg")
+	// Presigned PUT URLを生成
+	url, err := store.PresignedPutURL(ctx, key, "image/jpeg", 5*time.Minute)
 	require.NoError(t, err)
+	assert.NotEmpty(t, url)
+	assert.True(t, strings.Contains(url, key))
 
-	// S3にオブジェクトが存在することを確認
+	// Presigned URLでアップロードできることを確認
+	body := strings.NewReader("fake-image-data")
+	req, err := http.NewRequest("PUT", url, body)
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "image/jpeg")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// アップロードされたことを確認
 	_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -83,7 +112,7 @@ func TestS3ObjectStorage_Upload(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestS3ObjectStorage_GetURL(t *testing.T) {
+func TestS3ObjectStorage_PresignedGetURL(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
@@ -91,18 +120,20 @@ func TestS3ObjectStorage_GetURL(t *testing.T) {
 
 	key := "whiskey/users/" + uuid.New().String() + "/avatar/" + uuid.New().String() + ".jpg"
 
-	// 存在しない場合は空文字列を返す
-	url, err := store.GetURL(ctx, key)
-	require.NoError(t, err)
-	assert.Empty(t, url)
+	// テストデータをS3に直接配置
+	putObjectDirect(t, s3Client, bucket, key, []byte("fake-image-data"))
 
-	// アップロード後はキーが返される
-	err = store.Upload(ctx, key, []byte("image-data"), "image/jpeg")
+	// Presigned GET URLを生成
+	url, err := store.PresignedGetURL(ctx, key, 5*time.Minute)
 	require.NoError(t, err)
+	assert.NotEmpty(t, url)
+	assert.True(t, strings.Contains(url, key))
 
-	url, err = store.GetURL(ctx, key)
+	// Presigned URLでダウンロードできることを確認
+	resp, err := http.Get(url)
 	require.NoError(t, err)
-	assert.Equal(t, key, url)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// クリーンアップ
 	err = store.Delete(ctx, key)
@@ -121,17 +152,18 @@ func TestS3ObjectStorage_Delete(t *testing.T) {
 	err := store.Delete(ctx, key)
 	require.NoError(t, err)
 
-	// アップロードしてから削除
-	err = store.Upload(ctx, key, []byte("image-data"), "image/jpeg")
-	require.NoError(t, err)
+	// S3に直接配置してから削除
+	putObjectDirect(t, s3Client, bucket, key, []byte("image-data"))
 
 	err = store.Delete(ctx, key)
 	require.NoError(t, err)
 
 	// 削除されたことを確認
-	url, err := store.GetURL(ctx, key)
-	require.NoError(t, err)
-	assert.Empty(t, url)
+	_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	assert.Error(t, err)
 }
 
 func TestS3ObjectStorage_ListByPrefix(t *testing.T) {
@@ -150,11 +182,9 @@ func TestS3ObjectStorage_ListByPrefix(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, keys)
 
-	// 2件アップロード
-	err = store.Upload(ctx, key1, []byte("img1"), "image/jpeg")
-	require.NoError(t, err)
-	err = store.Upload(ctx, key2, []byte("img2"), "image/jpeg")
-	require.NoError(t, err)
+	// S3に直接2件配置
+	putObjectDirect(t, s3Client, bucket, key1, []byte("img1"))
+	putObjectDirect(t, s3Client, bucket, key2, []byte("img2"))
 
 	// 2件返される
 	keys, err = store.ListByPrefix(ctx, prefix)

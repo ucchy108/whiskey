@@ -2,9 +2,9 @@
 package storage
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -14,9 +14,11 @@ import (
 
 // S3ObjectStorage はS3を使用した汎用オブジェクトストレージ実装。
 // repository.ObjectStorageRepositoryインターフェースを実装する。
+// ファイルのアップロード・取得は全てPresigned URL経由で行う。
 type S3ObjectStorage struct {
-	client *s3.Client
-	bucket string
+	client    *s3.Client
+	presigner *s3.PresignClient
+	bucket    string
 }
 
 // S3ObjectStorageがrepository.ObjectStorageRepositoryを実装していることをコンパイル時にチェック
@@ -25,40 +27,39 @@ var _ repository.ObjectStorageRepository = (*S3ObjectStorage)(nil)
 // NewS3ObjectStorage は指定されたS3クライアントとバケット名で新しいS3ObjectStorageを生成する。
 func NewS3ObjectStorage(client *s3.Client, bucket string) *S3ObjectStorage {
 	return &S3ObjectStorage{
-		client: client,
-		bucket: bucket,
+		client:    client,
+		presigner: s3.NewPresignClient(client),
+		bucket:    bucket,
 	}
 }
 
-// Upload はデータをS3にアップロードする。
-func (s *S3ObjectStorage) Upload(ctx context.Context, key string, data []byte, contentType string) error {
-	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+// PresignedPutURL はアップロード用のPresigned URLを生成する。
+func (s *S3ObjectStorage) PresignedPutURL(ctx context.Context, key string, contentType string, expiry time.Duration) (string, error) {
+	result, err := s.presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
 		Key:         aws.String(key),
-		Body:        bytes.NewReader(data),
 		ContentType: aws.String(contentType),
-	})
+	}, s3.WithPresignExpires(expiry))
 	if err != nil {
-		return fmt.Errorf("failed to upload object: %w", err)
+		return "", fmt.Errorf("failed to generate presigned put URL: %w", err)
 	}
 
-	logger.Info("object uploaded", "bucket", s.bucket, "key", key)
-	return nil
+	logger.Info("presigned put URL generated", "bucket", s.bucket, "key", key, "expiry", expiry)
+	return result.URL, nil
 }
 
-// GetURL はキーに対応するオブジェクトのURLを返す。
-// オブジェクトが存在しない場合は空文字列とnilを返す。
-func (s *S3ObjectStorage) GetURL(ctx context.Context, key string) (string, error) {
-	_, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{
+// PresignedGetURL はダウンロード用のPresigned URLを生成する。
+func (s *S3ObjectStorage) PresignedGetURL(ctx context.Context, key string, expiry time.Duration) (string, error) {
+	result, err := s.presigner.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
-	})
+	}, s3.WithPresignExpires(expiry))
 	if err != nil {
-		// オブジェクトが存在しない場合
-		return "", nil
+		return "", fmt.Errorf("failed to generate presigned get URL: %w", err)
 	}
 
-	return key, nil
+	logger.Info("presigned get URL generated", "bucket", s.bucket, "key", key, "expiry", expiry)
+	return result.URL, nil
 }
 
 // Delete はキーに対応するオブジェクトをS3から削除する。
