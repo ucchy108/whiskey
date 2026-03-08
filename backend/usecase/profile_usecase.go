@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
@@ -14,7 +16,15 @@ var (
 	ErrProfileNotFound = errors.New("profile not found")
 	// ErrProfileAlreadyExists はプロフィールが既に存在する場合のエラー
 	ErrProfileAlreadyExists = errors.New("profile already exists for this user")
+	// ErrInvalidContentType は許可されていないContent-Typeの場合のエラー
+	ErrInvalidContentType = errors.New("content type must be image/jpeg or image/png")
 )
+
+// allowedImageTypes はアバター画像で許可されるContent-Type
+var allowedImageTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+}
 
 // ProfileUsecaseInterface はProfileUsecaseのインターフェース。
 // テスト時のモック作成に使用する。
@@ -22,24 +32,22 @@ type ProfileUsecaseInterface interface {
 	CreateProfile(ctx context.Context, userID uuid.UUID, displayName string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
 	GetProfile(ctx context.Context, userID uuid.UUID) (*entity.Profile, error)
 	UpdateProfile(ctx context.Context, userID uuid.UUID, displayName *string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
+	GetAvatarUploadURL(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error)
+	GetAvatarURL(ctx context.Context, userID uuid.UUID) (string, error)
+	DeleteAvatar(ctx context.Context, userID uuid.UUID) error
 }
 
 // ProfileUsecase はプロフィールに関するビジネスロジックを提供する。
-// プロフィールの作成、取得、更新のユースケースを実装する。
 type ProfileUsecase struct {
-	profileRepo repository.ProfileRepository
+	profileRepo    repository.ProfileRepository
+	objectStorage  repository.ObjectStorageRepository
 }
 
 // NewProfileUsecase はProfileUsecaseの新しいインスタンスを生成する。
-//
-// パラメータ:
-//   - profileRepo: プロフィールデータの永続化を担当するリポジトリ
-//
-// 戻り値:
-//   - *ProfileUsecase: 生成されたProfileUsecaseインスタンス
-func NewProfileUsecase(profileRepo repository.ProfileRepository) *ProfileUsecase {
+func NewProfileUsecase(profileRepo repository.ProfileRepository, objectStorage repository.ObjectStorageRepository) *ProfileUsecase {
 	return &ProfileUsecase{
-		profileRepo: profileRepo,
+		profileRepo:   profileRepo,
+		objectStorage: objectStorage,
 	}
 }
 
@@ -187,4 +195,74 @@ func (u *ProfileUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, di
 	}
 
 	return profile, nil
+}
+
+// avatarPrefix はユーザーのアバターのS3プレフィックスを返す。
+func avatarPrefix(userID uuid.UUID) string {
+	return fmt.Sprintf("whiskey/users/%s/avatar/", userID.String())
+}
+
+// GetAvatarUploadURL はアバター画像アップロード用のPresigned URLを生成する。
+// 既存のアバターがある場合は先に削除してから新しいキーのURLを発行する。
+// 返り値: (presignedURL, s3Key, error)
+func (u *ProfileUsecase) GetAvatarUploadURL(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error) {
+	if !allowedImageTypes[contentType] {
+		return "", "", ErrInvalidContentType
+	}
+
+	// 既存アバターを削除
+	if err := u.DeleteAvatar(ctx, userID); err != nil {
+		return "", "", err
+	}
+
+	ext := ".jpg"
+	if contentType == "image/png" {
+		ext = ".png"
+	}
+
+	key := avatarPrefix(userID) + uuid.New().String() + ext
+	url, err := u.objectStorage.PresignedPutURL(ctx, key, contentType, 5*time.Minute)
+	if err != nil {
+		return "", "", err
+	}
+
+	return url, key, nil
+}
+
+// GetAvatarURL はアバター画像のPresigned GET URLを返す。
+// アバターが存在しない場合は空文字列を返す。
+func (u *ProfileUsecase) GetAvatarURL(ctx context.Context, userID uuid.UUID) (string, error) {
+	prefix := avatarPrefix(userID)
+	keys, err := u.objectStorage.ListByPrefix(ctx, prefix)
+	if err != nil {
+		return "", err
+	}
+
+	if len(keys) == 0 {
+		return "", nil
+	}
+
+	url, err := u.objectStorage.PresignedGetURL(ctx, keys[0], 15*time.Minute)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}
+
+// DeleteAvatar はアバター画像を削除する。
+func (u *ProfileUsecase) DeleteAvatar(ctx context.Context, userID uuid.UUID) error {
+	prefix := avatarPrefix(userID)
+	keys, err := u.objectStorage.ListByPrefix(ctx, prefix)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if err := u.objectStorage.Delete(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

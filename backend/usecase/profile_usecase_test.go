@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ucchy108/whiskey/backend/domain/entity"
@@ -91,9 +92,62 @@ func (m *mockProfileRepository) addProfile(userID uuid.UUID, displayName string)
 // Ensure mockProfileRepository implements repository.ProfileRepository
 var _ repository.ProfileRepository = (*mockProfileRepository)(nil)
 
+// mockObjectStorage はObjectStorageRepositoryのモック実装
+type mockObjectStorage struct {
+	objects         map[string][]byte
+	presignedPutURL string
+	presignedGetURL string
+	err             error
+}
+
+func newMockObjectStorage() *mockObjectStorage {
+	return &mockObjectStorage{
+		objects:         make(map[string][]byte),
+		presignedPutURL: "https://s3.example.com/presigned-put",
+		presignedGetURL: "https://s3.example.com/presigned-get",
+	}
+}
+
+func (m *mockObjectStorage) Delete(ctx context.Context, key string) error {
+	if m.err != nil {
+		return m.err
+	}
+	delete(m.objects, key)
+	return nil
+}
+
+func (m *mockObjectStorage) ListByPrefix(ctx context.Context, prefix string) ([]string, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	var keys []string
+	for k := range m.objects {
+		if len(k) >= len(prefix) && k[:len(prefix)] == prefix {
+			keys = append(keys, k)
+		}
+	}
+	return keys, nil
+}
+
+func (m *mockObjectStorage) PresignedPutURL(ctx context.Context, key string, contentType string, expiry time.Duration) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	return m.presignedPutURL, nil
+}
+
+func (m *mockObjectStorage) PresignedGetURL(ctx context.Context, key string, expiry time.Duration) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	return m.presignedGetURL, nil
+}
+
+var _ repository.ObjectStorageRepository = (*mockObjectStorage)(nil)
+
 // テストヘルパー: ProfileUsecaseを生成
 func newProfileUsecaseForTest(mockRepo *mockProfileRepository) *ProfileUsecase {
-	return NewProfileUsecase(mockRepo)
+	return NewProfileUsecase(mockRepo, newMockObjectStorage())
 }
 
 func TestProfileUsecase_CreateProfile(t *testing.T) {
@@ -504,6 +558,163 @@ func TestProfileUsecase_UpdateProfile(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProfileUsecase_GetAvatarUploadURL(t *testing.T) {
+	tests := []struct {
+		name        string
+		contentType string
+		wantErr     bool
+	}{
+		{
+			name:        "正常系: JPEG画像のアップロードURL取得",
+			contentType: "image/jpeg",
+			wantErr:     false,
+		},
+		{
+			name:        "正常系: PNG画像のアップロードURL取得",
+			contentType: "image/png",
+			wantErr:     false,
+		},
+		{
+			name:        "異常系: 許可されていないContent-Type",
+			contentType: "application/pdf",
+			wantErr:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := newMockProfileRepository()
+			mockStorage := newMockObjectStorage()
+			uc := NewProfileUsecase(mockRepo, mockStorage)
+
+			userID := uuid.New()
+			url, key, err := uc.GetAvatarUploadURL(context.Background(), userID, tt.contentType)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Error("GetAvatarUploadURL() error = nil, want error")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("GetAvatarUploadURL() unexpected error = %v", err)
+				return
+			}
+
+			if url == "" {
+				t.Error("GetAvatarUploadURL() url is empty")
+			}
+			if key == "" {
+				t.Error("GetAvatarUploadURL() key is empty")
+			}
+		})
+	}
+}
+
+func TestProfileUsecase_GetAvatarUploadURL_DeletesExisting(t *testing.T) {
+	t.Run("正常系: 既存アバターを削除してからURL発行", func(t *testing.T) {
+		mockRepo := newMockProfileRepository()
+		mockStorage := newMockObjectStorage()
+		uc := NewProfileUsecase(mockRepo, mockStorage)
+
+		userID := uuid.New()
+
+		// 既存アバターをストレージに配置
+		oldKey := "whiskey/users/" + userID.String() + "/avatar/old.jpg"
+		mockStorage.objects[oldKey] = []byte("old-image")
+
+		url, key, err := uc.GetAvatarUploadURL(context.Background(), userID, "image/jpeg")
+		if err != nil {
+			t.Errorf("GetAvatarUploadURL() unexpected error = %v", err)
+			return
+		}
+
+		if url == "" || key == "" {
+			t.Error("GetAvatarUploadURL() returned empty url or key")
+		}
+
+		// 古いアバターが削除されていること
+		if _, exists := mockStorage.objects[oldKey]; exists {
+			t.Error("old avatar should be deleted")
+		}
+	})
+}
+
+func TestProfileUsecase_GetAvatarURL(t *testing.T) {
+	t.Run("正常系: アバターURLを取得", func(t *testing.T) {
+		mockRepo := newMockProfileRepository()
+		mockStorage := newMockObjectStorage()
+		uc := NewProfileUsecase(mockRepo, mockStorage)
+
+		userID := uuid.New()
+		key := "whiskey/users/" + userID.String() + "/avatar/test.jpg"
+		mockStorage.objects[key] = []byte("image-data")
+
+		url, err := uc.GetAvatarURL(context.Background(), userID)
+		if err != nil {
+			t.Errorf("GetAvatarURL() unexpected error = %v", err)
+			return
+		}
+		if url == "" {
+			t.Error("GetAvatarURL() url is empty")
+		}
+	})
+
+	t.Run("正常系: アバターが存在しない場合は空文字列", func(t *testing.T) {
+		mockRepo := newMockProfileRepository()
+		mockStorage := newMockObjectStorage()
+		uc := NewProfileUsecase(mockRepo, mockStorage)
+
+		userID := uuid.New()
+
+		url, err := uc.GetAvatarURL(context.Background(), userID)
+		if err != nil {
+			t.Errorf("GetAvatarURL() unexpected error = %v", err)
+			return
+		}
+		if url != "" {
+			t.Errorf("GetAvatarURL() url = %v, want empty string", url)
+		}
+	})
+}
+
+func TestProfileUsecase_DeleteAvatar(t *testing.T) {
+	t.Run("正常系: アバターを削除", func(t *testing.T) {
+		mockRepo := newMockProfileRepository()
+		mockStorage := newMockObjectStorage()
+		uc := NewProfileUsecase(mockRepo, mockStorage)
+
+		userID := uuid.New()
+		key := "whiskey/users/" + userID.String() + "/avatar/test.jpg"
+		mockStorage.objects[key] = []byte("image-data")
+
+		err := uc.DeleteAvatar(context.Background(), userID)
+		if err != nil {
+			t.Errorf("DeleteAvatar() unexpected error = %v", err)
+			return
+		}
+
+		// 削除されていること
+		if _, exists := mockStorage.objects[key]; exists {
+			t.Error("avatar should be deleted")
+		}
+	})
+
+	t.Run("正常系: アバターが存在しない場合もエラーなし", func(t *testing.T) {
+		mockRepo := newMockProfileRepository()
+		mockStorage := newMockObjectStorage()
+		uc := NewProfileUsecase(mockRepo, mockStorage)
+
+		userID := uuid.New()
+
+		err := uc.DeleteAvatar(context.Background(), userID)
+		if err != nil {
+			t.Errorf("DeleteAvatar() unexpected error = %v", err)
+		}
+	})
 }
 
 // テストヘルパー関数
