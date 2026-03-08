@@ -102,6 +102,72 @@ func (h *ProfileHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, toProfileResponse(profile))
 }
 
+// AvatarUploadURLRequest はアバターアップロードURL取得APIのリクエストボディ
+type AvatarUploadURLRequest struct {
+	ContentType string `json:"content_type"`
+}
+
+// AvatarUploadURLResponse はアバターアップロードURL取得APIのレスポンスボディ
+type AvatarUploadURLResponse struct {
+	UploadURL string `json:"upload_url"`
+	Key       string `json:"key"`
+}
+
+// AvatarURLResponse はアバターURL取得APIのレスポンスボディ
+type AvatarURLResponse struct {
+	URL string `json:"url"`
+}
+
+// GetAvatarUploadURL はアバター画像アップロード用のPresigned URLを返す。
+// POST /api/profile/avatar
+func (h *ProfileHandler) GetAvatarUploadURL(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	var req AvatarUploadURLRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	url, key, err := h.profileUsecase.GetAvatarUploadURL(r.Context(), userID, req.ContentType)
+	if err != nil {
+		handleProfileError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, AvatarUploadURLResponse{
+		UploadURL: url,
+		Key:       key,
+	})
+}
+
+// GetAvatarURL はアバター画像のPresigned GET URLを返す。
+// GET /api/profile/avatar
+func (h *ProfileHandler) GetAvatarURL(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	url, err := h.profileUsecase.GetAvatarURL(r.Context(), userID)
+	if err != nil {
+		handleProfileError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, AvatarURLResponse{URL: url})
+}
+
+// DeleteAvatar はアバター画像を削除する。
+// DELETE /api/profile/avatar
+func (h *ProfileHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	if err := h.profileUsecase.DeleteAvatar(r.Context(), userID); err != nil {
+		handleProfileError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // toProfileResponse はProfileエンティティをレスポンスDTOに変換する。
 func toProfileResponse(p *entity.Profile) ProfileResponse {
 	return ProfileResponse{
@@ -122,6 +188,8 @@ func handleProfileError(w http.ResponseWriter, err error) {
 		respondError(w, http.StatusNotFound, "Profile not found")
 	case usecase.ErrProfileAlreadyExists:
 		respondError(w, http.StatusConflict, "Profile already exists")
+	case usecase.ErrInvalidContentType:
+		respondError(w, http.StatusBadRequest, err.Error())
 	default:
 		if isProfileValidationError(err) {
 			respondError(w, http.StatusBadRequest, err.Error())

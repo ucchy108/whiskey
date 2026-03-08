@@ -16,9 +16,12 @@ import (
 
 // mockProfileUsecase はProfileUsecaseのモック実装
 type mockProfileUsecase struct {
-	createProfileFunc func(ctx context.Context, userID uuid.UUID, displayName string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
-	getProfileFunc    func(ctx context.Context, userID uuid.UUID) (*entity.Profile, error)
-	updateProfileFunc func(ctx context.Context, userID uuid.UUID, displayName *string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
+	createProfileFunc        func(ctx context.Context, userID uuid.UUID, displayName string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
+	getProfileFunc           func(ctx context.Context, userID uuid.UUID) (*entity.Profile, error)
+	updateProfileFunc        func(ctx context.Context, userID uuid.UUID, displayName *string, age *int32, weight *float64, height *float64) (*entity.Profile, error)
+	getAvatarUploadURLFunc func(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error)
+	getAvatarURLFunc       func(ctx context.Context, userID uuid.UUID) (string, error)
+	deleteAvatarFunc       func(ctx context.Context, userID uuid.UUID) error
 }
 
 func (m *mockProfileUsecase) CreateProfile(ctx context.Context, userID uuid.UUID, displayName string, age *int32, weight *float64, height *float64) (*entity.Profile, error) {
@@ -40,6 +43,27 @@ func (m *mockProfileUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID
 		return m.updateProfileFunc(ctx, userID, displayName, age, weight, height)
 	}
 	return nil, nil
+}
+
+func (m *mockProfileUsecase) GetAvatarUploadURL(ctx context.Context, userID uuid.UUID, contentType string) (string, string, error) {
+	if m.getAvatarUploadURLFunc != nil {
+		return m.getAvatarUploadURLFunc(ctx, userID, contentType)
+	}
+	return "", "", nil
+}
+
+func (m *mockProfileUsecase) GetAvatarURL(ctx context.Context, userID uuid.UUID) (string, error) {
+	if m.getAvatarURLFunc != nil {
+		return m.getAvatarURLFunc(ctx, userID)
+	}
+	return "", nil
+}
+
+func (m *mockProfileUsecase) DeleteAvatar(ctx context.Context, userID uuid.UUID) error {
+	if m.deleteAvatarFunc != nil {
+		return m.deleteAvatarFunc(ctx, userID)
+	}
+	return nil
 }
 
 // setAuthContext はテスト用にリクエストコンテキストにuserIDを設定する
