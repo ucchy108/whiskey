@@ -17,6 +17,7 @@ type RouterConfig struct {
 	UserHandler     *handler.UserHandler
 	WorkoutHandler  *handler.WorkoutHandler
 	ExerciseHandler *handler.ExerciseHandler
+	ProfileHandler  *handler.ProfileHandler
 	SessionRepo     repository.SessionRepository
 }
 
@@ -61,6 +62,11 @@ func NewRouter(config RouterConfig) http.Handler {
 	authRequired.HandleFunc("/workouts/{id}/sets", config.WorkoutHandler.AddWorkoutSets).Methods("POST")
 	authRequired.HandleFunc("/workouts/{id}", config.WorkoutHandler.DeleteWorkout).Methods("DELETE")
 	authRequired.HandleFunc("/workout-sets/{id}", config.WorkoutHandler.DeleteWorkoutSet).Methods("DELETE")
+
+	// プロフィールルート
+	authRequired.HandleFunc("/profile", config.ProfileHandler.CreateProfile).Methods("POST")
+	authRequired.HandleFunc("/profile", config.ProfileHandler.GetProfile).Methods("GET")
+	authRequired.HandleFunc("/profile", config.ProfileHandler.UpdateProfile).Methods("PUT")
 
 	// エクササイズルート
 	// 注意: /exercises/{id}/progression は /exercises/{id} より前に登録（Gorilla Muxの優先順位）

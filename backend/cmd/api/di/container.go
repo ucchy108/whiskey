@@ -44,15 +44,21 @@ func BuildRouterConfig(db *sql.DB, redisClient *redis.Client) router.RouterConfi
 	workoutUsecase := usecase.NewWorkoutUsecase(workoutRepo, workoutSetRepo, exerciseRepo, workoutService)
 	exerciseUsecase := usecase.NewExerciseUsecase(exerciseRepo, exerciseService)
 
+	// Profile
+	profileRepo := database.NewProfileRepository(db)
+	profileUsecase := usecase.NewProfileUsecase(profileRepo)
+
 	// Interface層
 	userHandler := handler.NewUserHandler(userUsecase)
 	workoutHandler := handler.NewWorkoutHandler(workoutUsecase)
 	exerciseHandler := handler.NewExerciseHandler(exerciseUsecase)
+	profileHandler := handler.NewProfileHandler(profileUsecase)
 
 	return router.RouterConfig{
 		UserHandler:     userHandler,
 		WorkoutHandler:  workoutHandler,
 		ExerciseHandler: exerciseHandler,
+		ProfileHandler:  profileHandler,
 		SessionRepo:     sessionStore,
 	}
 }
