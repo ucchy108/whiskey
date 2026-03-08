@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"github.com/ucchy108/whiskey/backend/cmd/api/di"
@@ -68,8 +71,25 @@ func main() {
 	}
 	logger.Info("Successfully connected to Redis", "redis_url", redisURL)
 
+	// S3クライアントの初期化
+	s3Endpoint := getEnv("S3_ENDPOINT", "http://localstack:4566")
+	s3Region := getEnv("S3_REGION", "ap-northeast-1")
+	s3Bucket := getEnv("S3_BUCKET", "whiskey-avatars")
+	s3Client := s3.NewFromConfig(aws.Config{
+		Region: s3Region,
+		Credentials: credentials.NewStaticCredentialsProvider(
+			getEnv("AWS_ACCESS_KEY_ID", "test"),
+			getEnv("AWS_SECRET_ACCESS_KEY", "test"),
+			"",
+		),
+	}, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(s3Endpoint)
+		o.UsePathStyle = true
+	})
+	logger.Info("S3 client initialized", "endpoint", s3Endpoint, "bucket", s3Bucket)
+
 	// 依存関係の注入（DI）
-	routerConfig := di.BuildRouterConfig(db, redisClient)
+	routerConfig := di.BuildRouterConfig(db, redisClient, s3Client, s3Bucket)
 	r := router.NewRouter(routerConfig)
 
 	// サーバー起動

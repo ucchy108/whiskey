@@ -64,6 +64,10 @@ func NewRouter(config RouterConfig) http.Handler {
 	authRequired.HandleFunc("/workout-sets/{id}", config.WorkoutHandler.DeleteWorkoutSet).Methods("DELETE")
 
 	// プロフィールルート
+	// 注意: /profile/avatar/* は /profile より前に登録
+	authRequired.HandleFunc("/profile/avatar", config.ProfileHandler.GetAvatarUploadURL).Methods("POST")
+	authRequired.HandleFunc("/profile/avatar", config.ProfileHandler.GetAvatarURL).Methods("GET")
+	authRequired.HandleFunc("/profile/avatar", config.ProfileHandler.DeleteAvatar).Methods("DELETE")
 	authRequired.HandleFunc("/profile", config.ProfileHandler.CreateProfile).Methods("POST")
 	authRequired.HandleFunc("/profile", config.ProfileHandler.GetProfile).Methods("GET")
 	authRequired.HandleFunc("/profile", config.ProfileHandler.UpdateProfile).Methods("PUT")

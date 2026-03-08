@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/redis/go-redis/v9"
 	"github.com/ucchy108/whiskey/backend/domain/service"
 	"github.com/ucchy108/whiskey/backend/infrastructure/auth"
 	"github.com/ucchy108/whiskey/backend/infrastructure/database"
 	"github.com/ucchy108/whiskey/backend/infrastructure/router"
+	"github.com/ucchy108/whiskey/backend/infrastructure/storage"
 	"github.com/ucchy108/whiskey/backend/interfaces/handler"
 	"github.com/ucchy108/whiskey/backend/usecase"
 )
@@ -25,7 +27,7 @@ import (
 //
 // 戻り値:
 //   - router.RouterConfig: 全ハンドラーとセッションリポジトリを含むルーター設定
-func BuildRouterConfig(db *sql.DB, redisClient *redis.Client) router.RouterConfig {
+func BuildRouterConfig(db *sql.DB, redisClient *redis.Client, s3Client *s3.Client, s3Bucket string) router.RouterConfig {
 	// Infrastructure層
 	userRepo := database.NewUserRepository(db)
 	sessionStore := auth.NewSessionStore(redisClient)
@@ -44,9 +46,10 @@ func BuildRouterConfig(db *sql.DB, redisClient *redis.Client) router.RouterConfi
 	workoutUsecase := usecase.NewWorkoutUsecase(workoutRepo, workoutSetRepo, exerciseRepo, workoutService)
 	exerciseUsecase := usecase.NewExerciseUsecase(exerciseRepo, exerciseService)
 
-	// Profile
+	// Profile + ObjectStorage
 	profileRepo := database.NewProfileRepository(db)
-	profileUsecase := usecase.NewProfileUsecase(profileRepo)
+	objectStorage := storage.NewS3ObjectStorage(s3Client, s3Bucket)
+	profileUsecase := usecase.NewProfileUsecase(profileRepo, objectStorage)
 
 	// Interface層
 	userHandler := handler.NewUserHandler(userUsecase)
