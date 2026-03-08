@@ -210,22 +210,6 @@ func parseFloat(s string) (float64, error) {
 	return strconv.ParseFloat(s, 64)
 }
 
-// toNullInt32 は*int32をsql.NullInt32に変換する
-func toNullInt32(i *int32) sql.NullInt32 {
-	if i == nil {
-		return sql.NullInt32{Valid: false}
-	}
-	return sql.NullInt32{Int32: *i, Valid: true}
-}
-
-// fromNullInt32 はsql.NullInt32を*int32に変換する
-func fromNullInt32(ni sql.NullInt32) *int32 {
-	if !ni.Valid {
-		return nil
-	}
-	return &ni.Int32
-}
-
 // toWorkoutSetEntity はDB層のWorkoutSetをDomain層のWorkoutSetに変換する
 func toWorkoutSetEntity(ws db.WorkoutSet) (*entity.WorkoutSet, error) {
 	weight, err := parseFloat(ws.Weight)

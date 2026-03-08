@@ -151,22 +151,6 @@ func (r *workoutRepository) ExistsByUserIDAndDate(ctx context.Context, userID uu
 	return workout != nil, nil
 }
 
-// toNullString は*stringをsql.NullStringに変換する
-func toNullString(s *string) sql.NullString {
-	if s == nil {
-		return sql.NullString{Valid: false}
-	}
-	return sql.NullString{String: *s, Valid: true}
-}
-
-// fromNullString はsql.NullStringを*stringに変換する
-func fromNullString(ns sql.NullString) *string {
-	if !ns.Valid {
-		return nil
-	}
-	return &ns.String
-}
-
 // toWorkoutEntity はDB層のWorkoutをDomain層のWorkoutに変換する
 func toWorkoutEntity(w db.Workout) *entity.Workout {
 	return entity.ReconstructWorkout(
