@@ -102,23 +102,23 @@ func TestProfile_CalculateBMI(t *testing.T) {
 		wantNil    bool
 	}{
 		{
-			name:    "正常系: 標準的なBMI計算（70kg, 1.75m）",
+			name:    "正常系: 標準的なBMI計算（70kg, 175cm）",
 			weight:  float64Ptr(70.0),
-			height:  float64Ptr(1.75),
+			height:  float64Ptr(175.0),
 			wantBMI: float64Ptr(22.86), // 70 / (1.75 * 1.75) ≈ 22.86
 			wantNil: false,
 		},
 		{
-			name:    "正常系: 低BMI（50kg, 1.70m）",
+			name:    "正常系: 低BMI（50kg, 170cm）",
 			weight:  float64Ptr(50.0),
-			height:  float64Ptr(1.70),
+			height:  float64Ptr(170.0),
 			wantBMI: float64Ptr(17.30), // 50 / (1.70 * 1.70) ≈ 17.30
 			wantNil: false,
 		},
 		{
 			name:    "異常系: 体重がnil",
 			weight:  nil,
-			height:  float64Ptr(1.75),
+			height:  float64Ptr(175.0),
 			wantNil: true,
 		},
 		{
@@ -312,13 +312,18 @@ func TestProfile_UpdateHeight(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name:    "正常系: 有効な身長（1.75m）",
-			height:  float64Ptr(1.75),
+			name:    "正常系: 有効な身長（175cm）",
+			height:  float64Ptr(175.0),
 			wantErr: false,
 		},
 		{
-			name:    "正常系: 極小の身長（0.1m）",
-			height:  float64Ptr(0.1),
+			name:    "正常系: 最小値（1cm）",
+			height:  float64Ptr(1.0),
+			wantErr: false,
+		},
+		{
+			name:    "正常系: 最大値（300cm）",
+			height:  float64Ptr(300.0),
 			wantErr: false,
 		},
 		{
@@ -327,7 +332,7 @@ func TestProfile_UpdateHeight(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:        "異常系: 0m",
+			name:        "異常系: 0cm",
 			height:      float64Ptr(0.0),
 			wantErr:     true,
 			expectedErr: ErrInvalidHeight,
@@ -335,6 +340,12 @@ func TestProfile_UpdateHeight(t *testing.T) {
 		{
 			name:        "異常系: 負の身長",
 			height:      float64Ptr(-1.0),
+			wantErr:     true,
+			expectedErr: ErrInvalidHeight,
+		},
+		{
+			name:        "異常系: 301cm（上限超過）",
+			height:      float64Ptr(301.0),
 			wantErr:     true,
 			expectedErr: ErrInvalidHeight,
 		},

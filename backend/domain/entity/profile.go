@@ -11,7 +11,7 @@ var (
 	ErrInvalidDisplayName = errors.New("display name must be between 1 and 100 characters")
 	ErrInvalidAge         = errors.New("age must be between 0 and 150")
 	ErrInvalidWeight      = errors.New("weight must be greater than 0")
-	ErrInvalidHeight      = errors.New("height must be greater than 0")
+	ErrInvalidHeight      = errors.New("height must be between 1 and 300 cm")
 )
 
 // Profile はユーザーのプロフィール情報を表す
@@ -109,7 +109,9 @@ func (p *Profile) CalculateBMI() *float64 {
 		return nil
 	}
 	// BMI = 体重(kg) / (身長(m))^2
-	bmi := *p.Weight / (*p.Height * *p.Height)
+	// Height は cm 単位なので m に変換する
+	heightM := *p.Height / 100.0
+	bmi := *p.Weight / (heightM * heightM)
 	return &bmi
 }
 
@@ -137,9 +139,9 @@ func ValidateWeight(weight float64) error {
 	return nil
 }
 
-// ValidateHeight は身長を検証する
+// ValidateHeight は身長（cm単位）を検証する
 func ValidateHeight(height float64) error {
-	if height <= 0 {
+	if height < 1 || height > 300 {
 		return ErrInvalidHeight
 	}
 	return nil
