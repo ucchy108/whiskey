@@ -20,6 +20,7 @@ type Repos struct {
 	Exercise   repository.ExerciseRepository
 	Workout    repository.WorkoutRepository
 	WorkoutSet repository.WorkoutSetRepository
+	Profile    repository.ProfileRepository
 }
 
 // SetupRepos はテスト用の全リポジトリを生成する
@@ -29,6 +30,7 @@ func SetupRepos(conn *sql.DB) *Repos {
 		Exercise:   NewExerciseRepository(conn),
 		Workout:    NewWorkoutRepository(conn),
 		WorkoutSet: NewWorkoutSetRepository(conn),
+		Profile:    NewProfileRepository(conn),
 	}
 }
 
@@ -180,6 +182,65 @@ func CreateWorkout(t *testing.T, ctx context.Context, repo repository.WorkoutRep
 	}
 
 	return w
+}
+
+// ---------- Profile Factory ----------
+
+// profileSeq はユニークな表示名生成用のシーケンス番号
+var profileSeq int
+
+// ProfileOption はProfileファクトリのオプション関数
+type ProfileOption func(p *entity.Profile)
+
+// WithDisplayName は表示名を指定する
+func WithDisplayName(name string) ProfileOption {
+	return func(p *entity.Profile) {
+		p.DisplayName = name
+	}
+}
+
+// WithAge は年齢を指定する
+func WithAge(age int32) ProfileOption {
+	return func(p *entity.Profile) {
+		p.Age = &age
+	}
+}
+
+// WithProfileWeight は体重を指定する
+func WithProfileWeight(weight float64) ProfileOption {
+	return func(p *entity.Profile) {
+		p.Weight = &weight
+	}
+}
+
+// WithHeight は身長（cm）を指定する
+func WithHeight(height float64) ProfileOption {
+	return func(p *entity.Profile) {
+		p.Height = &height
+	}
+}
+
+// CreateProfile はテスト用プロフィールを作成しDBに保存する。
+func CreateProfile(t *testing.T, ctx context.Context, repo repository.ProfileRepository, userID uuid.UUID, opts ...ProfileOption) *entity.Profile {
+	t.Helper()
+
+	profileSeq++
+	displayName := fmt.Sprintf("User-%d", profileSeq)
+
+	profile, err := entity.NewProfile(userID, displayName)
+	if err != nil {
+		t.Fatalf("CreateProfile: failed to create entity: %v", err)
+	}
+
+	for _, opt := range opts {
+		opt(profile)
+	}
+
+	if err := repo.Create(ctx, profile); err != nil {
+		t.Fatalf("CreateProfile: failed to save: %v", err)
+	}
+
+	return profile
 }
 
 // ---------- WorkoutSet Factory ----------
