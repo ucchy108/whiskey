@@ -31,6 +31,23 @@ services:
       timeout: 3s
       retries: 5
 
+  # LocalStack (S3 Emulation)
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=ap-northeast-1
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ./docker/localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # Go Backend API
   backend:
     build:
@@ -46,10 +63,17 @@ services:
       - REDIS_URL=redis:6379
       - PORT=8080
       - ENV=development
+      - S3_ENDPOINT=http://localstack:4566
+      - S3_REGION=ap-northeast-1
+      - S3_BUCKET=whiskey-avatars
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     command: air -c .air.toml
 
@@ -73,3 +97,4 @@ volumes:
   postgres-data:
   go-mod-cache:
   redis-data:
+  localstack-data:
