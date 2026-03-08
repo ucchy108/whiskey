@@ -736,6 +736,204 @@ GitHub風ヒートマップ表示用のデータを取得する。
 
 ---
 
+## プロフィール API
+
+全エンドポイント **認証: 必要**。認証済みユーザー自身のプロフィールのみ操作可能。
+
+### `POST /api/profile` - プロフィール作成
+
+**リクエストボディ:**
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| display_name | string | Yes | 表示名（1〜100文字） |
+| age | int | No | 年齢（0〜150） |
+| weight | float | No | 体重 kg（0より大きい値） |
+| height | float | No | 身長 cm（1〜300） |
+
+```json
+{
+  "display_name": "テストユーザー",
+  "age": 25,
+  "weight": 70.5,
+  "height": 175.0
+}
+```
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 201 Created | 作成成功 |
+| 400 Bad Request | リクエスト不正、バリデーションエラー |
+| 409 Conflict | プロフィールが既に存在 |
+| 500 Internal Server Error | サーバーエラー |
+
+```json
+{
+  "id": "...",
+  "user_id": "...",
+  "display_name": "テストユーザー",
+  "age": 25,
+  "weight": 70.5,
+  "height": 175.0,
+  "bmi": 23.02
+}
+```
+
+---
+
+### `GET /api/profile` - プロフィール取得
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 200 OK | 取得成功 |
+| 404 Not Found | プロフィールが未作成 |
+| 500 Internal Server Error | サーバーエラー |
+
+```json
+{
+  "id": "...",
+  "user_id": "...",
+  "display_name": "テストユーザー",
+  "age": 25,
+  "weight": 70.5,
+  "height": 175.0,
+  "bmi": 23.02
+}
+```
+
+---
+
+### `PUT /api/profile` - プロフィール更新
+
+nilのフィールドは更新しない（部分更新）。
+
+**リクエストボディ:**
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| display_name | string | No | 表示名（1〜100文字） |
+| age | int | No | 年齢（0〜150） |
+| weight | float | No | 体重 kg（0より大きい値） |
+| height | float | No | 身長 cm（1〜300） |
+
+```json
+{
+  "display_name": "新しい名前",
+  "weight": 72.0
+}
+```
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 200 OK | 更新成功 |
+| 400 Bad Request | リクエスト不正、バリデーションエラー |
+| 404 Not Found | プロフィールが未作成 |
+| 500 Internal Server Error | サーバーエラー |
+
+```json
+{
+  "id": "...",
+  "user_id": "...",
+  "display_name": "新しい名前",
+  "age": 25,
+  "weight": 72.0,
+  "height": 175.0,
+  "bmi": 23.51
+}
+```
+
+---
+
+### `POST /api/profile/avatar` - アバターアップロードURL取得
+
+アバター画像アップロード用のPresigned URLを発行する。既存のアバターがある場合は自動的に削除される。
+
+フロントエンドはレスポンスの `upload_url` に対してPUTリクエストで画像をアップロードする。
+
+**リクエストボディ:**
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| content_type | string | Yes | 画像のContent-Type（`image/jpeg` または `image/png`） |
+
+```json
+{
+  "content_type": "image/jpeg"
+}
+```
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 200 OK | URL発行成功 |
+| 400 Bad Request | 許可されていないContent-Type |
+| 500 Internal Server Error | サーバーエラー |
+
+```json
+{
+  "upload_url": "https://s3.example.com/presigned-put-url...",
+  "key": "whiskey/users/{user_id}/avatar/{uuid}.jpg"
+}
+```
+
+**フロントエンドでのアップロード手順:**
+
+```javascript
+// 1. Presigned URLを取得
+const { upload_url } = await fetch('/api/profile/avatar', {
+  method: 'POST',
+  body: JSON.stringify({ content_type: 'image/jpeg' })
+}).then(r => r.json());
+
+// 2. Presigned URLに直接アップロード
+await fetch(upload_url, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'image/jpeg' },
+  body: imageFile
+});
+```
+
+---
+
+### `GET /api/profile/avatar` - アバターURL取得
+
+アバター画像の閲覧用Presigned URL（有効期限15分）を返す。
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 200 OK | URL取得成功 |
+| 500 Internal Server Error | サーバーエラー |
+
+```json
+{
+  "url": "https://s3.example.com/presigned-get-url..."
+}
+```
+
+アバターが存在しない場合は `url` が空文字列になる。
+
+---
+
+### `DELETE /api/profile/avatar` - アバター削除
+
+**レスポンス:**
+
+| ステータス | 説明 |
+|-----------|------|
+| 204 No Content | 削除成功 |
+| 500 Internal Server Error | サーバーエラー |
+
+---
+
 ## エンドポイント一覧
 
 | メソッド | パス | 認証 | 説明 |
@@ -759,6 +957,12 @@ GitHub風ヒートマップ表示用のデータを取得する。
 | GET | `/api/exercises/{id}` | 必要 | エクササイズ詳細取得 |
 | PUT | `/api/exercises/{id}` | 必要 | エクササイズ更新 |
 | DELETE | `/api/exercises/{id}` | 必要 | エクササイズ削除 |
+| POST | `/api/profile` | 必要 | プロフィール作成 |
+| GET | `/api/profile` | 必要 | プロフィール取得 |
+| PUT | `/api/profile` | 必要 | プロフィール更新 |
+| POST | `/api/profile/avatar` | 必要 | アバターアップロードURL取得 |
+| GET | `/api/profile/avatar` | 必要 | アバターURL取得 |
+| DELETE | `/api/profile/avatar` | 必要 | アバター削除 |
 
 ## 参考リンク
 
