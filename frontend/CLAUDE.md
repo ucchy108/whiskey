@@ -79,6 +79,30 @@ shared/*   → features/* ❌
 features/A → features/B ⚠️ index.ts 経由のみ
 ```
 
+### feature 間の共有ルール
+
+**APIクライアント（api.ts）** と **型定義（types.ts）** は feature のドメインに対応する場所に定義し、`index.ts` 経由で他の feature から参照してよい。エンドポイントの定義が1箇所にまとまり、変更時の影響を局所化できる。
+
+```typescript
+// ✅ 正しい: features/profile/api.ts を index.ts 経由で参照
+import { profileApi } from '@/features/profile';
+
+// ✅ 正しい: features/profile/types.ts の型を index.ts 経由で参照
+import type { Profile } from '@/features/profile';
+```
+
+**カスタムフック（hooks/）** は使用する feature 内に定義し、外部に公開しない。同じ API を呼ぶフックでも、用途が異なれば各 feature に個別に定義する。
+
+```typescript
+// ✅ 正しい: settings 画面で使う useProfile は settings 内に定義
+features/settings/hooks/useProfile/
+
+// ❌ 間違い: features/profile/hooks/useProfile/ を他の feature から参照
+import { useProfile } from '@/features/profile';
+```
+
+**理由**: カスタムフックは状態管理やUIロジックを含むため、feature をまたいで共有すると依存関係が複雑になる。APIクライアントはバックエンドエンドポイントへの薄いマッピングであり、状態を持たないため共有しても問題が起きにくい。
+
 ### テーマの使い方
 
 色やスペーシングは `shared/theme/theme.ts` で定義されたテーマを使用する。コンポーネント内でカラーコードをハードコードしない。
