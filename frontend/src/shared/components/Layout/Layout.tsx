@@ -1,12 +1,15 @@
 import { Outlet, NavLink, useNavigate } from 'react-router';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ListIcon from '@mui/icons-material/List';
+import Person from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useCurrentProfile } from '@/shared/hooks/useCurrentProfile';
 
 interface NavItemProps {
   to: string;
@@ -60,6 +63,7 @@ function NavItem({ to, icon, label }: NavItemProps) {
 
 export function Layout() {
   const { user, logout } = useAuth();
+  const { displayName, avatarURL } = useCurrentProfile();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -123,20 +127,22 @@ export function Layout() {
           }}
           onClick={handleLogout}
         >
-          <Box
+          <Avatar
+            src={avatarURL ?? undefined}
             sx={{
               width: 32,
               height: 32,
-              borderRadius: '50%',
               bgcolor: 'primary.main',
               flexShrink: 0,
             }}
-          />
+          >
+            {!avatarURL && <Person sx={{ fontSize: 18 }} />}
+          </Avatar>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
             <Typography
               sx={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF' }}
             >
-              {user?.email ?? ''}
+              {displayName ?? user?.email ?? ''}
             </Typography>
             <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
               無料プラン
