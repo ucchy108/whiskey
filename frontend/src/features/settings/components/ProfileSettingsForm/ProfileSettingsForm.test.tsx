@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Default, Loading, Empty } from './ProfileSettingsForm.stories';
+import { Default, Loading, Empty, WithAvatar } from './ProfileSettingsForm.stories';
 
 describe('ProfileSettingsForm', () => {
   describe('レンダリング', () => {
@@ -25,6 +25,18 @@ describe('ProfileSettingsForm', () => {
     it('profile が null の場合は空フォーム', () => {
       render(<Empty.Component />);
       expect(screen.getByLabelText(/表示名/)).toHaveValue('');
+    });
+
+    it('アバター未設定時に「画像を選択」ボタンが表示される', () => {
+      render(<Default.Component />);
+      expect(screen.getByText('画像を選択')).toBeInTheDocument();
+    });
+
+    it('アバター設定済みで画像と「変更」「削除」ボタンが表示される', () => {
+      render(<WithAvatar.Component />);
+      expect(screen.getByRole('img')).toBeInTheDocument();
+      expect(screen.getByText('変更')).toBeInTheDocument();
+      expect(screen.getByText('削除')).toBeInTheDocument();
     });
   });
 

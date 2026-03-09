@@ -13,17 +13,26 @@ import {
   type ProfileFormInput,
   type ProfileFormValues,
 } from '@/features/profile/schemas';
+import { AvatarUploader } from '../AvatarUploader';
 
 export interface ProfileSettingsFormProps {
   profile: Profile | null;
+  avatarURL: string | null;
   onSubmit: (data: ProfileFormValues) => void;
+  onAvatarUpload: (file: File) => void;
+  onAvatarDelete: () => void;
   isLoading?: boolean;
+  isAvatarLoading?: boolean;
 }
 
 export function ProfileSettingsForm({
   profile,
+  avatarURL,
   onSubmit,
+  onAvatarUpload,
+  onAvatarDelete,
   isLoading = false,
+  isAvatarLoading = false,
 }: ProfileSettingsFormProps) {
   const {
     register,
@@ -65,6 +74,13 @@ export function ProfileSettingsForm({
           表示名や身体情報を設定します
         </Typography>
       </Box>
+
+      <AvatarUploader
+        avatarURL={avatarURL}
+        onUpload={onAvatarUpload}
+        onDelete={onAvatarDelete}
+        isLoading={isAvatarLoading}
+      />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>

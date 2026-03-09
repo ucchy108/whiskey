@@ -7,12 +7,20 @@ import { SettingsForm } from '../../components/SettingsForm';
 import { ProfileSettingsForm } from '../../components/ProfileSettingsForm';
 import { useSettings } from '../../hooks/useSettings';
 import { useProfile } from '../../hooks/useProfile';
+import { useAvatar } from '../../hooks/useAvatar';
 import type { ThemeMode, WeightUnit } from '../../types';
 
 export function SettingsPage() {
   const { settings, setThemeMode, setWeightUnit, setNotifications } =
     useSettings();
   const { profile, isLoading: isProfileLoading, saveProfile } = useProfile();
+  const {
+    avatarURL,
+    isLoading: isAvatarLoading,
+    isUploading,
+    uploadAvatar,
+    deleteAvatar,
+  } = useAvatar();
   const { showSuccess, showError } = useSnackbar();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -48,6 +56,24 @@ export function SettingsPage() {
     }
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      await uploadAvatar(file);
+      showSuccess('アバターをアップロードしました');
+    } catch {
+      showError('アバターのアップロードに失敗しました');
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    try {
+      await deleteAvatar();
+      showSuccess('アバターを削除しました');
+    } catch {
+      showError('アバターの削除に失敗しました');
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -62,8 +88,12 @@ export function SettingsPage() {
       {!isProfileLoading && (
         <ProfileSettingsForm
           profile={profile}
+          avatarURL={avatarURL}
           onSubmit={handleProfileSubmit}
+          onAvatarUpload={handleAvatarUpload}
+          onAvatarDelete={handleAvatarDelete}
           isLoading={isSaving}
+          isAvatarLoading={isUploading || isAvatarLoading}
         />
       )}
       <SettingsForm
