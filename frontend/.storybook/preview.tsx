@@ -8,6 +8,7 @@ import { AppSnackbar } from '../src/shared/components';
 import {
   authHandlers,
   exerciseHandlers,
+  profileHandlers,
   workoutHandlers,
 } from '../src/test/mocks/handlers';
 
@@ -21,6 +22,7 @@ export default definePreview({
       handlers: {
         auth: authHandlers,
         exercise: exerciseHandlers,
+        profile: profileHandlers,
         workout: workoutHandlers,
       },
     },
