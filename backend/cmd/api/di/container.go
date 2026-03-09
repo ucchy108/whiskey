@@ -27,7 +27,7 @@ import (
 //
 // 戻り値:
 //   - router.RouterConfig: 全ハンドラーとセッションリポジトリを含むルーター設定
-func BuildRouterConfig(db *sql.DB, redisClient *redis.Client, s3Client *s3.Client, s3Bucket string) router.RouterConfig {
+func BuildRouterConfig(db *sql.DB, redisClient *redis.Client, s3Client *s3.Client, s3Bucket string, s3Endpoint string, s3ExternalEndpoint string) router.RouterConfig {
 	// Infrastructure層
 	userRepo := database.NewUserRepository(db)
 	sessionStore := auth.NewSessionStore(redisClient)
@@ -48,7 +48,7 @@ func BuildRouterConfig(db *sql.DB, redisClient *redis.Client, s3Client *s3.Clien
 
 	// Profile + ObjectStorage
 	profileRepo := database.NewProfileRepository(db)
-	objectStorage := storage.NewS3ObjectStorage(s3Client, s3Bucket)
+	objectStorage := storage.NewS3ObjectStorage(s3Client, s3Bucket, s3Endpoint, s3ExternalEndpoint)
 	profileUsecase := usecase.NewProfileUsecase(profileRepo, objectStorage)
 
 	// Interface層

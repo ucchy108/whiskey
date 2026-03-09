@@ -73,23 +73,25 @@ func main() {
 
 	// S3クライアントの初期化
 	s3Endpoint := getEnv("S3_ENDPOINT", "http://localstack:4566")
+	s3ExternalEndpoint := getEnv("S3_EXTERNAL_ENDPOINT", "")
 	s3Region := getEnv("S3_REGION", "ap-northeast-1")
 	s3Bucket := getEnv("S3_BUCKET", "whiskey-avatars")
+	s3Creds := credentials.NewStaticCredentialsProvider(
+		getEnv("AWS_ACCESS_KEY_ID", "test"),
+		getEnv("AWS_SECRET_ACCESS_KEY", "test"),
+		"",
+	)
 	s3Client := s3.NewFromConfig(aws.Config{
-		Region: s3Region,
-		Credentials: credentials.NewStaticCredentialsProvider(
-			getEnv("AWS_ACCESS_KEY_ID", "test"),
-			getEnv("AWS_SECRET_ACCESS_KEY", "test"),
-			"",
-		),
+		Region:      s3Region,
+		Credentials: s3Creds,
 	}, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(s3Endpoint)
 		o.UsePathStyle = true
 	})
-	logger.Info("S3 client initialized", "endpoint", s3Endpoint, "bucket", s3Bucket)
+	logger.Info("S3 client initialized", "endpoint", s3Endpoint, "external_endpoint", s3ExternalEndpoint, "bucket", s3Bucket)
 
 	// 依存関係の注入（DI）
-	routerConfig := di.BuildRouterConfig(db, redisClient, s3Client, s3Bucket)
+	routerConfig := di.BuildRouterConfig(db, redisClient, s3Client, s3Bucket, s3Endpoint, s3ExternalEndpoint)
 	r := router.NewRouter(routerConfig)
 
 	// サーバー起動
