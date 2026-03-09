@@ -79,7 +79,7 @@ func TestS3ObjectStorage_PresignedPutURL(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
-	store := storage.NewS3ObjectStorage(s3Client, bucket)
+	store := storage.NewS3ObjectStorage(s3Client, bucket, "", "")
 
 	key := "whiskey/users/" + uuid.New().String() + "/avatar/" + uuid.New().String() + ".jpg"
 
@@ -116,7 +116,7 @@ func TestS3ObjectStorage_PresignedGetURL(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
-	store := storage.NewS3ObjectStorage(s3Client, bucket)
+	store := storage.NewS3ObjectStorage(s3Client, bucket, "", "")
 
 	key := "whiskey/users/" + uuid.New().String() + "/avatar/" + uuid.New().String() + ".jpg"
 
@@ -144,7 +144,7 @@ func TestS3ObjectStorage_Delete(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
-	store := storage.NewS3ObjectStorage(s3Client, bucket)
+	store := storage.NewS3ObjectStorage(s3Client, bucket, "", "")
 
 	key := "whiskey/users/" + uuid.New().String() + "/avatar/" + uuid.New().String() + ".jpg"
 
@@ -170,7 +170,7 @@ func TestS3ObjectStorage_ListByPrefix(t *testing.T) {
 	ctx := context.Background()
 	s3Client := setupTestS3Client(t)
 	bucket := getBucket()
-	store := storage.NewS3ObjectStorage(s3Client, bucket)
+	store := storage.NewS3ObjectStorage(s3Client, bucket, "", "")
 
 	userID := uuid.New().String()
 	prefix := "whiskey/users/" + userID + "/avatar/"

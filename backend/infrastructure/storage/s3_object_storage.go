@@ -4,6 +4,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -15,21 +16,29 @@ import (
 // S3ObjectStorage はS3を使用した汎用オブジェクトストレージ実装。
 // repository.ObjectStorageRepositoryインターフェースを実装する。
 // ファイルのアップロード・取得は全てPresigned URL経由で行う。
+//
+// 開発環境（LocalStack）ではPresigned URLのホスト名がDocker内部ネットワークのものになるため、
+// externalEndpoint を設定することでブラウザからアクセス可能なURLに置換する。
 type S3ObjectStorage struct {
-	client    *s3.Client
-	presigner *s3.PresignClient
-	bucket    string
+	client           *s3.Client
+	presigner        *s3.PresignClient
+	bucket           string
+	endpoint         string
+	externalEndpoint string
 }
 
 // S3ObjectStorageがrepository.ObjectStorageRepositoryを実装していることをコンパイル時にチェック
 var _ repository.ObjectStorageRepository = (*S3ObjectStorage)(nil)
 
 // NewS3ObjectStorage は指定されたS3クライアントとバケット名で新しいS3ObjectStorageを生成する。
-func NewS3ObjectStorage(client *s3.Client, bucket string) *S3ObjectStorage {
+// externalEndpoint が空でない場合、Presigned URLの内部エンドポイントを外部エンドポイントに置換する。
+func NewS3ObjectStorage(client *s3.Client, bucket string, endpoint string, externalEndpoint string) *S3ObjectStorage {
 	return &S3ObjectStorage{
-		client:    client,
-		presigner: s3.NewPresignClient(client),
-		bucket:    bucket,
+		client:           client,
+		presigner:        s3.NewPresignClient(client),
+		bucket:           bucket,
+		endpoint:         endpoint,
+		externalEndpoint: externalEndpoint,
 	}
 }
 
@@ -45,7 +54,7 @@ func (s *S3ObjectStorage) PresignedPutURL(ctx context.Context, key string, conte
 	}
 
 	logger.Info("presigned put URL generated", "bucket", s.bucket, "key", key, "expiry", expiry)
-	return result.URL, nil
+	return s.toExternalURL(result.URL), nil
 }
 
 // PresignedGetURL はダウンロード用のPresigned URLを生成する。
@@ -59,7 +68,16 @@ func (s *S3ObjectStorage) PresignedGetURL(ctx context.Context, key string, expir
 	}
 
 	logger.Info("presigned get URL generated", "bucket", s.bucket, "key", key, "expiry", expiry)
-	return result.URL, nil
+	return s.toExternalURL(result.URL), nil
+}
+
+// toExternalURL は内部エンドポイントを外部エンドポイントに置換する。
+// externalEndpoint が未設定の場合はそのまま返す。
+func (s *S3ObjectStorage) toExternalURL(url string) string {
+	if s.externalEndpoint == "" || s.endpoint == "" {
+		return url
+	}
+	return strings.Replace(url, s.endpoint, s.externalEndpoint, 1)
 }
 
 // Delete はキーに対応するオブジェクトをS3から削除する。
