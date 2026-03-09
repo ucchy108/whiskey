@@ -1,0 +1,1 @@
+export { useCurrentProfile } from './useCurrentProfile';
