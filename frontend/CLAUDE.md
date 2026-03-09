@@ -49,6 +49,22 @@ Phase 3 実装中。featureベース構成導入済み。
 
 ## 開発ルール
 
+### `let` 禁止 — `const` のみ使用
+
+変数宣言には常に `const` を使用する。`let` は使用禁止。再代入が必要な場合は設計を見直す（例: `map`/`filter`/`reduce` で変換、状態は `useState` で管理）。
+
+```typescript
+// ✅ 正しい: const のみ
+const result = items.map((item) => item.name);
+const [count, setCount] = useState(0);
+
+// ❌ 間違い: let で再代入
+let result = '';
+for (const item of items) {
+  result += item.name;
+}
+```
+
 ### パスエイリアス
 
 `@/` で `src/` を参照。`vite.config.ts` と `tsconfig.json` で設定済み。
