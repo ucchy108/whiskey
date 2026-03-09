@@ -7,11 +7,16 @@ beforeEach(() => {
 });
 
 describe('SettingsPage', () => {
-  it('ページヘッダーと設定セクションが表示される', () => {
+  it('ページヘッダーと設定セクションが表示される', async () => {
     render(<Default.Component />);
 
     expect(screen.getByText('設定')).toBeInTheDocument();
     expect(screen.getByText('アプリケーションの設定を管理')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('プロフィール')).toBeInTheDocument();
+    });
+
     expect(screen.getByText('テーマ')).toBeInTheDocument();
     expect(screen.getByText('重量の単位')).toBeInTheDocument();
     expect(screen.getByText('通知')).toBeInTheDocument();
@@ -47,5 +52,13 @@ describe('SettingsPage', () => {
 
     const stored = JSON.parse(localStorage.getItem('whiskey-settings')!);
     expect(stored.themeMode).toBe('dark');
+  });
+
+  it('プロフィールセクションにモックデータが表示される', async () => {
+    render(<Default.Component />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/表示名/)).toHaveValue('テストユーザー');
+    });
   });
 });
