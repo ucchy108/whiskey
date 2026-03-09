@@ -46,7 +46,7 @@ describe('RegisterPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
-  it('登録成功で / に遷移', async () => {
+  it('登録成功でプロフィール設定ステップに遷移', async () => {
     mockRegister.mockResolvedValue(undefined);
     const user = userEvent.setup();
     render(<Default.Component />);
@@ -60,8 +60,30 @@ describe('RegisterPage', () => {
 
     await waitFor(() => {
       expect(mockRegister).toHaveBeenCalledWith('new@example.com', 'password123');
-      expect(mockNavigate).toHaveBeenCalledWith('/');
+      expect(screen.getByText('プロフィール設定')).toBeInTheDocument();
     });
+  });
+
+  it('プロフィール設定で「あとで設定する」クリックで / に遷移', async () => {
+    mockRegister.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<Default.Component />);
+
+    // Step 1: アカウント作成
+    await user.type(screen.getByLabelText('メールアドレス'), 'new@example.com');
+    await user.type(screen.getByLabelText('パスワード'), 'password123');
+    await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+    await user.click(
+      screen.getAllByRole('button').find((btn) => btn.getAttribute('type') === 'submit')!,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('プロフィール設定')).toBeInTheDocument();
+    });
+
+    // Step 2: スキップ
+    await user.click(screen.getByText('あとで設定する'));
+    expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
   it('登録失敗 (409) で Snackbar にエラーが表示される', async () => {
