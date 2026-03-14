@@ -35,12 +35,12 @@ export function useProfile() {
   }, []);
 
   const saveProfile = useCallback(
-    async (data: CreateProfileRequest | UpdateProfileRequest) => {
+    async (data: CreateProfileRequest & UpdateProfileRequest) => {
       if (profile) {
-        const updated = await profileApi.update(data as UpdateProfileRequest);
+        const updated = await profileApi.update(data);
         setProfile(updated);
       } else {
-        const created = await profileApi.create(data as CreateProfileRequest);
+        const created = await profileApi.create(data);
         setProfile(created);
       }
     },

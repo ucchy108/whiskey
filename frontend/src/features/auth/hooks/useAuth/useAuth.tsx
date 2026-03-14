@@ -21,7 +21,7 @@ function loadUser(): User | null {
       typeof parsed.id === 'string' &&
       typeof parsed.email === 'string'
     ) {
-      return parsed as User;
+      return { id: parsed.id, email: parsed.email };
     }
     return null;
   } catch {
@@ -64,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setIsLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialUser is intentionally read only on mount
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

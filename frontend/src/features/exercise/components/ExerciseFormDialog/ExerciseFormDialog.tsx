@@ -24,7 +24,7 @@ export interface ExerciseFormDialogProps {
   exercise: Exercise | null;
   isLoading: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateExerciseRequest | UpdateExerciseRequest) => void;
+  onSubmit: (data: CreateExerciseRequest & UpdateExerciseRequest) => void;
 }
 
 export function ExerciseFormDialog({

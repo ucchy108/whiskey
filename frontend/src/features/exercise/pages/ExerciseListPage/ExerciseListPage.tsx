@@ -65,10 +65,10 @@ export function ExerciseListPage() {
     fetchExercises(filterBodyPart);
   }, [fetchExercises, filterBodyPart]);
 
-  const handleCreate = async (data: CreateExerciseRequest | UpdateExerciseRequest) => {
+  const handleCreate = async (data: CreateExerciseRequest & UpdateExerciseRequest) => {
     setIsSubmitting(true);
     try {
-      await exerciseApi.create(data as CreateExerciseRequest);
+      await exerciseApi.create(data);
       showSuccess('エクササイズを追加しました');
       setFormOpen(false);
       fetchExercises(filterBodyPart);
@@ -79,11 +79,11 @@ export function ExerciseListPage() {
     }
   };
 
-  const handleUpdate = async (data: CreateExerciseRequest | UpdateExerciseRequest) => {
+  const handleUpdate = async (data: CreateExerciseRequest & UpdateExerciseRequest) => {
     if (!editTarget) return;
     setIsSubmitting(true);
     try {
-      await exerciseApi.update(editTarget.id, data as UpdateExerciseRequest);
+      await exerciseApi.update(editTarget.id, data);
       showSuccess('エクササイズを更新しました');
       setEditTarget(null);
       fetchExercises(filterBodyPart);
