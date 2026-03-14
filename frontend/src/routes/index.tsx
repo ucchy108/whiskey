@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { VerificationPendingPage } from '@/features/auth/pages/VerificationPendingPage';
+import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { Layout } from '@/shared/components';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
@@ -16,6 +18,8 @@ export function AppRoutes() {
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email/pending" element={<VerificationPendingPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
 
       {/* Protected routes with Layout */}
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>

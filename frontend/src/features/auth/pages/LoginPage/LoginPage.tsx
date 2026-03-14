@@ -19,8 +19,14 @@ export function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (e) {
-      if (e instanceof ApiRequestError && e.status === 401) {
-        showError('メールアドレスまたはパスワードが正しくありません');
+      if (e instanceof ApiRequestError) {
+        if (e.status === 401) {
+          showError('メールアドレスまたはパスワードが正しくありません');
+        } else if (e.status === 403) {
+          showError('メールアドレスの確認が完了していません。確認メールをご確認ください');
+        } else {
+          showError('ログインに失敗しました。しばらく経ってからお試しください');
+        }
       } else {
         showError('ログインに失敗しました。しばらく経ってからお試しください');
       }

@@ -3,26 +3,21 @@ import { useNavigate } from 'react-router';
 import Box from '@mui/material/Box';
 import { ApiRequestError } from '@/shared/api';
 import { useSnackbar } from '@/shared/hooks';
-import { profileApi, ProfileForm } from '@/features/profile';
-import type { ProfileFormValues } from '@/features/profile';
 import { useAuth } from '../../hooks/useAuth';
 import { BrandPanel } from '../../components/BrandPanel';
 import { RegisterForm } from '../../components/RegisterForm';
 
-type Step = 'account' | 'profile';
-
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const { showError, showSuccess } = useSnackbar();
+  const { showError } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<Step>('account');
 
   const handleAccountSubmit = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       await register(email, password);
-      setStep('profile');
+      navigate('/verify-email/pending', { state: { email } });
     } catch (e) {
       if (e instanceof ApiRequestError) {
         if (e.status === 409) {
@@ -40,28 +35,6 @@ export function RegisterPage() {
     }
   };
 
-  const handleProfileSubmit = async (data: ProfileFormValues) => {
-    setIsLoading(true);
-    try {
-      await profileApi.create({
-        display_name: data.displayName,
-        age: data.age,
-        weight: data.weight,
-        height: data.height,
-      });
-      showSuccess('プロフィールを設定しました');
-      navigate('/');
-    } catch {
-      showError('プロフィールの設定に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSkip = () => {
-    navigate('/');
-  };
-
   const handleLoginClick = () => {
     navigate('/login');
   };
@@ -73,12 +46,10 @@ export function RegisterPage() {
         height: '100vh',
       }}
     >
-      {/* Left: Brand Panel */}
       <Box sx={{ flex: 1, display: { xs: 'none', md: 'block' } }}>
         <BrandPanel />
       </Box>
 
-      {/* Right: Form */}
       <Box
         sx={{
           flex: 1,
@@ -89,19 +60,11 @@ export function RegisterPage() {
           p: '60px 80px',
         }}
       >
-        {step === 'account' ? (
-          <RegisterForm
-            onSubmit={handleAccountSubmit}
-            isLoading={isLoading}
-            onLoginClick={handleLoginClick}
-          />
-        ) : (
-          <ProfileForm
-            onSubmit={handleProfileSubmit}
-            onSkip={handleSkip}
-            isLoading={isLoading}
-          />
-        )}
+        <RegisterForm
+          onSubmit={handleAccountSubmit}
+          isLoading={isLoading}
+          onLoginClick={handleLoginClick}
+        />
       </Box>
     </Box>
   );
