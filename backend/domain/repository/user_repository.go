@@ -29,4 +29,7 @@ type UserRepository interface {
 
 	// ExistsByEmail checks if a user with the given email exists
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+
+	// FindByVerificationToken retrieves a user by verification token
+	FindByVerificationToken(ctx context.Context, token string) (*entity.User, error)
 }

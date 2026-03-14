@@ -32,11 +32,14 @@ type Profile struct {
 }
 
 type User struct {
-	ID           uuid.UUID `json:"id"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"password_hash"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID                         uuid.UUID      `json:"id"`
+	Email                      string         `json:"email"`
+	PasswordHash               string         `json:"password_hash"`
+	EmailVerified              bool           `json:"email_verified"`
+	VerificationToken          sql.NullString `json:"verification_token"`
+	VerificationTokenExpiresAt sql.NullTime   `json:"verification_token_expires_at"`
+	CreatedAt                  time.Time      `json:"created_at"`
+	UpdatedAt                  time.Time      `json:"updated_at"`
 }
 
 type Workout struct {

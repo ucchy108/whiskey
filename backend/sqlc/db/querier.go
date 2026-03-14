@@ -34,6 +34,7 @@ type Querier interface {
 	GetProfileByUserID(ctx context.Context, userID uuid.UUID) (Profile, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByVerificationToken(ctx context.Context, verificationToken sql.NullString) (User, error)
 	GetWorkout(ctx context.Context, id uuid.UUID) (Workout, error)
 	GetWorkoutByUserAndDate(ctx context.Context, arg GetWorkoutByUserAndDateParams) (Workout, error)
 	GetWorkoutSet(ctx context.Context, id uuid.UUID) (WorkoutSet, error)
