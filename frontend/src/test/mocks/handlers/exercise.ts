@@ -3,7 +3,7 @@ import { mockExercises, generateMockProgression } from '../data';
 
 export const exerciseHandlers = [
   http.get('/api/exercises/:id/progression', ({ params }) => {
-    const data = generateMockProgression(params.id as string);
+    const data = generateMockProgression(String(params.id));
     return HttpResponse.json(data);
   }),
 
@@ -24,8 +24,8 @@ export const exerciseHandlers = [
     return HttpResponse.json(exercise);
   }),
 
-  http.post('/api/exercises', async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  http.post<Record<string, never>, Record<string, unknown>>('/api/exercises', async ({ request }) => {
+    const body = await request.json();
     return HttpResponse.json(
       {
         id: `e${Date.now()}`,
@@ -39,12 +39,12 @@ export const exerciseHandlers = [
     );
   }),
 
-  http.put('/api/exercises/:id', async ({ params, request }) => {
+  http.put<{ id: string }, Record<string, unknown>>('/api/exercises/:id', async ({ params, request }) => {
     const exercise = mockExercises.find((e) => e.id === params.id);
     if (!exercise) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 });
     }
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = await request.json();
     return HttpResponse.json({
       ...exercise,
       ...body,

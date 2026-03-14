@@ -11,7 +11,7 @@ export const workoutHandlers = [
   }),
 
   http.get('/api/workouts/:id', ({ params }) => {
-    const detail = mockWorkoutDetails[params.id as string];
+    const detail = mockWorkoutDetails[String(params.id)];
     if (!detail) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 });
     }
@@ -23,8 +23,8 @@ export const workoutHandlers = [
     return HttpResponse.json(contributions);
   }),
 
-  http.post('/api/workouts', async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  http.post<Record<string, never>, Record<string, unknown>>('/api/workouts', async ({ request }) => {
+    const body = await request.json();
     return HttpResponse.json(
       {
         workout: {
@@ -42,12 +42,12 @@ export const workoutHandlers = [
     );
   }),
 
-  http.put('/api/workouts/:id/memo', async ({ params, request }) => {
-    const detail = mockWorkoutDetails[params.id as string];
+  http.put<{ id: string }, { memo: string | null }>('/api/workouts/:id/memo', async ({ params, request }) => {
+    const detail = mockWorkoutDetails[params.id];
     if (!detail) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 });
     }
-    const body = (await request.json()) as { memo: string | null };
+    const body = await request.json();
     return HttpResponse.json({
       ...detail.workout,
       memo: body.memo,
@@ -55,10 +55,8 @@ export const workoutHandlers = [
     });
   }),
 
-  http.post('/api/workouts/:id/sets', async ({ request }) => {
-    const body = (await request.json()) as {
-      sets: Record<string, unknown>[];
-    };
+  http.post<{ id: string }, { sets: Record<string, unknown>[] }>('/api/workouts/:id/sets', async ({ request }) => {
+    const body = await request.json();
     const newSets = body.sets.map((s, i) => ({
       ...s,
       id: `s${Date.now()}-${i}`,

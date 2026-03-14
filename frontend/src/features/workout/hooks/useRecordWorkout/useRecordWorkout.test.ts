@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useRecordWorkout } from './useRecordWorkout';
 import type { WorkoutFormValues } from '../../schemas';
+import type { WorkoutDetail } from '../../types';
 
 vi.mock('../../api', () => ({
   workoutApi: {
@@ -62,24 +63,27 @@ describe('useRecordWorkout', () => {
   });
 
   it('呼び出し中は isLoading が true になる', async () => {
-    let resolveRecord!: (v: unknown) => void;
-    vi.mocked(workoutApi.record).mockReturnValue(
-      new Promise((r) => { resolveRecord = r as never; }),
+    const ctrl: { resolve: ((v: WorkoutDetail | PromiseLike<WorkoutDetail>) => void) | null } = { resolve: null };
+    vi.mocked(workoutApi.record).mockImplementation(
+      () => new Promise((r) => { ctrl.resolve = r; }),
     );
 
     const { result } = renderHook(() => useRecordWorkout());
     expect(result.current.isLoading).toBe(false);
 
-    let promise: Promise<unknown>;
+    const promiseRef: { current: Promise<unknown> | null } = { current: null };
     act(() => {
-      promise = result.current.recordWorkout(formData);
+      promiseRef.current = result.current.recordWorkout(formData);
     });
 
     expect(result.current.isLoading).toBe(true);
 
     await act(async () => {
-      resolveRecord!({ workout: { id: 'w1' }, sets: [] });
-      await promise;
+      ctrl.resolve?.({
+        workout: { id: 'w1', user_id: 'u1', date: '2026-02-08', daily_score: 1, memo: null, created_at: '', updated_at: '' },
+        sets: [],
+      });
+      await promiseRef.current;
     });
 
     expect(result.current.isLoading).toBe(false);

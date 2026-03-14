@@ -30,7 +30,7 @@ describe('AvatarUploader', () => {
       render(<Default.Component onUpload={onUpload} />);
 
       const file = new File(['dummy'], 'avatar.jpg', { type: 'image/jpeg' });
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
       await user.upload(input, file);
 
       await waitFor(() => {
@@ -44,7 +44,7 @@ describe('AvatarUploader', () => {
       render(<Default.Component onUpload={onUpload} />);
 
       const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
       await user.upload(input, file);
 
       await waitFor(() => {
@@ -58,7 +58,7 @@ describe('AvatarUploader', () => {
       render(<Default.Component onUpload={onUpload} />);
 
       const file = new File(['dummy'], 'avatar.gif', { type: 'image/gif' });
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
       await user.upload(input, file);
 
       await waitFor(() => {
@@ -74,7 +74,7 @@ describe('AvatarUploader', () => {
 
       const largeContent = new Uint8Array(5 * 1024 * 1024 + 1);
       const file = new File([largeContent], 'large.jpg', { type: 'image/jpeg' });
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
       await user.upload(input, file);
 
       await waitFor(() => {
