@@ -43,6 +43,8 @@ func NewRouter(config RouterConfig) http.Handler {
 	// 認証不要のエンドポイント
 	api.HandleFunc("/users", config.UserHandler.Register).Methods("POST")
 	api.HandleFunc("/auth/login", config.UserHandler.Login).Methods("POST")
+	api.HandleFunc("/auth/verify-email", config.UserHandler.VerifyEmail).Methods("GET")
+	api.HandleFunc("/auth/resend-verification", config.UserHandler.ResendVerificationEmail).Methods("POST")
 
 	// 認証が必要なエンドポイント
 	authRequired := api.PathPrefix("").Subrouter()

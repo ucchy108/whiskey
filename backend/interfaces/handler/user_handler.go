@@ -65,6 +65,11 @@ type ChangePasswordRequest struct {
 	NewPassword     string `json:"new_password"`
 }
 
+// ResendVerificationRequest は確認メール再送APIのリクエストボディ
+type ResendVerificationRequest struct {
+	Email string `json:"email"`
+}
+
 // ErrorResponse はエラーレスポンスボディ
 type ErrorResponse struct {
 	Error string `json:"error"`
@@ -293,6 +298,45 @@ func (h *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// VerifyEmail はメール検証を行う。
+// GET /api/auth/verify-email?token=xxx
+//
+// レスポンス:
+//   - 200 OK: 検証成功
+//   - 400 Bad Request: トークンが不正または期限切れ
+func (h *UserHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		respondError(w, http.StatusBadRequest, "Token is required")
+		return
+	}
+
+	if err := h.userUsecase.VerifyEmail(r.Context(), token); err != nil {
+		handleUsecaseError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{"message": "Email verified successfully"})
+}
+
+// ResendVerificationEmail は確認メールを再送する。
+// POST /api/auth/resend-verification
+//
+// レスポンス:
+//   - 200 OK: 常に200を返す（メール列挙攻撃防止）
+func (h *UserHandler) ResendVerificationEmail(w http.ResponseWriter, r *http.Request) {
+	var req ResendVerificationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// エラーがあっても常に200を返す（メール列挙攻撃防止）
+	_ = h.userUsecase.ResendVerificationEmail(r.Context(), req.Email)
+
+	respondJSON(w, http.StatusOK, map[string]string{"message": "If the email exists, a verification email has been sent"})
+}
+
 // respondJSON はJSON形式でレスポンスを返す。
 func respondJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -315,6 +359,10 @@ func handleUsecaseError(w http.ResponseWriter, err error) {
 		respondError(w, http.StatusUnauthorized, "Invalid email or password")
 	case usecase.ErrUserNotFound:
 		respondError(w, http.StatusNotFound, "User not found")
+	case usecase.ErrEmailNotVerified:
+		respondError(w, http.StatusForbidden, "Email not verified")
+	case usecase.ErrInvalidVerificationToken:
+		respondError(w, http.StatusBadRequest, "Invalid or expired verification token")
 	default:
 		// バリデーションエラー（値オブジェクトのエラー）をチェック
 		if isValidationError(err) {

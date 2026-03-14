@@ -90,8 +90,13 @@ func main() {
 	})
 	logger.Info("S3 client initialized", "endpoint", s3Endpoint, "external_endpoint", s3ExternalEndpoint, "bucket", s3Bucket)
 
+	// SMTP設定
+	smtpHost := getEnv("SMTP_HOST", "localhost")
+	smtpPort := getEnv("SMTP_PORT", "1025")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+
 	// 依存関係の注入（DI）
-	routerConfig := di.BuildRouterConfig(db, redisClient, s3Client, s3Bucket, s3Endpoint, s3ExternalEndpoint)
+	routerConfig := di.BuildRouterConfig(db, redisClient, s3Client, s3Bucket, s3Endpoint, s3ExternalEndpoint, smtpHost, smtpPort, frontendURL)
 	r := router.NewRouter(routerConfig)
 
 	// サーバー起動

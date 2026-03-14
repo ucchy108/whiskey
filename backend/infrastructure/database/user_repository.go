@@ -25,20 +25,22 @@ func NewUserRepository(conn *sql.DB) repository.UserRepository {
 
 // Create はユーザーを作成する
 func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
-	// Domain層の値オブジェクト → DB層のstringに変換
 	params := db.CreateUserParams{
 		Email:        user.Email.String(),
 		PasswordHash: user.PasswordHash.String(),
+		EmailVerified: user.EmailVerified,
 	}
 
-	// sqlcでDBに保存
+	if user.VerificationToken != nil {
+		params.VerificationToken = sql.NullString{String: user.VerificationToken.String(), Valid: true}
+		params.VerificationTokenExpiresAt = sql.NullTime{Time: user.VerificationToken.ExpiresAt(), Valid: true}
+	}
+
 	createdUser, err := r.queries.CreateUser(ctx, params)
 	if err != nil {
 		return err
 	}
 
-	// 生成されたIDとタイムスタンプを元のエンティティに反映
-	// NOTE: Goのポインタ渡しのため、呼び出し側のエンティティも更新される
 	user.ID = createdUser.ID
 	user.CreatedAt = createdUser.CreatedAt
 	user.UpdatedAt = createdUser.UpdatedAt
@@ -48,68 +50,53 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 
 // FindByID はIDでユーザーを取得する
 func (r *userRepository) FindByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
-	// sqlcでDBから取得（string型）
 	dbUser, err := r.queries.GetUser(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil // ユーザーが見つからない場合はnilを返す
+			return nil, nil
 		}
 		return nil, err
 	}
 
-	// DB層 → Domain層に変換
-	domainUser := entity.ReconstructUser(
-		dbUser.ID,
-		dbUser.Email,
-		dbUser.PasswordHash,
-		dbUser.CreatedAt,
-		dbUser.UpdatedAt,
-	)
-
-	return domainUser, nil
+	return reconstructUserFromDB(dbUser), nil
 }
 
 // FindByEmail はメールアドレスでユーザーを取得する
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
-	// sqlcでDBから取得
 	dbUser, err := r.queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil // ユーザーが見つからない場合はnilを返す
+			return nil, nil
 		}
 		return nil, err
 	}
 
-	// DB層 → Domain層に変換
-	domainUser := entity.ReconstructUser(
-		dbUser.ID,
-		dbUser.Email,
-		dbUser.PasswordHash,
-		dbUser.CreatedAt,
-		dbUser.UpdatedAt,
-	)
+	return reconstructUserFromDB(dbUser), nil
+}
 
-	return domainUser, nil
+// FindByVerificationToken は検証トークンでユーザーを取得する
+func (r *userRepository) FindByVerificationToken(ctx context.Context, token string) (*entity.User, error) {
+	dbUser, err := r.queries.GetUserByVerificationToken(ctx, sql.NullString{String: token, Valid: true})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return reconstructUserFromDB(dbUser), nil
 }
 
 // FindAll は全ユーザーを取得する
 func (r *userRepository) FindAll(ctx context.Context) ([]*entity.User, error) {
-	// sqlcでDBから取得
 	dbUsers, err := r.queries.ListUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// DB層 → Domain層に変換
 	domainUsers := make([]*entity.User, len(dbUsers))
 	for i, dbUser := range dbUsers {
-		domainUsers[i] = entity.ReconstructUser(
-			dbUser.ID,
-			dbUser.Email,
-			dbUser.PasswordHash,
-			dbUser.CreatedAt,
-			dbUser.UpdatedAt,
-		)
+		domainUsers[i] = reconstructUserFromDB(dbUser)
 	}
 
 	return domainUsers, nil
@@ -117,23 +104,26 @@ func (r *userRepository) FindAll(ctx context.Context) ([]*entity.User, error) {
 
 // Update はユーザーを更新する
 func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
-	// Domain層の値オブジェクト → DB層のstringに変換
 	params := db.UpdateUserParams{
-		ID:           user.ID,
-		Email:        user.Email.String(),
-		PasswordHash: user.PasswordHash.String(),
+		ID:            user.ID,
+		Email:         user.Email.String(),
+		PasswordHash:  user.PasswordHash.String(),
+		EmailVerified: user.EmailVerified,
 	}
 
-	// sqlcでDBを更新
+	if user.VerificationToken != nil {
+		params.VerificationToken = sql.NullString{String: user.VerificationToken.String(), Valid: true}
+		params.VerificationTokenExpiresAt = sql.NullTime{Time: user.VerificationToken.ExpiresAt(), Valid: true}
+	}
+
 	updatedUser, err := r.queries.UpdateUser(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil // ユーザーが見つからない場合はnilを返す
+			return nil
 		}
 		return err
 	}
 
-	// 更新されたタイムスタンプを元のエンティティに反映
 	user.UpdatedAt = updatedUser.UpdatedAt
 
 	return nil
@@ -151,4 +141,24 @@ func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 		return false, err
 	}
 	return user != nil, nil
+}
+
+// reconstructUserFromDB はDB層のUserからドメインのUserに変換する
+func reconstructUserFromDB(dbUser db.User) *entity.User {
+	var tokenStr string
+	var tokenExpiresAt = dbUser.VerificationTokenExpiresAt.Time
+	if dbUser.VerificationToken.Valid {
+		tokenStr = dbUser.VerificationToken.String
+	}
+
+	return entity.ReconstructUser(
+		dbUser.ID,
+		dbUser.Email,
+		dbUser.PasswordHash,
+		dbUser.EmailVerified,
+		tokenStr,
+		tokenExpiresAt,
+		dbUser.CreatedAt,
+		dbUser.UpdatedAt,
+	)
 }

@@ -18,6 +18,10 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 	// ErrInvalidCredentials は認証情報が無効な場合のエラー
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	// ErrEmailNotVerified はメールアドレスが未検証の場合のエラー
+	ErrEmailNotVerified = errors.New("email not verified")
+	// ErrInvalidVerificationToken は検証トークンが不正な場合のエラー
+	ErrInvalidVerificationToken = errors.New("invalid or expired verification token")
 )
 
 // UserUsecaseInterface はUserUsecaseのインターフェース。
@@ -28,119 +32,92 @@ type UserUsecaseInterface interface {
 	Logout(ctx context.Context, sessionID string) error
 	GetUser(ctx context.Context, userID uuid.UUID) (*entity.User, error)
 	ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
+	VerifyEmail(ctx context.Context, token string) error
+	ResendVerificationEmail(ctx context.Context, email string) error
 }
 
 // UserUsecase はユーザーに関するビジネスロジックを提供する。
-// ユーザー登録、ログイン、情報取得、パスワード変更などのユースケースを実装する。
 type UserUsecase struct {
 	userRepo    repository.UserRepository
 	userService *service.UserService
 	sessionRepo repository.SessionRepository
+	emailSender repository.EmailSender
 	sessionTTL  time.Duration
 }
 
 // NewUserUsecase はUserUsecaseの新しいインスタンスを生成する。
-//
-// パラメータ:
-//   - userRepo: ユーザーデータの永続化を担当するリポジトリ
-//   - userService: メールアドレスのユニーク性チェックなどのドメインサービス
-//   - sessionRepo: セッション管理を担当するリポジトリ
-//   - sessionTTL: セッションの有効期限
-//
-// 戻り値:
-//   - *UserUsecase: 生成されたUserUsecaseインスタンス
 func NewUserUsecase(
 	userRepo repository.UserRepository,
 	userService *service.UserService,
 	sessionRepo repository.SessionRepository,
+	emailSender repository.EmailSender,
 	sessionTTL time.Duration,
 ) *UserUsecase {
 	return &UserUsecase{
 		userRepo:    userRepo,
 		userService: userService,
 		sessionRepo: sessionRepo,
+		emailSender: emailSender,
 		sessionTTL:  sessionTTL,
 	}
 }
 
-// Register はユーザー登録を行う。
-// メールアドレスの重複チェック、パスワードのバリデーション、ハッシュ化を実施し、ユーザーを永続化する。
-//
-// パラメータ:
-//   - ctx: リクエストのコンテキスト
-//   - email: 登録するメールアドレス（形式バリデーションが実施される）
-//   - password: 登録するパスワード（8文字以上72文字以下、ハッシュ化される）
-//
-// 戻り値:
-//   - *entity.User: 登録されたユーザーエンティティ
-//   - error: 以下のエラーが返される可能性がある
-//     - value.ErrInvalidEmail: メールアドレス形式が不正
-//     - value.ErrEmailAlreadyExists: メールアドレスが既に登録済み
-//     - value.ErrPasswordTooShort: パスワードが短すぎる
-//     - value.ErrPasswordTooLong: パスワードが長すぎる
-//     - その他のリポジトリエラー
+// Register はユーザー登録を行い、確認メールを送信する。
 func (u *UserUsecase) Register(ctx context.Context, email, password string) (*entity.User, error) {
-	// Email値オブジェクトの生成（バリデーション含む）
 	emailVO, err := value.NewEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	// メールアドレスのユニーク性チェック（ドメインサービス）
 	if err := u.userService.CheckEmailUniqueness(ctx, emailVO); err != nil {
 		return nil, err
 	}
 
-	// エンティティ作成（パスワードのバリデーション・ハッシュ化含む）
 	user, err := entity.NewUser(email, password)
 	if err != nil {
 		return nil, err
 	}
 
-	// 永続化
 	if err := u.userRepo.Create(ctx, user); err != nil {
 		return nil, err
+	}
+
+	// 確認メールを送信（失敗してもユーザー登録は成功とする）
+	if user.VerificationToken != nil {
+		if sendErr := u.emailSender.SendVerificationEmail(ctx, email, user.VerificationToken.String()); sendErr != nil {
+			// ログは EmailSender 内で記録される
+			return user, nil
+		}
 	}
 
 	return user, nil
 }
 
-// Login はログイン処理を行う。
-// メールアドレスとパスワードを検証し、認証に成功したユーザーとセッションIDを返す。
-// セキュリティ上、ユーザーの存在確認とパスワードの不一致を区別せず、同じエラーを返す。
-//
-// パラメータ:
-//   - ctx: リクエストのコンテキスト
-//   - email: ログインに使用するメールアドレス
-//   - password: ログインに使用するパスワード
-//
-// 戻り値:
-//   - *entity.User: 認証に成功したユーザーエンティティ
-//   - string: 生成されたセッションID
-//   - error: 以下のエラーが返される可能性がある
-//     - ErrInvalidCredentials: メールアドレスまたはパスワードが不正
-//     - その他のリポジトリエラー
+// Login はログイン処理を行う。メール未検証の場合はエラーを返す。
 func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entity.User, string, error) {
-	// Email値オブジェクトの生成（バリデーション含む）
 	emailVO, err := value.NewEmail(email)
 	if err != nil {
 		return nil, "", ErrInvalidCredentials
 	}
 
-	// ユーザーをメールアドレスで検索
 	user, err := u.userRepo.FindByEmail(ctx, emailVO.String())
 	if err != nil {
-		// ユーザーが存在しない場合も認証失敗として扱う
-		// （セキュリティ上、存在確認を悪用されないようにするため）
 		return nil, "", ErrInvalidCredentials
 	}
 
-	// パスワード検証
+	if user == nil {
+		return nil, "", ErrInvalidCredentials
+	}
+
 	if err := user.VerifyPassword(password); err != nil {
 		return nil, "", ErrInvalidCredentials
 	}
 
-	// セッション作成
+	// メール検証チェック
+	if !user.EmailVerified {
+		return nil, "", ErrEmailNotVerified
+	}
+
 	sessionID, err := u.sessionRepo.Create(ctx, user.ID, u.sessionTTL)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create session: %w", err)
@@ -149,18 +126,69 @@ func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entit
 	return user, sessionID, nil
 }
 
+// VerifyEmail はメール検証を完了する。
+func (u *UserUsecase) VerifyEmail(ctx context.Context, token string) error {
+	if token == "" {
+		return ErrInvalidVerificationToken
+	}
+
+	user, err := u.userRepo.FindByVerificationToken(ctx, token)
+	if err != nil {
+		return fmt.Errorf("failed to find user by token: %w", err)
+	}
+	if user == nil {
+		return ErrInvalidVerificationToken
+	}
+
+	// トークン有効期限チェック
+	if user.VerificationToken != nil && user.VerificationToken.IsExpired() {
+		return ErrInvalidVerificationToken
+	}
+
+	user.VerifyEmail()
+
+	if err := u.userRepo.Update(ctx, user); err != nil {
+		return fmt.Errorf("failed to verify email: %w", err)
+	}
+
+	return nil
+}
+
+// ResendVerificationEmail は確認メールを再送する。
+// セキュリティ上、メールアドレスの存在有無に関わらず同じレスポンスを返す。
+func (u *UserUsecase) ResendVerificationEmail(ctx context.Context, email string) error {
+	emailVO, err := value.NewEmail(email)
+	if err != nil {
+		return nil // メール形式が不正でもエラーを返さない
+	}
+
+	user, err := u.userRepo.FindByEmail(ctx, emailVO.String())
+	if err != nil || user == nil {
+		return nil // ユーザーが存在しなくてもエラーを返さない
+	}
+
+	if user.EmailVerified {
+		return nil // 既に検証済み
+	}
+
+	if err := user.RegenerateVerificationToken(); err != nil {
+		return fmt.Errorf("failed to regenerate token: %w", err)
+	}
+
+	if err := u.userRepo.Update(ctx, user); err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	if user.VerificationToken != nil {
+		if err := u.emailSender.SendVerificationEmail(ctx, email, user.VerificationToken.String()); err != nil {
+			return fmt.Errorf("failed to send verification email: %w", err)
+		}
+	}
+
+	return nil
+}
+
 // GetUser はユーザー情報を取得する。
-// 指定されたユーザーIDに対応するユーザーエンティティを返す。
-//
-// パラメータ:
-//   - ctx: リクエストのコンテキスト
-//   - userID: 取得するユーザーのID
-//
-// 戻り値:
-//   - *entity.User: 取得したユーザーエンティティ
-//   - error: 以下のエラーが返される可能性がある
-//     - ErrUserNotFound: 指定されたIDのユーザーが存在しない
-//     - その他のリポジトリエラー
 func (u *UserUsecase) GetUser(ctx context.Context, userID uuid.UUID) (*entity.User, error) {
 	user, err := u.userRepo.FindByID(ctx, userID)
 	if err != nil {
@@ -171,40 +199,20 @@ func (u *UserUsecase) GetUser(ctx context.Context, userID uuid.UUID) (*entity.Us
 }
 
 // ChangePassword はパスワード変更を行う。
-// 現在のパスワードを検証し、新しいパスワードに更新する。
-// セキュリティのため、パスワード変更には現在のパスワードの入力が必要となる。
-//
-// パラメータ:
-//   - ctx: リクエストのコンテキスト
-//   - userID: パスワードを変更するユーザーのID
-//   - currentPassword: 現在のパスワード（検証に使用）
-//   - newPassword: 新しいパスワード（8文字以上72文字以下、ハッシュ化される）
-//
-// 戻り値:
-//   - error: 以下のエラーが返される可能性がある
-//     - ErrUserNotFound: 指定されたIDのユーザーが存在しない
-//     - ErrInvalidCredentials: 現在のパスワードが不正
-//     - value.ErrPasswordTooShort: 新しいパスワードが短すぎる
-//     - value.ErrPasswordTooLong: 新しいパスワードが長すぎる
-//     - その他のリポジトリエラー
 func (u *UserUsecase) ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error {
-	// ユーザー取得
 	user, err := u.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return ErrUserNotFound
 	}
 
-	// 現在のパスワード検証
 	if err := user.VerifyPassword(currentPassword); err != nil {
 		return ErrInvalidCredentials
 	}
 
-	// 新しいパスワードに更新（エンティティ内でバリデーション・ハッシュ化）
 	if err := user.UpdatePassword(newPassword); err != nil {
 		return err
 	}
 
-	// 永続化
 	if err := u.userRepo.Update(ctx, user); err != nil {
 		return err
 	}
@@ -213,14 +221,6 @@ func (u *UserUsecase) ChangePassword(ctx context.Context, userID uuid.UUID, curr
 }
 
 // Logout はログアウト処理を行う。
-// 指定されたセッションIDのセッションを削除する。
-//
-// パラメータ:
-//   - ctx: リクエストのコンテキスト
-//   - sessionID: 削除するセッションID
-//
-// 戻り値:
-//   - error: セッション削除に失敗した場合のエラー
 func (u *UserUsecase) Logout(ctx context.Context, sessionID string) error {
 	return u.sessionRepo.Delete(ctx, sessionID)
 }
