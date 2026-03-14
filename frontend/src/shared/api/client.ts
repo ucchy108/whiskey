@@ -37,7 +37,9 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   }
 
   if (response.status === 204) {
-    return undefined as T;
+    // 204 No Content: void を返す API 向け。ジェネリック型のため型アサーションが必要
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return undefined as unknown as T;
   }
 
   return response.json();
