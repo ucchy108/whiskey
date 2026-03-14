@@ -7,45 +7,13 @@ import Typography from '@mui/material/Typography';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import type { Settings, ThemeMode, WeightUnit } from '../../types';
+import { SettingSection } from './SettingSection';
 
 export interface SettingsFormProps {
   settings: Settings;
   onThemeModeChange: (mode: ThemeMode) => void;
   onWeightUnitChange: (unit: WeightUnit) => void;
   onNotificationsChange: (enabled: boolean) => void;
-}
-
-interface SettingSectionProps {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}
-
-function SettingSection({ title, description, children }: SettingSectionProps) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        justifyContent: 'space-between',
-        gap: 2,
-        p: 3,
-        borderRadius: '12px',
-        bgcolor: 'background.paper',
-      }}
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
-          {title}
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-          {description}
-        </Typography>
-      </Box>
-      {children}
-    </Box>
-  );
 }
 
 export function SettingsForm({

@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { PageButton } from './PageButton';
 
 export interface PaginationProps {
   currentPage: number;
@@ -47,50 +48,6 @@ export function Pagination({
       >
         <ChevronRightIcon sx={{ fontSize: 18 }} />
       </PageButton>
-    </Box>
-  );
-}
-
-function PageButton({
-  children,
-  active,
-  disabled,
-  onClick,
-  'aria-label': ariaLabel,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  'aria-label'?: string;
-}) {
-  return (
-    <Box
-      component="button"
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: '8px',
-        border: 'none',
-        bgcolor: active ? 'primary.main' : 'background.paper',
-        color: active ? '#FFFFFF' : 'text.secondary',
-        fontSize: 13,
-        fontWeight: active ? 600 : 400,
-        cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        '&:hover': {
-          bgcolor: active ? 'primary.main' : 'border.light',
-        },
-      }}
-    >
-      {children}
     </Box>
   );
 }
