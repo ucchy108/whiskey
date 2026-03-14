@@ -18,11 +18,13 @@ import (
 
 // mockUserUsecase はUserUsecaseのモック実装
 type mockUserUsecase struct {
-	registerFunc       func(ctx context.Context, email, password string) (*entity.User, error)
-	loginFunc          func(ctx context.Context, email, password string) (*entity.User, string, error)
-	logoutFunc         func(ctx context.Context, sessionID string) error
-	getUserFunc        func(ctx context.Context, userID uuid.UUID) (*entity.User, error)
-	changePasswordFunc func(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
+	registerFunc                func(ctx context.Context, email, password string) (*entity.User, error)
+	loginFunc                   func(ctx context.Context, email, password string) (*entity.User, string, error)
+	logoutFunc                  func(ctx context.Context, sessionID string) error
+	getUserFunc                 func(ctx context.Context, userID uuid.UUID) (*entity.User, error)
+	changePasswordFunc          func(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error
+	verifyEmailFunc             func(ctx context.Context, token string) error
+	resendVerificationEmailFunc func(ctx context.Context, email string) error
 }
 
 func (m *mockUserUsecase) Register(ctx context.Context, email, password string) (*entity.User, error) {
@@ -56,6 +58,20 @@ func (m *mockUserUsecase) GetUser(ctx context.Context, userID uuid.UUID) (*entit
 func (m *mockUserUsecase) ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error {
 	if m.changePasswordFunc != nil {
 		return m.changePasswordFunc(ctx, userID, currentPassword, newPassword)
+	}
+	return errors.New("not implemented")
+}
+
+func (m *mockUserUsecase) VerifyEmail(ctx context.Context, token string) error {
+	if m.verifyEmailFunc != nil {
+		return m.verifyEmailFunc(ctx, token)
+	}
+	return errors.New("not implemented")
+}
+
+func (m *mockUserUsecase) ResendVerificationEmail(ctx context.Context, email string) error {
+	if m.resendVerificationEmailFunc != nil {
+		return m.resendVerificationEmailFunc(ctx, email)
 	}
 	return errors.New("not implemented")
 }

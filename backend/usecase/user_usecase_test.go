@@ -96,6 +96,18 @@ func (m *mockUserRepository) ExistsByEmail(ctx context.Context, email string) (b
 	return exists, nil
 }
 
+func (m *mockUserRepository) FindByVerificationToken(ctx context.Context, token string) (*entity.User, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	for _, user := range m.users {
+		if user.VerificationToken != nil && user.VerificationToken.String() == token {
+			return user, nil
+		}
+	}
+	return nil, nil
+}
+
 // mockSessionRepository はSessionRepositoryのモック実装
 type mockSessionRepository struct {
 	sessions map[string]uuid.UUID // sessionID -> userID
@@ -146,9 +158,29 @@ func (m *mockSessionRepository) Extend(ctx context.Context, sessionID string, tt
 	return nil
 }
 
-// テストヘルパー: リポジトリにユーザーを追加
+// mockEmailSender はEmailSenderのモック実装
+type mockEmailSender struct {
+	sentEmails []string
+	err        error
+}
+
+func newMockEmailSender() *mockEmailSender {
+	return &mockEmailSender{}
+}
+
+func (m *mockEmailSender) SendVerificationEmail(ctx context.Context, toEmail string, token string) error {
+	if m.err != nil {
+		return m.err
+	}
+	m.sentEmails = append(m.sentEmails, toEmail)
+	return nil
+}
+
+// テストヘルパー: リポジトリにユーザーを追加（メール検証済みの状態で追加）
 func (m *mockUserRepository) addUser(email, password string) *entity.User {
 	user, _ := entity.NewUser(email, password)
+	user.EmailVerified = true
+	user.VerificationToken = nil
 	m.users[email] = user
 	return user
 }
@@ -212,8 +244,9 @@ func TestUserUsecase_Register(t *testing.T) {
 			tt.setup(mockRepo)
 
 			mockSessionRepo := newMockSessionRepository()
+			mockEmailSender := newMockEmailSender()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, mockEmailSender, 24*time.Hour)
 
 			user, err := usecase.Register(context.Background(), tt.email, tt.password)
 
@@ -313,8 +346,9 @@ func TestUserUsecase_Login(t *testing.T) {
 			tt.setup(mockRepo)
 
 			mockSessionRepo := newMockSessionRepository()
+			mockEmailSender := newMockEmailSender()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, mockEmailSender, 24*time.Hour)
 
 			user, sessionID, err := usecase.Login(context.Background(), tt.email, tt.password)
 
@@ -396,8 +430,9 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			userID := tt.setup(mockRepo)
 
 			mockSessionRepo := newMockSessionRepository()
+			mockEmailSender := newMockEmailSender()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, mockEmailSender, 24*time.Hour)
 
 			user, err := usecase.GetUser(context.Background(), userID)
 
@@ -498,8 +533,9 @@ func TestUserUsecase_ChangePassword(t *testing.T) {
 			userID := tt.setup(mockRepo)
 
 			mockSessionRepo := newMockSessionRepository()
+			mockEmailSender := newMockEmailSender()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, mockEmailSender, 24*time.Hour)
 
 			err := usecase.ChangePassword(context.Background(), userID, tt.currentPassword, tt.newPassword)
 
@@ -570,8 +606,9 @@ func TestUserUsecase_Logout(t *testing.T) {
 			mockSessionRepo := newMockSessionRepository()
 			sessionID := tt.setup(mockSessionRepo)
 
+			mockEmailSender := newMockEmailSender()
 			userService := service.NewUserService(mockRepo)
-			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, 24*time.Hour)
+			usecase := NewUserUsecase(mockRepo, userService, mockSessionRepo, mockEmailSender, 24*time.Hour)
 
 			err := usecase.Logout(context.Background(), sessionID)
 

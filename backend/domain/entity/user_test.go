@@ -311,7 +311,7 @@ func TestReconstructUser(t *testing.T) {
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 
-	user := ReconstructUser(id, email, passwordHash, createdAt, updatedAt)
+	user := ReconstructUser(id, email, passwordHash, false, "", time.Time{}, createdAt, updatedAt)
 
 	if user == nil {
 		t.Fatal("ReconstructUser() returned nil")
