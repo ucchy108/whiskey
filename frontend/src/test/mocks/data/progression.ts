@@ -8,7 +8,7 @@ export function generateMockProgression(
   const today = new Date();
   const baseWeight = exerciseId === 'e1' ? 60 : exerciseId === 'e2' ? 80 : 100;
 
-  for (let i = days; i >= 0; i -= 3) {
+  for (const i of Array.from({ length: Math.ceil((days + 1) / 3) }, (_, idx) => days - idx * 3).filter((v) => v >= 0)) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 

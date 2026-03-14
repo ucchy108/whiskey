@@ -18,15 +18,17 @@ function computeSummary(
 
   for (const block of data.exerciseBlocks) {
     const exercise = exercises.find((e) => e.id === block.exerciseId);
-    let totalVolume = 0;
-    let maxWeight = 0;
-
-    for (const set of block.sets) {
-      const w = Number(set.weight) || 0;
-      const r = Number(set.reps) || 0;
-      totalVolume += w * r;
-      if (w > maxWeight) maxWeight = w;
-    }
+    const { totalVolume, maxWeight } = block.sets.reduce(
+      (acc, set) => {
+        const w = Number(set.weight) || 0;
+        const r = Number(set.reps) || 0;
+        return {
+          totalVolume: acc.totalVolume + w * r,
+          maxWeight: Math.max(acc.maxWeight, w),
+        };
+      },
+      { totalVolume: 0, maxWeight: 0 },
+    );
 
     items.push({
       exerciseName: exercise?.name ?? '未選択',

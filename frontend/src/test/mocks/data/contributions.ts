@@ -8,7 +8,7 @@ export function generateMockContributions(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  for (let i = days - 1; i >= 0; i--) {
+  for (const i of Array.from({ length: days }, (_, idx) => days - 1 - idx)) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 

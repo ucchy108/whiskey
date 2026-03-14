@@ -22,13 +22,13 @@ function buildGrid(data: ContributionData[]): {
   totalContributions: number;
 } {
   const scoreMap = new Map<string, number>();
-  let totalContributions = 0;
 
   for (const d of data) {
     const dateKey = d.date.slice(0, 10);
     scoreMap.set(dateKey, d.daily_score);
-    if (d.daily_score > 0) totalContributions++;
   }
+
+  const totalContributions = data.filter((d) => d.daily_score > 0).length;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -43,7 +43,7 @@ function buildGrid(data: ContributionData[]): {
   while (current <= today) {
     const week: WeekColumn = { days: [] };
 
-    for (let d = 0; d < 7; d++) {
+    for (const d of Array.from({ length: 7 }, (_, i) => i)) {
       const dayDate = new Date(current);
       dayDate.setDate(dayDate.getDate() + d);
 
