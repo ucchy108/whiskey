@@ -17,4 +17,13 @@ export const authApi = {
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
 
   getMe: () => request<User>('/api/auth/me'),
+
+  verifyEmail: (token: string) =>
+    request<{ message: string }>(`/api/auth/verify-email?token=${encodeURIComponent(token)}`),
+
+  resendVerification: (email: string) =>
+    request<{ message: string }>('/api/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
 };

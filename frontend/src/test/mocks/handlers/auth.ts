@@ -17,4 +17,12 @@ export const authHandlers = [
   http.get('/api/auth/me', () => {
     return HttpResponse.json(mockUser);
   }),
+
+  http.get('/api/auth/verify-email', () => {
+    return HttpResponse.json({ message: 'Email verified successfully' });
+  }),
+
+  http.post('/api/auth/resend-verification', () => {
+    return HttpResponse.json({ message: 'If the email exists, a verification email has been sent' });
+  }),
 ];

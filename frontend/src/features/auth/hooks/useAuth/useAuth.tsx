@@ -75,9 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (email: string, password: string) => {
     await authApi.register(email, password);
-    const loggedInUser = await authApi.login(email, password);
-    saveUser(loggedInUser);
-    setUser(loggedInUser);
+    // メール検証が必要なため、自動ログインしない
+    // 呼び出し側で検証待ち画面へ遷移する
   }, []);
 
   const logout = useCallback(async () => {
