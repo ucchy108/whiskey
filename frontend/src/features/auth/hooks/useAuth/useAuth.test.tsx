@@ -72,14 +72,11 @@ describe('useAuth', () => {
     expect(result.current.user).toBeNull();
   });
 
-  it('register 成功で user がセットされる', async () => {
+  it('register 成功で user はセットされない（メール検証待ち）', async () => {
     const mockUser = { id: '1', email: 'new@example.com' };
     server.use(
       http.post('/api/users', () => {
         return HttpResponse.json(mockUser, { status: 201 });
-      }),
-      http.post('/api/auth/login', () => {
-        return HttpResponse.json(mockUser);
       }),
     );
 
@@ -89,7 +86,7 @@ describe('useAuth', () => {
       await result.current.register('new@example.com', 'password123');
     });
 
-    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.user).toBeNull();
   });
 
   it('初期化時にセッション検証を行い、無効なら user を null にする', async () => {
